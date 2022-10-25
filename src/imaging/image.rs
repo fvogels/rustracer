@@ -10,7 +10,7 @@ pub struct Image {
 }
 
 #[derive(Debug)]
-enum WriteError {
+pub enum WriteError {
     IOError(std::io::Error),
     PNGError(png::EncodingError)
 }
