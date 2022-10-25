@@ -24,6 +24,20 @@ impl Image {
         Image { pixels, width, height }
     }
 
+    pub fn get(&self, x: usize, y: usize) -> &Color {
+        let index = self.index_of(x, y);
+        &self.pixels[index]
+    }
+
+    pub fn get_mut(&mut self, x: usize, y: usize) -> &Color {
+        let index = self.index_of(x, y);
+        &self.pixels[index]
+    }
+
+    fn index_of(&self, x: usize, y: usize) -> usize {
+        self.width as usize * y + x
+    }
+
     pub fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
         fn create_encoder<'a>(writer: BufWriter<File>, width: u32, height: u32) -> png::Encoder<'a, BufWriter<File>> {
             let mut encoder = png::Encoder::new(writer, width, height);
