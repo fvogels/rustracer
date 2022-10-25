@@ -14,6 +14,10 @@ impl Color {
         Color::new(0.0, 0.0, 0.0)
     }
 
+    pub fn white() -> Color {
+        Color::new(1.0, 1.0, 1.0)
+    }
+
     pub fn r(&self) -> f64 {
         self.rgb[0]
     }
