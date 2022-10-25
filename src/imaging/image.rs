@@ -25,8 +25,8 @@ impl Image {
     }
 
     pub fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
-        fn create_encoder(writer: BufWriter<File>, width: u32, height: u32) -> Encoder<BufWriter<File>> {
-            let encoder = png::Encoder::new(writer, width, height);
+        fn create_encoder<'a>(writer: BufWriter<File>, width: u32, height: u32) -> png::Encoder<'a, BufWriter<File>> {
+            let mut encoder = png::Encoder::new(writer, width, height);
 
             encoder.set_color(png::ColorType::Rgb);
             encoder.set_depth(png::BitDepth::Eight);
@@ -38,8 +38,8 @@ impl Image {
         let height = self.height;
         let file = File::create(path).map_err(WriteError::IOError)?;
         let writer = BufWriter::new(file);
-        let mut encoder = create_encoder(writer, width, height);
-        let writer2 = encoder.write_header().map_err(WriteError::PNGError)?;
+        let encoder = create_encoder(writer, width, height);
+        let mut writer2 = encoder.write_header().map_err(WriteError::PNGError)?;
         let data = self.convert_to_raw_rgb();
         writer2.write_image_data(&data).map_err(WriteError::PNGError)?;
 
@@ -47,12 +47,12 @@ impl Image {
     }
 
     fn convert_to_raw_rgb(&self) -> Vec<u8> {
-        let result = Vec::new();
+        let mut result = Vec::new();
         let bytes_per_pixel = 3;
         let total_byte_count = (bytes_per_pixel * self.width * self.height) as usize;
         result.reserve(total_byte_count);
 
-        for color in self.pixels {
+        for color in self.pixels.iter() {
             for c in color.to_byte_array() {
                 result.push(c);
             }
