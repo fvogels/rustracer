@@ -30,6 +30,14 @@ impl Vector3D {
     pub fn z(&self) -> f64 {
         self.coords[2]
     }
+
+    pub fn dot(&self, v: Vector3D) -> f64 {
+        let x = self.x() * v.x();
+        let y = self.y() * v.y();
+        let z = self.z() * v.z();
+
+        x + y + z
+    }
 }
 
 impl std::ops::Add<Vector3D> for Vector3D {
@@ -57,6 +65,16 @@ mod tests {
         let v = v3!(5, 2, 4);
         let expected = v3!(6, 4, 7);
         let actual = u + v;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dot_product() {
+        let u = v3!(1, 2, 3);
+        let v = v3!(4, -2, 0);
+        let expected = (1 * 4 - 2 * 2) as f64;
+        let actual = u.dot(v);
 
         assert_eq!(expected, actual);
     }
