@@ -23,7 +23,7 @@ impl Image {
         Image { pixels, width, height }
     }
 
-    fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
+    pub fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
         fn create_encoder(writer: BufWriter<File>, width: u32, height: u32) -> Encoder<BufWriter<File>> {
             let encoder = png::Encoder::new(writer, width, height);
 
