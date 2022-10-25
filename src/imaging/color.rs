@@ -10,6 +10,10 @@ impl Color {
         }
     }
 
+    fn black() -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
+
     fn r(&self) -> f64 {
         self.rgb[0]
     }
