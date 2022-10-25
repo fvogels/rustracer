@@ -58,22 +58,34 @@ impl std::ops::Add<Vector3D> for Vector3D {
 mod tests {
     #[cfg(test)]
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn addition() {
-        let u = v3!(1, 2, 3);
-        let v = v3!(5, 2, 4);
-        let expected = v3!(6, 4, 7);
+    #[rstest]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(0, 1, 0), v3!(0, 0, 0), v3!(0, 1, 0))]
+    #[case(v3!(0, 0, 1), v3!(0, 0, 0), v3!(0, 0, 1))]
+    #[case(v3!(0, 0, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(0, 0, 0), v3!(0, 1, 0), v3!(0, 1, 0))]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 1), v3!(0, 0, 1))]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 1), v3!(1, 0, 1))]
+    #[case(v3!(1, 2, 3), v3!(0, 0, 0), v3!(1, 2, 3))]
+    #[case(v3!(1, 2, 3), v3!(5, 2, 4), v3!(6, 4, 7))]
+    fn addition(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
         let actual = u + v;
 
         assert_eq!(expected, actual);
     }
 
-    #[test]
-    fn dot_product() {
-        let u = v3!(1, 2, 3);
-        let v = v3!(4, -2, 0);
-        let expected = (1 * 4 - 2 * 2) as f64;
+    #[rstest]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 0), 0.0)]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 0), 0.0)]
+    #[case(v3!(1, 0, 0), v3!(1, 0, 0), 1.0)]
+    #[case(v3!(2, 0, 0), v3!(3, 0, 0), 6.0)]
+    #[case(v3!(0, 4, 0), v3!(0, 5, 0), 20.0)]
+    #[case(v3!(0, 0, 2), v3!(0, 0, -1), -2.0)]
+    #[case(v3!(1, 2, 3), v3!(1, 2, 3), 1.0 + 4.0 + 9.0)]
+    fn dot_product(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: f64) {
         let actual = u.dot(v);
 
         assert_eq!(expected, actual);
