@@ -1,2 +1,2 @@
-mod color;
-mod image;
+pub mod color;
+pub mod image;
