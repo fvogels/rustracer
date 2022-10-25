@@ -1,3 +1,5 @@
+use std::cmp::{min, max};
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
     rgb: [f64; 3],
@@ -28,6 +30,19 @@ impl Color {
 
     pub fn b(&self) -> f64 {
         self.rgb[2]
+    }
+
+    pub fn to_byte_array(&self) -> [u8; 3] {
+        fn clamp(c: f64) -> u8 {
+            let c = (c * 256.0) as u8;
+            min(255, max(0, c)) as u8
+        }
+
+        [
+            clamp(self.r()),
+            clamp(self.g()),
+            clamp(self.b()),
+        ]
     }
 }
 
