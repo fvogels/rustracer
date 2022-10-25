@@ -29,9 +29,9 @@ impl Image {
         &self.pixels[index]
     }
 
-    pub fn get_mut(&mut self, x: usize, y: usize) -> &Color {
+    pub fn get_mut(&mut self, x: usize, y: usize) -> &mut Color {
         let index = self.index_of(x, y);
-        &self.pixels[index]
+        &mut self.pixels[index]
     }
 
     fn index_of(&self, x: usize, y: usize) -> usize {
