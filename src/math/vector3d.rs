@@ -40,7 +40,7 @@ impl Vector3D {
     }
 }
 
-impl std::ops::Add<Vector3D> for Vector3D {
+impl std::ops::Add for Vector3D {
     type Output = Self;
 
     fn add(self, v: Vector3D) -> Self::Output {
