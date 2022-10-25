@@ -4,25 +4,25 @@ pub struct Color {
 }
 
 impl Color {
-    fn new(r: f64, g: f64, b: f64) -> Color {
+    pub fn new(r: f64, g: f64, b: f64) -> Color {
         Color {
             rgb: [r, g, b]
         }
     }
 
-    fn black() -> Color {
+    pub fn black() -> Color {
         Color::new(0.0, 0.0, 0.0)
     }
 
-    fn r(&self) -> f64 {
+    pub fn r(&self) -> f64 {
         self.rgb[0]
     }
 
-    fn g(&self) -> f64 {
+    pub fn g(&self) -> f64 {
         self.rgb[1]
     }
 
-    fn b(&self) -> f64 {
+    pub fn b(&self) -> f64 {
         self.rgb[2]
     }
 }
