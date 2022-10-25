@@ -9,6 +9,7 @@ pub struct Image {
     height: u32,
 }
 
+#[derive(Debug)]
 enum WriteError {
     IOError(std::io::Error),
     PNGError(png::EncodingError)
