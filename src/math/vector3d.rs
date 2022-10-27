@@ -46,6 +46,18 @@ impl std::ops::Add for Vector3D {
     }
 }
 
+impl std::ops::Mul<f64> for Vector3D {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        let x = self.x() * rhs;
+        let y = self.y() * rhs;
+        let z = self.z() * rhs;
+
+        Vector3D::new(x, y, z)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
@@ -79,6 +91,22 @@ mod tests {
     #[case(v3!(1, 2, 3), v3!(1, 2, 3), 1.0 + 4.0 + 9.0)]
     fn dot_product(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: f64) {
         let actual = u.dot(v);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), 0.0, v3!(0, 0, 0))]
+    #[case(v3!(1, 1, 1), 0.0, v3!(0, 0, 0))]
+    #[case(v3!(0, 0, 0), 1.0, v3!(0, 0, 0))]
+    #[case(v3!(1, 0, 0), 1.0, v3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), 2.0, v3!(2, 0, 0))]
+    #[case(v3!(3, 0, 0), 2.0, v3!(6, 0, 0))]
+    #[case(v3!(0, 4, 0), 2.0, v3!(0, 8, 0))]
+    #[case(v3!(0, 0, 2), 3.0, v3!(0, 0, 6))]
+    #[case(v3!(1, 2, 3), 2.0, v3!(2, 4, 6))]
+    fn multiplication(#[case] v: Vector3D, #[case] c: f64, #[case] expected: Vector3D) {
+        let actual = v * c;
 
         assert_eq!(expected, actual);
     }
