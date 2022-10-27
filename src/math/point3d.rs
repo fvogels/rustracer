@@ -40,6 +40,18 @@ impl std::ops::Add<Vector3D> for Point3D {
     }
 }
 
+impl std::ops::Sub<Point3D> for Point3D {
+    type Output = Vector3D;
+
+    fn sub(self, p: Point3D) -> Self::Output {
+        let x = self.x() - p.x();
+        let y = self.y() - p.y();
+        let z = self.z() - p.z();
+
+        Vector3D::new(x, y, z)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
@@ -59,6 +71,23 @@ mod tests {
     #[case(p3!(1, 2, 3), v3!(5, 2, 4), p3!(6, 4, 7))]
     fn addition(#[case] p: Point3D, #[case] v: Vector3D, #[case] expected: Point3D) {
         let actual = p + v;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(p3!(0, 0, 0), p3!(0, 0, 0), v3!(0, 0, 0))]
+    #[case(p3!(1, 0, 0), p3!(0, 0, 0), v3!(1, 0, 0))]
+    #[case(p3!(0, 1, 0), p3!(0, 0, 0), v3!(0, 1, 0))]
+    #[case(p3!(0, 0, 1), p3!(0, 0, 0), v3!(0, 0, 1))]
+    #[case(p3!(0, 0, 0), p3!(1, 0, 0), v3!(-1, 0, 0))]
+    #[case(p3!(0, 0, 0), p3!(0, 1, 0), v3!(0, -1, 0))]
+    #[case(p3!(0, 0, 0), p3!(0, 0, 1), v3!(0, 0, -1))]
+    #[case(p3!(1, 0, 0), p3!(0, 0, 1), v3!(1, 0, -1))]
+    #[case(p3!(1, 2, 3), p3!(0, 0, 0), v3!(1, 2, 3))]
+    #[case(p3!(5, 2, 4), p3!(1, 2, 3), v3!(4, 0, 1))]
+    fn subtraction_p_p(#[case] p: Point3D, #[case] q: Point3D, #[case] expected: Vector3D) {
+        let actual = p - q;
 
         assert_eq!(expected, actual);
     }
