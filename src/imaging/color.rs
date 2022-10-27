@@ -1,4 +1,4 @@
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
@@ -7,9 +7,7 @@ pub struct Color {
 
 impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Color {
-        Color {
-            rgb: [r, g, b]
-        }
+        Color { rgb: [r, g, b] }
     }
 
     pub fn black() -> Color {
@@ -38,11 +36,7 @@ impl Color {
             min(255, max(0, c)) as u8
         }
 
-        [
-            clamp(self.r()),
-            clamp(self.g()),
-            clamp(self.b()),
-        ]
+        [clamp(self.r()), clamp(self.g()), clamp(self.b())]
     }
 }
 

@@ -1,7 +1,7 @@
-use std::path::Path;
+use crate::imaging::color::Color;
 use std::fs::File;
 use std::io::BufWriter;
-use crate::imaging::color::Color;
+use std::path::Path;
 
 pub struct Image {
     pixels: Vec<Color>,
@@ -12,7 +12,7 @@ pub struct Image {
 #[derive(Debug)]
 pub enum WriteError {
     IOError(std::io::Error),
-    PNGError(png::EncodingError)
+    PNGError(png::EncodingError),
 }
 
 impl Image {
@@ -21,7 +21,11 @@ impl Image {
         let mut pixels = Vec::new();
         pixels.resize(pixel_count as usize, Color::black());
 
-        Image { pixels, width, height }
+        Image {
+            pixels,
+            width,
+            height,
+        }
     }
 
     pub fn get(&self, x: usize, y: usize) -> &Color {
@@ -39,7 +43,11 @@ impl Image {
     }
 
     pub fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
-        fn create_encoder<'a>(writer: BufWriter<File>, width: u32, height: u32) -> png::Encoder<'a, BufWriter<File>> {
+        fn create_encoder<'a>(
+            writer: BufWriter<File>,
+            width: u32,
+            height: u32,
+        ) -> png::Encoder<'a, BufWriter<File>> {
             let mut encoder = png::Encoder::new(writer, width, height);
 
             encoder.set_color(png::ColorType::Rgb);
@@ -55,7 +63,9 @@ impl Image {
         let encoder = create_encoder(writer, width, height);
         let mut writer2 = encoder.write_header().map_err(WriteError::PNGError)?;
         let data = self.convert_to_raw_rgb();
-        writer2.write_image_data(&data).map_err(WriteError::PNGError)?;
+        writer2
+            .write_image_data(&data)
+            .map_err(WriteError::PNGError)?;
 
         Ok(())
     }
@@ -74,5 +84,4 @@ impl Image {
 
         result
     }
-
 }

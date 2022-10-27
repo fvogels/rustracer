@@ -5,18 +5,14 @@ pub struct Vector3D {
 
 #[macro_export]
 macro_rules! v3 {
-    ( $x:expr, $y:expr, $z:expr ) => {
-        {
-            Vector3D::new($x as f64, $y as f64, $z as f64)
-        }
-    };
+    ( $x:expr, $y:expr, $z:expr ) => {{
+        Vector3D::new($x as f64, $y as f64, $z as f64)
+    }};
 }
 
 impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
-        Vector3D {
-            coords: [x, y, z]
-        }
+        Vector3D { coords: [x, y, z] }
     }
 
     pub fn x(&self) -> f64 {
@@ -44,11 +40,7 @@ impl std::ops::Add for Vector3D {
     type Output = Self;
 
     fn add(self, v: Vector3D) -> Self::Output {
-        let coords = [
-            self.x() + v.x(),
-            self.y() + v.y(),
-            self.z() + v.z(),
-        ];
+        let coords = [self.x() + v.x(), self.y() + v.y(), self.z() + v.z()];
 
         Vector3D { coords }
     }

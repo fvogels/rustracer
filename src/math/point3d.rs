@@ -7,18 +7,14 @@ pub struct Point3D {
 
 #[macro_export]
 macro_rules! p3 {
-    ( $x:expr, $y:expr, $z:expr ) => {
-        {
-            Point3D::new($x as f64, $y as f64, $z as f64)
-        }
-    };
+    ( $x:expr, $y:expr, $z:expr ) => {{
+        Point3D::new($x as f64, $y as f64, $z as f64)
+    }};
 }
 
 impl Point3D {
     pub fn new(x: f64, y: f64, z: f64) -> Point3D {
-        Point3D {
-            coords: [x, y, z]
-        }
+        Point3D { coords: [x, y, z] }
     }
 
     pub fn x(&self) -> f64 {
@@ -38,11 +34,7 @@ impl std::ops::Add<Vector3D> for Point3D {
     type Output = Self;
 
     fn add(self, v: Vector3D) -> Self::Output {
-        let coords = [
-            self.x() + v.x(),
-            self.y() + v.y(),
-            self.z() + v.z(),
-        ];
+        let coords = [self.x() + v.x(), self.y() + v.y(), self.z() + v.z()];
 
         Point3D { coords }
     }
