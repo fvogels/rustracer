@@ -1,4 +1,4 @@
-use crate::math::vector3d::Vector3D;
+use super::vector3d::Vector3D;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
