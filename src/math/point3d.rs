@@ -34,9 +34,11 @@ impl std::ops::Add<Vector3D> for Point3D {
     type Output = Self;
 
     fn add(self, v: Vector3D) -> Self::Output {
-        let coords = [self.x() + v.x(), self.y() + v.y(), self.z() + v.z()];
+        let x = self.x() + v.x();
+        let y = self.y() + v.y();
+        let z = self.z() + v.z();
 
-        Point3D { coords }
+        Point3D::new(x, y, z)
     }
 }
 
