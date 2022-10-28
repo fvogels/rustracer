@@ -26,7 +26,7 @@ mod tests {
     #[cfg(test)]
     use super::*;
     use crate::math::point2d::p2;
-    use crate::math::vector2d::{Vector2D, v2};
+    use crate::math::vector2d::{v2, Vector2D};
     use rstest::rstest;
 
     #[rstest]

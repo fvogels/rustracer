@@ -1,6 +1,10 @@
 use std::ops::Mul;
 
-use super::{point3d::{Point3D, p3}, vector3d::Vector3D, ray::Ray};
+use super::{
+    point3d::{p3, Point3D},
+    ray::Ray,
+    vector3d::Vector3D,
+};
 
 pub struct Matrix4D {
     m: [[f64; 4]; 4],
@@ -29,7 +33,12 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    pub fn from_coordinate_system(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D, z_axis: Vector3D) -> Matrix4D {
+    pub fn from_coordinate_system(
+        origin: Point3D,
+        x_axis: Vector3D,
+        y_axis: Vector3D,
+        z_axis: Vector3D,
+    ) -> Matrix4D {
         let m = [
             [x_axis.x(), y_axis.x(), z_axis.x(), origin.x()],
             [x_axis.y(), y_axis.y(), z_axis.y(), origin.y()],
@@ -120,7 +129,7 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::{vector3d::v3, point3d::p3};
+    use crate::math::{point3d::p3, vector3d::v3};
 
     #[rstest]
     #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
@@ -131,7 +140,11 @@ mod tests {
     #[case(v3!(1, 2, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
     #[case(v3!(1, 2, 3), v3!(1, 0, 0), v3!(1, 0, 0))]
     #[case(v3!(1, 4, 2), v3!(1, 2, 3), v3!(1, 2, 3))]
-    fn translate_vector(#[case] displacement: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
+    fn translate_vector(
+        #[case] displacement: Vector3D,
+        #[case] v: Vector3D,
+        #[case] expected: Vector3D,
+    ) {
         let matrix = Matrix4D::translation(displacement);
         let actual = &matrix * &v;
 
@@ -148,7 +161,11 @@ mod tests {
     #[case(v3!(1, 2, 0), p3!(1, 0, 0), p3!(2, 2, 0))]
     #[case(v3!(1, 2, 3), p3!(1, 0, 0), p3!(2, 2, 3))]
     #[case(v3!(1, 4, 2), p3!(5, 1, 7), p3!(6, 5, 9))]
-    fn translate_point(#[case] displacement: Vector3D, #[case] p: Point3D, #[case] expected: Point3D) {
+    fn translate_point(
+        #[case] displacement: Vector3D,
+        #[case] p: Point3D,
+        #[case] expected: Point3D,
+    ) {
         let matrix = Matrix4D::translation(displacement);
         let actual = &matrix * &p;
 
@@ -162,7 +179,13 @@ mod tests {
     #[case(1.0, 2.0, 1.0, v3!(1, 1, 1), v3!(1, 2, 1))]
     #[case(1.0, 1.0, 2.0, v3!(1, 1, 1), v3!(1, 1, 2))]
     #[case(2.0, 3.0, 2.0, v3!(2, 3, 4), v3!(4, 9, 8))]
-    fn scale_vector(#[case] sx: f64, #[case] sy: f64, #[case] sz: f64, #[case] v: Vector3D, #[case] expected: Vector3D) {
+    fn scale_vector(
+        #[case] sx: f64,
+        #[case] sy: f64,
+        #[case] sz: f64,
+        #[case] v: Vector3D,
+        #[case] expected: Vector3D,
+    ) {
         let matrix = Matrix4D::scaling(sx, sy, sz);
         let actual = &matrix * &v;
 

@@ -1,4 +1,4 @@
-use super::{vector2d::Vector2D, metric::Metric};
+use super::{metric::Metric, vector2d::Vector2D};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point2D {

@@ -8,21 +8,21 @@ pub trait Approx {
     fn approx_eps(&self, rhs: &Self, epsilon: f64) -> bool;
 }
 
-impl<T : Metric> Approx for T {
+impl<T: Metric> Approx for T {
     fn approx_eps(&self, rhs: &Self, epsilon: f64) -> bool {
         self.distance(rhs) < epsilon
     }
 }
 
-pub struct ApproxWrapper<T : Approx> {
+pub struct ApproxWrapper<T: Approx> {
     value: T,
 }
 
-pub fn approx<T : Approx>(value : T) -> ApproxWrapper<T> {
+pub fn approx<T: Approx>(value: T) -> ApproxWrapper<T> {
     ApproxWrapper { value }
 }
 
-impl<T : Approx> PartialEq<T> for ApproxWrapper<T> {
+impl<T: Approx> PartialEq<T> for ApproxWrapper<T> {
     fn eq(&self, other: &T) -> bool {
         self.value.approx(other)
     }

@@ -1,4 +1,4 @@
-use super::{vector3d::Vector3D, metric::Metric};
+use super::{metric::Metric, vector3d::Vector3D};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {

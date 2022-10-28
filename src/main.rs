@@ -6,8 +6,8 @@ mod primitives;
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
-use math::point3d::{Point3D};
-use math::vector3d::{Vector3D};
+use math::point3d::Point3D;
+use math::vector3d::Vector3D;
 
 fn main() {
     let width: i32 = 500;
@@ -21,8 +21,6 @@ fn main() {
         up: v3!(0, 1, 0),
     };
     let camera = PerspectiveCamera::new(&camera_parameters);
-
-
 
     image
         .write_to_file(std::path::Path::new(r"g:/temp/test.png"))

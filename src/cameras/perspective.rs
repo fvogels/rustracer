@@ -1,9 +1,10 @@
 use crate::math::{
+    matrix4d::Matrix4D,
     point2d::Point2D,
     point3d::{p3, Point3D},
     ray::Ray,
     rectangle3d::Rectangle3D,
-    vector3d::{v3, Vector3D}, matrix4d::Matrix4D,
+    vector3d::{v3, Vector3D},
 };
 
 pub struct PerspectiveCamera {
@@ -69,7 +70,10 @@ impl PerspectiveCamera {
         let screen = create_screen(parameters);
         let transformation_matrix = create_transformation_matrix(parameters);
 
-        PerspectiveCamera { screen, transformation_matrix }
+        PerspectiveCamera {
+            screen,
+            transformation_matrix,
+        }
     }
 
     pub fn enumerate_rays(&self, point: Point2D) -> Rays {
@@ -108,7 +112,7 @@ mod tests {
     use rstest::rstest;
 
     #[cfg(test)]
-    use crate::math::{point2d::p2, approx::approx};
+    use crate::math::{approx::approx, point2d::p2};
 
     #[rstest]
     #[case(p2!(0.5, 0.5), p3!(0, 0, 0))]
