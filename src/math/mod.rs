@@ -4,4 +4,5 @@ pub mod point2d;
 pub mod point3d;
 pub mod ray;
 pub mod quadratic;
+pub mod rectangle2d;
 pub mod rectangle3d;
