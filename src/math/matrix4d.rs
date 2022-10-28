@@ -67,3 +67,43 @@ impl Mul<&Matrix4D> for &Matrix4D {
         result
     }
 }
+
+impl Mul<&Vector3D> for &Matrix4D {
+    type Output = Vector3D;
+
+    fn mul(self, v: &Vector3D) -> Self::Output {
+        let m = &self.m;
+        let x = m[0][0] * v.x() + m[0][1] * v.y() + m[0][2] * v.z();
+        let y = m[1][0] * v.x() + m[1][1] * v.y() + m[1][2] * v.z();
+        let z = m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z();
+
+        Vector3D::new(x, y, z)
+    }
+}
+
+mod tests {
+    use rstest::rstest;
+
+    #[cfg(test)]
+    use super::*;
+
+    #[cfg(test)]
+    use crate::math::vector3d::v3;
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
+    #[case(v3!(0, 0, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), v3!(0, 1, 0), v3!(0, 1, 0))]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 1), v3!(0, 0, 1))]
+    #[case(v3!(1, 2, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(1, 2, 3), v3!(1, 0, 0), v3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), v3!(0, 1, 0), v3!(0, 1, 0))]
+    #[case(v3!(1, 4, 2), v3!(1, 2, 3), v3!(1, 2, 3))]
+    fn translate_vector(#[case] displacement: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
+        let matrix = Matrix4D::translation(displacement);
+        let actual = &matrix * &v;
+
+        assert_eq!(expected, actual);
+    }
+}
