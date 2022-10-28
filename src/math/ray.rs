@@ -21,6 +21,8 @@ impl Ray {
 mod tests {
     #[cfg(test)]
     use super::{Point3D, Vector3D, Ray};
+    use crate::math::point3d::p3;
+    use crate::math::vector3d::v3;
     use rstest::rstest;
 
     #[rstest]
