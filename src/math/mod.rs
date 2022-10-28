@@ -1,3 +1,4 @@
+pub mod metric;
 pub mod point2d;
 pub mod point3d;
 pub mod position2d;
