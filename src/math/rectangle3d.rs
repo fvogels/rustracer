@@ -10,7 +10,11 @@ pub struct Rectangle3D {
 
 impl Rectangle3D {
     pub fn new(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D) -> Rectangle3D {
-        Rectangle3D { origin, x_axis, y_axis }
+        Rectangle3D {
+            origin,
+            x_axis,
+            y_axis,
+        }
     }
 
     pub fn from_relative(&self, p: Point2D) -> Point3D {
@@ -22,10 +26,10 @@ impl Rectangle3D {
 mod tests {
     #[cfg(test)]
     use super::*;
-    use rstest::rstest;
     use crate::math::point2d::p2;
     use crate::math::point3d::p3;
     use crate::math::vector3d::v3;
+    use rstest::rstest;
 
     #[rstest]
     #[case(Rectangle3D::new(p3!(0, 0, 0), v3!(1, 0, 0), v3!(0, 1, 0)), p2!(0, 0), p3!(0, 0, 0))]
@@ -34,7 +38,11 @@ mod tests {
     #[case(Rectangle3D::new(p3!(0, 0, 0), v3!(1, 0, 0), v3!(0, 1, 0)), p2!(1, 1), p3!(1, 1, 0))]
     #[case(Rectangle3D::new(p3!(0, 0, 0), v3!(2, 0, 0), v3!(0, 4, 0)), p2!(1, 0), p3!(2, 0, 0))]
     #[case(Rectangle3D::new(p3!(0, 0, 0), v3!(2, 0, 0), v3!(0, 4, 0)), p2!(0, 1), p3!(0, 4, 0))]
-    fn from_relative(#[case] rectangle: Rectangle3D, #[case] p: Point2D, #[case] expected: Point3D) {
+    fn from_relative(
+        #[case] rectangle: Rectangle3D,
+        #[case] p: Point2D,
+        #[case] expected: Point3D,
+    ) {
         let actual = rectangle.from_relative(p);
 
         assert_eq!(expected, actual);

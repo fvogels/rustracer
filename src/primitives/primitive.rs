@@ -1,6 +1,6 @@
-use crate::math::vector3d::Vector3D;
 use crate::math::point3d::Point3D;
 use crate::math::ray::Ray;
+use crate::math::vector3d::Vector3D;
 
 pub struct Hit {
     pub t: f64,

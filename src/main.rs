@@ -1,7 +1,7 @@
+mod cameras;
 mod imaging;
 mod math;
 mod primitives;
-mod cameras;
 
 use imaging::color::Color;
 use imaging::image::Image;

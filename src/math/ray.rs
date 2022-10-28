@@ -1,7 +1,6 @@
 use super::point3d::Point3D;
 use super::vector3d::Vector3D;
 
-
 pub struct Ray {
     pub origin: Point3D,
     pub direction: Vector3D,
@@ -20,7 +19,7 @@ impl Ray {
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
-    use super::{Point3D, Vector3D, Ray};
+    use super::{Point3D, Ray, Vector3D};
     use crate::math::point3d::p3;
     use crate::math::vector3d::v3;
     use rstest::rstest;
@@ -32,7 +31,12 @@ mod tests {
     #[case(p3!(1, 0, 0), v3!(2, 0, 0), 1.0, p3!(3, 0, 0))]
     #[case(p3!(1, 2, 3), v3!(1, 1, 1), 1.0, p3!(2, 3, 4))]
     #[case(p3!(1, 2, 3), v3!(1, 1, 1), 2.0, p3!(3, 4, 5))]
-    fn at(#[case] position: Point3D, #[case] direction: Vector3D, #[case] t: f64, #[case] expected: Point3D) {
+    fn at(
+        #[case] position: Point3D,
+        #[case] direction: Vector3D,
+        #[case] t: f64,
+        #[case] expected: Point3D,
+    ) {
         let actual = Ray::new(position, direction).at(t);
 
         assert_eq!(expected, actual);

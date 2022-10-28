@@ -1,5 +1,10 @@
-use crate::math::{ray::Ray, rectangle3d::Rectangle3D, point3d::{Point3D, p3}, vector3d::{Vector3D, v3}, point2d::Point2D};
-
+use crate::math::{
+    point2d::Point2D,
+    point3d::{p3, Point3D},
+    ray::Ray,
+    rectangle3d::Rectangle3D,
+    vector3d::{v3, Vector3D},
+};
 
 pub struct PerspectiveCamera {
     screen: Rectangle3D,
@@ -23,7 +28,11 @@ impl PerspectiveCamera {
     pub fn new(parameters: &PerspectiveCameraParameters) -> PerspectiveCamera {
         let screen_width = parameters.aspect_ratio;
         let screen_height = 1.0;
-        let origin = p3![-screen_width / 2.0, screen_height / 2.0, parameters.distance_to_screen];
+        let origin = p3![
+            -screen_width / 2.0,
+            screen_height / 2.0,
+            parameters.distance_to_screen
+        ];
         let x_axis = v3![screen_width, 0, 0];
         let y_axis = v3![0, screen_height, 0];
         let screen = Rectangle3D::new(origin, x_axis, y_axis);
@@ -32,7 +41,11 @@ impl PerspectiveCamera {
     }
 
     pub fn enumerate_rays(&self, point: Point2D) -> Rays {
-        Rays { parent: self, point, consumed: false }
+        Rays {
+            parent: self,
+            point,
+            consumed: false,
+        }
     }
 }
 
