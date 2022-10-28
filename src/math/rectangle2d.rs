@@ -1,4 +1,4 @@
-use super::point2d::Point2D;
+use super::point2d::{Point2D, p2};
 use super::vector2d::Vector2D;
 
 pub struct Rectangle2D {
@@ -18,6 +18,10 @@ impl Rectangle2D {
 
     pub fn from_relative(&self, p: &Point2D) -> Point2D {
         self.origin + self.x_axis * p.x() + self.y_axis * p.y()
+    }
+
+    pub fn center(&self) -> Point2D {
+        self.from_relative(&p2!(0.5, 0.5))
     }
 }
 
