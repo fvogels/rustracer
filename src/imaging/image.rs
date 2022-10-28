@@ -1,4 +1,5 @@
 use crate::imaging::color::Color;
+use crate::math::position2d::Position2D;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
@@ -28,17 +29,20 @@ impl Image {
         }
     }
 
-    pub fn get(&self, x: usize, y: usize) -> &Color {
-        let index = self.index_of(x, y);
+    pub fn get(&self, position: Position2D) -> &Color {
+        let index = self.index_of(position);
         &self.pixels[index]
     }
 
-    pub fn get_mut(&mut self, x: usize, y: usize) -> &mut Color {
-        let index = self.index_of(x, y);
+    pub fn get_mut(&mut self, position: Position2D) -> &mut Color {
+        let index = self.index_of(position);
         &mut self.pixels[index]
     }
 
-    fn index_of(&self, x: usize, y: usize) -> usize {
+    fn index_of(&self, position: Position2D) -> usize {
+        let x = position.x as usize;
+        let y = position.y as usize;
+
         self.width as usize * y + x
     }
 
