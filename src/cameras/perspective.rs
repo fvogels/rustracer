@@ -6,11 +6,11 @@ pub struct PerspectiveCamera {
 }
 
 pub struct PerspectiveCameraParameters {
-    eye: Point3D,
-    look_at: Point3D,
-    up: Vector3D,
-    distance_to_screen: f64,
-    aspect_ratio: f64,
+    pub eye: Point3D,
+    pub look_at: Point3D,
+    pub up: Vector3D,
+    pub distance_to_screen: f64,
+    pub aspect_ratio: f64,
 }
 
 pub struct Rays<'a> {
