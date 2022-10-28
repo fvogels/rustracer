@@ -1,4 +1,4 @@
-use super::point2d::Point2D;
+use super::point2d::{Point2D, p2};
 use super::point3d::Point3D;
 use super::vector3d::Vector3D;
 
@@ -19,6 +19,10 @@ impl Rectangle3D {
 
     pub fn from_relative(&self, p: &Point2D) -> Point3D {
         self.origin + self.x_axis * p.x() + self.y_axis * p.y()
+    }
+
+    pub fn center(&self) -> Point3D {
+        self.from_relative(&p2!(0.5, 0.5))
     }
 }
 
