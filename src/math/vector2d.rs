@@ -1,3 +1,6 @@
+use crate::math::approx::approx;
+use super::{metric::Metric};
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector2D {
     coords: [f64; 2],
@@ -11,8 +14,6 @@ macro_rules! v2 {
 }
 
 pub use v2;
-
-use super::metric::Metric;
 
 impl Vector2D {
     pub fn new(x: f64, y: f64) -> Vector2D {
@@ -43,7 +44,7 @@ impl Vector2D {
     }
 
     pub fn is_orthogonal_to(&self, v: &Vector2D) -> bool {
-        self.dot(v) == 0.0
+        approx(0.0) == self.dot(v)
     }
 }
 
