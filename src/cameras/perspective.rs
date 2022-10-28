@@ -4,7 +4,6 @@ use crate::math::{
     ray::Ray,
     rectangle3d::Rectangle3D,
     vector3d::{v3, Vector3D}, matrix4d::Matrix4D,
-    approx::approx,
 };
 
 pub struct PerspectiveCamera {
@@ -109,7 +108,7 @@ mod tests {
     use rstest::rstest;
 
     #[cfg(test)]
-    use crate::math::{point2d::p2, approx};
+    use crate::math::{point2d::p2, approx::approx};
 
     #[rstest]
     #[case(p2!(0.5, 0.5), p3!(0, 0, 0))]
