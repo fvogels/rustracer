@@ -36,6 +36,14 @@ impl Vector3D {
 
         x + y + z
     }
+
+    pub fn norm_sqr(&self) -> f64 {
+        self.dot(self)
+    }
+
+    pub fn norm(&self) -> f64 {
+        self.norm_sqr().sqrt()
+    }
 }
 
 impl std::ops::Add for Vector3D {
@@ -111,6 +119,24 @@ mod tests {
     #[case(v3!(1, 2, 3), 2.0, v3!(2, 4, 6))]
     fn multiplication(#[case] v: Vector3D, #[case] c: f64, #[case] expected: Vector3D) {
         let actual = v * c;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), 0.0)]
+    #[case(v3!(1, 0, 0), 1.0)]
+    #[case(v3!(0, 1, 0), 1.0)]
+    #[case(v3!(0, 0, 1), 1.0)]
+    #[case(v3!(3, 4, 0), 5.0)]
+    #[case(v3!(3, -4, 0), 5.0)]
+    #[case(v3!(-3, -4, 0), 5.0)]
+    #[case(v3!(-3, 4, 0), 5.0)]
+    #[case(v3!(-3, 0, 4), 5.0)]
+    #[case(v3!(3, 0, 4), 5.0)]
+    #[case(v3!(0, 3, 4), 5.0)]
+    fn norm(#[case] v: Vector3D, #[case] expected: f64) {
+        let actual = v.norm();
 
         assert_eq!(expected, actual);
     }
