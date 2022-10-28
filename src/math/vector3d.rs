@@ -80,7 +80,7 @@ impl Vector3D {
     }
 
     pub fn is_orthogonal_to(&self, v: &Vector3D) -> bool {
-        self.dot(v) == 0.0
+        approx(0.0) == self.dot(v)
     }
 }
 
