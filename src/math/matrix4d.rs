@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use super::{point3d::{Point3D, p3}, vector3d::Vector3D};
+use super::{point3d::{Point3D, p3}, vector3d::Vector3D, ray::Ray};
 
 pub struct Matrix4D {
     m: [[f64; 4]; 4],
@@ -99,6 +99,17 @@ impl Mul<&Point3D> for &Matrix4D {
         let z = m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z() + m[2][3];
 
         Point3D::new(x, y, z)
+    }
+}
+
+impl Mul<&Ray> for &Matrix4D {
+    type Output = Ray;
+
+    fn mul(self, ray: &Ray) -> Self::Output {
+        let origin = self * &ray.origin;
+        let direction = self * &ray.direction;
+
+        Ray::new(origin, direction)
     }
 }
 
