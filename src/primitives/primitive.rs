@@ -14,5 +14,5 @@ pub struct HitPosition {
 }
 
 pub trait Primitive {
-    fn find_first_positive_hit(ray: &Ray) -> Option<Hit>;
+    fn find_first_positive_hit(&self, ray: &Ray) -> Option<Hit>;
 }
