@@ -6,3 +6,4 @@ pub mod ray;
 pub mod quadratic;
 pub mod rectangle2d;
 pub mod rectangle3d;
+pub mod rasterizer2d;
