@@ -6,6 +6,12 @@ use crate::math::vector3d::Vector3D;
 
 pub struct Sphere { }
 
+impl Sphere {
+    pub fn new() -> Sphere {
+        Sphere {}
+    }
+}
+
 impl Primitive for Sphere {
     fn find_first_positive_hit(ray: &Ray) -> Option<Hit> {
         let delta: Vector3D = ray.origin - p3!(0.0, 0.0, 0.0);
