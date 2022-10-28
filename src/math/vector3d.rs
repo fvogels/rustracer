@@ -67,6 +67,10 @@ impl Vector3D {
         self.norm_sqr().sqrt()
     }
 
+    pub fn normalized(&self) -> Vector3D {
+        *self * (1.0 / self.norm())
+    }
+
     pub fn is_orthogonal_on(&self, v: &Vector3D) -> bool {
         self.dot(v) == 0.0
     }
