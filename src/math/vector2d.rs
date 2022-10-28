@@ -25,7 +25,7 @@ impl Vector2D {
         self.coords[1]
     }
 
-    pub fn dot(&self, v: Vector2D) -> f64 {
+    pub fn dot(&self, v: &Vector2D) -> f64 {
         let x = self.x() * v.x();
         let y = self.y() * v.y();
 
@@ -84,7 +84,7 @@ mod tests {
     #[case(v2!(0, 4), v2!(0, 5), 20.0)]
     #[case(v2!(1, 2), v2!(1, 2), 1.0 + 4.0)]
     fn dot_product(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: f64) {
-        let actual = u.dot(v);
+        let actual = u.dot(&v);
 
         assert_eq!(expected, actual);
     }
