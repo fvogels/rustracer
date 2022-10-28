@@ -1,4 +1,4 @@
-use super::vector2d::Vector2D;
+use super::{vector2d::Vector2D, metric::Metric};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point2D {
@@ -50,6 +50,12 @@ impl std::ops::Sub<Point2D> for Point2D {
     }
 }
 
+impl Metric for Point2D {
+    fn distance(&self, rhs: &Self) -> f64 {
+        (*self - *rhs).norm()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
@@ -85,6 +91,21 @@ mod tests {
     #[case(p2!(5, 2), p2!(1, 2), v2!(4, 0))]
     fn subtraction_p_p(#[case] p: Point2D, #[case] q: Point2D, #[case] expected: Vector2D) {
         let actual = p - q;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(p2!(0, 0), p2!(0, 0), 0.0)]
+    #[case(p2!(1, 0), p2!(0, 0), 1.0)]
+    #[case(p2!(0, 1), p2!(0, 0), 1.0)]
+    #[case(p2!(0, 0), p2!(1, 0), 1.0)]
+    #[case(p2!(0, 0), p2!(0, 1), 1.0)]
+    #[case(p2!(2, 0), p2!(0, 0), 2.0)]
+    #[case(p2!(3, 4), p2!(0, 0), 5.0)]
+    #[case(p2!(4, 5), p2!(1, 1), 5.0)]
+    fn distance(#[case] u: Point2D, #[case] v: Point2D, #[case] expected: f64) {
+        let actual = u.distance(&v);
 
         assert_eq!(expected, actual);
     }
