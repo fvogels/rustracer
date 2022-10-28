@@ -75,7 +75,7 @@ impl Vector3D {
         *self * self.norm().recip()
     }
 
-    pub fn is_normal(&self) -> bool {
+    pub fn is_unit(&self) -> bool {
         approx(1.0) == self.norm_sqr()
     }
 
@@ -243,6 +243,21 @@ mod tests {
     #[case(v3!(4, 0, 1), v3!(1, 0, 5), 5.0)]
     fn distance(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: f64) {
         let actual = u.distance(&v);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), false)]
+    #[case(v3!(1, 0, 0), true)]
+    #[case(v3!(0, 1, 0), true)]
+    #[case(v3!(0, 0, 1), true)]
+    #[case(v3!(2, 0, 0), false)]
+    #[case(v3!(0, 2, 0), false)]
+    #[case(v3!(0, 0, 2), false)]
+    #[case(v3!(1, 0, 1), false)]
+    fn is_unit(#[case] v: Vector3D, #[case] expected: bool) {
+        let actual = v.is_unit();
 
         assert_eq!(expected, actual);
     }
