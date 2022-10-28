@@ -44,6 +44,10 @@ impl Vector3D {
     pub fn norm(&self) -> f64 {
         self.norm_sqr().sqrt()
     }
+
+    pub fn is_orthogonal_on(&self, v: &Vector3D) -> bool {
+        self.dot(v) == 0.0
+    }
 }
 
 impl std::ops::Add for Vector3D {
@@ -139,5 +143,23 @@ mod tests {
         let actual = v.norm();
 
         assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(1, 0, 0), v3!(0, 1, 0), true)]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 1), true)]
+    #[case(v3!(1, 0, 0), v3!(0, 2, 0), true)]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 2), true)]
+    #[case(v3!(0, 1, 0), v3!(0, 0, 2), true)]
+    #[case(v3!(1, 0, 0), v3!(0, 5, 0), true)]
+    #[case(v3!(2, 0, 0), v3!(0, 5, 0), true)]
+    #[case(v3!(0, 0, 2), v3!(0, 5, 0), true)]
+    #[case(v3!(4, 0, 0), v3!(0, 5, 0), true)]
+    #[case(v3!(4, 1, 0), v3!(0, 5, 0), false)]
+    #[case(v3!(4, 4, 0), v3!(4, 0, 4), false)]
+    #[case(v3!(4, 4, 0), v3!(2, 0, 2), false)]
+    fn is_orthogonal_on(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: bool) {
+        assert_eq!(expected, u.is_orthogonal_on(&v));
+        assert_eq!(expected, v.is_orthogonal_on(&u));
     }
 }
