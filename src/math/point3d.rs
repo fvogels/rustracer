@@ -1,4 +1,4 @@
-use super::vector3d::Vector3D;
+use super::{vector3d::Vector3D, metric::Metric};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
@@ -56,6 +56,12 @@ impl std::ops::Sub<Point3D> for Point3D {
     }
 }
 
+impl Metric for Point3D {
+    fn distance(&self, rhs: &Self) -> f64 {
+        (*self - *rhs).norm()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
@@ -93,6 +99,25 @@ mod tests {
     #[case(p3!(5, 2, 4), p3!(1, 2, 3), v3!(4, 0, 1))]
     fn subtraction_p_p(#[case] p: Point3D, #[case] q: Point3D, #[case] expected: Vector3D) {
         let actual = p - q;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(p3!(0, 0, 0), p3!(0, 0, 0), 0.0)]
+    #[case(p3!(1, 0, 0), p3!(0, 0, 0), 1.0)]
+    #[case(p3!(0, 1, 0), p3!(0, 0, 0), 1.0)]
+    #[case(p3!(0, 0, 1), p3!(0, 0, 0), 1.0)]
+    #[case(p3!(0, 0, 0), p3!(1, 0, 0), 1.0)]
+    #[case(p3!(0, 0, 0), p3!(0, 1, 0), 1.0)]
+    #[case(p3!(0, 0, 0), p3!(0, 0, 1), 1.0)]
+    #[case(p3!(2, 0, 0), p3!(0, 0, 0), 2.0)]
+    #[case(p3!(3, 4, 0), p3!(0, 0, 0), 5.0)]
+    #[case(p3!(4, 5, 0), p3!(1, 1, 0), 5.0)]
+    #[case(p3!(4, 0, 5), p3!(1, 0, 1), 5.0)]
+    #[case(p3!(4, 0, 1), p3!(1, 0, 5), 5.0)]
+    fn distance(#[case] u: Point3D, #[case] v: Point3D, #[case] expected: f64) {
+        let actual = u.distance(&v);
 
         assert_eq!(expected, actual);
     }
