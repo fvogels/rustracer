@@ -47,6 +47,14 @@ impl Matrix4D {
         let z_axis = Vector3D::z_axis();
         Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
     }
+
+    fn scaling(sx: f64, sy: f64, sz: f64) -> Matrix4D {
+        let origin = p3!(0, 0, 0);
+        let x_axis = Vector3D::x_axis() * sx;
+        let y_axis = Vector3D::y_axis() * sy;
+        let z_axis = Vector3D::z_axis() * sz;
+        Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
+    }
 }
 
 impl Mul<&Matrix4D> for &Matrix4D {
@@ -132,6 +140,20 @@ mod tests {
     fn translate_point(#[case] displacement: Vector3D, #[case] p: Point3D, #[case] expected: Point3D) {
         let matrix = Matrix4D::translation(displacement);
         let actual = &matrix * &p;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(0.0, 0.0, 0.0, v3!(1, 1, 1), v3!(0, 0, 0))]
+    #[case(1.0, 1.0, 1.0, v3!(1, 1, 1), v3!(1, 1, 1))]
+    #[case(2.0, 1.0, 1.0, v3!(1, 1, 1), v3!(2, 1, 1))]
+    #[case(1.0, 2.0, 1.0, v3!(1, 1, 1), v3!(1, 2, 1))]
+    #[case(1.0, 1.0, 2.0, v3!(1, 1, 1), v3!(1, 1, 2))]
+    #[case(2.0, 3.0, 2.0, v3!(2, 3, 4), v3!(4, 9, 8))]
+    fn scale_vector(#[case] sx: f64, #[case] sy: f64, #[case] sz: f64, #[case] v: Vector3D, #[case] expected: Vector3D) {
+        let matrix = Matrix4D::scaling(sx, sy, sz);
+        let actual = &matrix * &v;
 
         assert_eq!(expected, actual);
     }
