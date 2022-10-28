@@ -42,7 +42,7 @@ impl Vector2D {
         self.norm_sqr().sqrt()
     }
 
-    pub fn is_orthogonal_on(&self, v: &Vector2D) -> bool {
+    pub fn is_orthogonal_to(&self, v: &Vector2D) -> bool {
         self.dot(v) == 0.0
     }
 }
@@ -156,9 +156,9 @@ mod tests {
     #[case(v2!(2, 0), v2!(0, 5), true)]
     #[case(v2!(4, 0), v2!(0, 5), true)]
     #[case(v2!(4, 1), v2!(0, 5), false)]
-    fn is_orthogonal_on(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: bool) {
-        assert_eq!(expected, u.is_orthogonal_on(&v));
-        assert_eq!(expected, v.is_orthogonal_on(&u));
+    fn is_orthogonal_to(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: bool) {
+        assert_eq!(expected, u.is_orthogonal_to(&v));
+        assert_eq!(expected, v.is_orthogonal_to(&u));
     }
 
     #[rstest]

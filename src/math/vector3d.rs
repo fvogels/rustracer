@@ -79,7 +79,7 @@ impl Vector3D {
         approx(1.0) == self.norm_sqr()
     }
 
-    pub fn is_orthogonal_on(&self, v: &Vector3D) -> bool {
+    pub fn is_orthogonal_to(&self, v: &Vector3D) -> bool {
         self.dot(v) == 0.0
     }
 }
@@ -210,9 +210,9 @@ mod tests {
     #[case(v3!(4, 1, 0), v3!(0, 5, 0), false)]
     #[case(v3!(4, 4, 0), v3!(4, 0, 4), false)]
     #[case(v3!(4, 4, 0), v3!(2, 0, 2), false)]
-    fn is_orthogonal_on(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: bool) {
-        assert_eq!(expected, u.is_orthogonal_on(&v));
-        assert_eq!(expected, v.is_orthogonal_on(&u));
+    fn is_orthogonal_to(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: bool) {
+        assert_eq!(expected, u.is_orthogonal_to(&v));
+        assert_eq!(expected, v.is_orthogonal_to(&u));
     }
 
     #[rstest]
