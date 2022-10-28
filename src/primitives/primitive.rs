@@ -3,6 +3,7 @@ use crate::math::point3d::Point3D;
 use crate::math::ray::Ray;
 
 pub struct Hit {
+    pub t: f64,
     pub position: HitPosition,
     pub normal: Vector3D,
 }
