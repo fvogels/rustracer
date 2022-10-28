@@ -81,6 +81,19 @@ impl Mul<&Vector3D> for &Matrix4D {
     }
 }
 
+impl Mul<&Point3D> for &Matrix4D {
+    type Output = Point3D;
+
+    fn mul(self, v: &Point3D) -> Self::Output {
+        let m = &self.m;
+        let x = m[0][0] * v.x() + m[0][1] * v.y() + m[0][2] * v.z() + m[0][3];
+        let y = m[1][0] * v.x() + m[1][1] * v.y() + m[1][2] * v.z() + m[1][3];
+        let z = m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z() + m[2][3];
+
+        Point3D::new(x, y, z)
+    }
+}
+
 mod tests {
     use rstest::rstest;
 
@@ -88,7 +101,7 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::vector3d::v3;
+    use crate::math::{vector3d::v3, point3d::p3};
 
     #[rstest]
     #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
@@ -98,11 +111,27 @@ mod tests {
     #[case(v3!(1, 0, 0), v3!(0, 0, 1), v3!(0, 0, 1))]
     #[case(v3!(1, 2, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
     #[case(v3!(1, 2, 3), v3!(1, 0, 0), v3!(1, 0, 0))]
-    #[case(v3!(1, 0, 0), v3!(0, 1, 0), v3!(0, 1, 0))]
     #[case(v3!(1, 4, 2), v3!(1, 2, 3), v3!(1, 2, 3))]
     fn translate_vector(#[case] displacement: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
         let matrix = Matrix4D::translation(displacement);
         let actual = &matrix * &v;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), p3!(0, 0, 0), p3!(0, 0, 0))]
+    #[case(v3!(0, 0, 0), p3!(1, 0, 0), p3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), p3!(0, 0, 0), p3!(1, 0, 0))]
+    #[case(v3!(1, 0, 0), p3!(1, 0, 0), p3!(2, 0, 0))]
+    #[case(v3!(1, 0, 0), p3!(0, 1, 0), p3!(1, 1, 0))]
+    #[case(v3!(1, 0, 0), p3!(0, 0, 1), p3!(1, 0, 1))]
+    #[case(v3!(1, 2, 0), p3!(1, 0, 0), p3!(2, 2, 0))]
+    #[case(v3!(1, 2, 3), p3!(1, 0, 0), p3!(2, 2, 3))]
+    #[case(v3!(1, 4, 2), p3!(5, 1, 7), p3!(6, 5, 9))]
+    fn translate_point(#[case] displacement: Vector3D, #[case] p: Point3D, #[case] expected: Point3D) {
+        let matrix = Matrix4D::translation(displacement);
+        let actual = &matrix * &p;
 
         assert_eq!(expected, actual);
     }
