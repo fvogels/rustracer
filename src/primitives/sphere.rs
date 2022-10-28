@@ -52,19 +52,26 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case(p3!(5, 0, 0), v3!(-1, 0, 0), Some(4.0))]
-    #[case(p3!(3, 0, 0), v3!(-1, 0, 0), Some(2.0))]
+    #[case(p3!(5, 0, 0), v3!(-1, 0, 0), Some((4.0, v3!(1, 0, 0))))]
+    #[case(p3!(3, 0, 0), v3!(-1, 0, 0), Some((2.0, v3!(1, 0, 0))))]
     #[case(p3!(-10, 0, 0), v3!(-1, 0, 0), None)]
     #[case(p3!(10, 5, 0), v3!(-1, 0, 0), None)]
-    #[case(p3!(0, 5, 0), v3!(0, -1, 0), Some(4.0))]
-    #[case(p3!(0, -8, 0), v3!(0, 1, 0), Some(7.0))]
-    #[case(p3!(0, -9, 0), v3!(0, 1, 0), Some(8.0))]
-    #[case(p3!(0, -9, 0), v3!(0, 2, 0), Some(4.0))]
-    fn first_positive_hit(#[case] ray_origin: Point3D, #[case] ray_direction: Vector3D, #[case] expected_t: Option<f64>) {
+    #[case(p3!(0, 5, 0), v3!(0, -1, 0), Some((4.0, v3!(0, 1, 0))))]
+    #[case(p3!(0, -8, 0), v3!(0, 1, 0), Some((7.0, v3!(0, -1, 0))))]
+    #[case(p3!(0, -9, 0), v3!(0, 1, 0), Some((8.0, v3!(0, -1, 0))))]
+    #[case(p3!(0, -9, 0), v3!(0, 2, 0), Some((4.0, v3!(0, -1, 0))))]
+    fn first_positive_hit(#[case] ray_origin: Point3D, #[case] ray_direction: Vector3D, #[case] expected_hit: Option<(f64, Vector3D)>) {
         let ray = Ray::new(ray_origin, ray_direction);
         let sphere = Sphere::new();
         let actual_hit = sphere.find_first_positive_hit(&ray);
 
-        assert_eq!(expected_t, actual_hit.map(|hit| hit.t));
+        match (expected_hit, actual_hit) {
+            (None, None) => (),
+            (Some(ref expected), Some(ref actual)) => {
+                assert_eq!(expected.0, actual.t);
+                assert_eq!(expected.1, actual.normal);
+            },
+            _ => panic!()
+        }
     }
 }
