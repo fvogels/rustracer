@@ -2,6 +2,7 @@ mod cameras;
 mod imaging;
 mod math;
 mod primitives;
+mod samplers;
 
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
