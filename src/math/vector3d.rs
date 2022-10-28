@@ -68,7 +68,7 @@ impl Vector3D {
     }
 
     pub fn normalized(&self) -> Vector3D {
-        *self * (1.0 / self.norm())
+        *self * self.norm().recip()
     }
 
     pub fn is_orthogonal_on(&self, v: &Vector3D) -> bool {
