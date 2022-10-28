@@ -39,6 +39,14 @@ impl Matrix4D {
 
         Matrix4D { m }
     }
+
+    fn translation(v: Vector3D) -> Matrix4D {
+        let origin = p3!(v.x(), v.y(), v.z());
+        let x_axis = Vector3D::x_axis();
+        let y_axis = Vector3D::y_axis();
+        let z_axis = Vector3D::z_axis();
+        Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
+    }
 }
 
 impl Mul<&Matrix4D> for &Matrix4D {
