@@ -49,6 +49,16 @@ impl Vector3D {
         x + y + z
     }
 
+    pub fn cross(&self, v: &Vector3D) -> Vector3D {
+        let u = self;
+
+        let x = u.y() * v.z() - u.z() * v.y();
+        let y = -(u.x() * v.z() - u.z() * v.x());
+        let z = u.x() * v.y() - u.y() * v.x();
+
+        v3!(x, y, z)
+    }
+
     pub fn norm_sqr(&self) -> f64 {
         self.dot(self)
     }
@@ -173,5 +183,18 @@ mod tests {
     fn is_orthogonal_on(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: bool) {
         assert_eq!(expected, u.is_orthogonal_on(&v));
         assert_eq!(expected, v.is_orthogonal_on(&u));
+    }
+
+    #[rstest]
+    #[case(v3!(1, 0, 0), v3!(0, 1, 0), v3!(0, 0, 1))]
+    #[case(v3!(0, 1, 0), v3!(1, 0, 0), v3!(0, 0, -1))]
+    #[case(v3!(0, 2, 0), v3!(1, 0, 0), v3!(0, 0, -2))]
+    #[case(v3!(0, 2, 0), v3!(3, 0, 0), v3!(0, 0, -6))]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 1), v3!(0, -1, 0))]
+    #[case(v3!(0, 0, 1), v3!(1, 0, 0), v3!(0, 1, 0))]
+    fn cross_product(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
+        let actual = u.cross(&v);
+
+        assert_eq!(expected, actual);
     }
 }
