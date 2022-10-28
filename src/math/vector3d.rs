@@ -10,6 +10,8 @@ macro_rules! v3 {
     }};
 }
 
+pub use v3;
+
 impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
         Vector3D { coords: [x, y, z] }

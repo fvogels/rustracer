@@ -12,6 +12,8 @@ macro_rules! p3 {
     }};
 }
 
+pub use p3;
+
 impl Point3D {
     pub fn new(x: f64, y: f64, z: f64) -> Point3D {
         Point3D { coords: [x, y, z] }
@@ -58,6 +60,7 @@ impl std::ops::Sub<Point3D> for Point3D {
 mod tests {
     #[cfg(test)]
     use super::*;
+    use crate::math::vector3d::v3;
     use rstest::rstest;
 
     #[rstest]
