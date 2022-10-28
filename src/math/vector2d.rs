@@ -31,6 +31,14 @@ impl Vector2D {
 
         x + y
     }
+
+    pub fn norm_sqr(&self) -> f64 {
+        self.dot(self)
+    }
+
+    pub fn norm(&self) -> f64 {
+        self.norm_sqr().sqrt()
+    }
 }
 
 impl std::ops::Add for Vector2D {
@@ -100,6 +108,20 @@ mod tests {
     #[case(v2!(1, 2), 2.0, v2!(2, 4))]
     fn multiplication(#[case] v: Vector2D, #[case] c: f64, #[case] expected: Vector2D) {
         let actual = v * c;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v2!(0, 0), 0.0)]
+    #[case(v2!(1, 0), 1.0)]
+    #[case(v2!(0, 1), 1.0)]
+    #[case(v2!(3, 4), 5.0)]
+    #[case(v2!(3, -4), 5.0)]
+    #[case(v2!(-3, -4), 5.0)]
+    #[case(v2!(-3, 4), 5.0)]
+    fn norm(#[case] v: Vector2D, #[case] expected: f64) {
+        let actual = v.norm();
 
         assert_eq!(expected, actual);
     }
