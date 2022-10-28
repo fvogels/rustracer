@@ -120,6 +120,12 @@ impl std::ops::Mul<f64> for Vector3D {
     }
 }
 
+impl Metric for Vector3D {
+    fn distance(&self, rhs: &Self) -> f64 {
+        (*self - *rhs).norm()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
@@ -218,6 +224,23 @@ mod tests {
     #[case(v3!(0, 0, 1), v3!(1, 0, 0), v3!(0, 1, 0))]
     fn cross_product(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: Vector3D) {
         let actual = u.cross(&v);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 0), 0.0)]
+    #[case(v3!(1, 0, 0), v3!(0, 0, 0), 1.0)]
+    #[case(v3!(0, 1, 0), v3!(0, 0, 0), 1.0)]
+    #[case(v3!(0, 0, 1), v3!(0, 0, 0), 1.0)]
+    #[case(v3!(0, 0, 0), v3!(1, 0, 0), 1.0)]
+    #[case(v3!(0, 0, 0), v3!(0, 1, 0), 1.0)]
+    #[case(v3!(0, 0, 0), v3!(0, 0, 1), 1.0)]
+    #[case(v3!(2, 0, 0), v3!(0, 0, 0), 2.0)]
+    #[case(v3!(3, 4, 0), v3!(0, 0, 0), 5.0)]
+    #[case(v3!(4, 5, 0), v3!(1, 1, 0), 5.0)]
+    fn distance(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: f64) {
+        let actual = u.distance(&v);
 
         assert_eq!(expected, actual);
     }
