@@ -59,7 +59,7 @@ impl<'a> Iterator for Rays<'a> {
             self.consumed = true;
 
             let origin = p3!(0, 0, 0);
-            let to = self.parent.screen.from_relative(self.point);
+            let to = self.parent.screen.from_relative(&self.point);
             let direction = to - origin;
             let ray = Ray::new(origin, direction);
 
