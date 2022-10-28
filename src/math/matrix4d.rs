@@ -7,7 +7,7 @@ pub struct Matrix4D {
 }
 
 impl Matrix4D {
-    fn zero() -> Matrix4D {
+    pub fn zero() -> Matrix4D {
         let m = [
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
@@ -18,7 +18,7 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    fn identity() -> Matrix4D {
+    pub fn identity() -> Matrix4D {
         let m = [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
@@ -29,7 +29,7 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    fn from_coordinate_system(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D, z_axis: Vector3D) -> Matrix4D {
+    pub fn from_coordinate_system(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D, z_axis: Vector3D) -> Matrix4D {
         let m = [
             [x_axis.x(), y_axis.x(), z_axis.x(), origin.x()],
             [x_axis.y(), y_axis.y(), z_axis.y(), origin.y()],
@@ -40,7 +40,7 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    fn translation(v: Vector3D) -> Matrix4D {
+    pub fn translation(v: Vector3D) -> Matrix4D {
         let origin = p3!(v.x(), v.y(), v.z());
         let x_axis = Vector3D::x_axis();
         let y_axis = Vector3D::y_axis();
@@ -48,7 +48,7 @@ impl Matrix4D {
         Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
     }
 
-    fn scaling(sx: f64, sy: f64, sz: f64) -> Matrix4D {
+    pub fn scaling(sx: f64, sy: f64, sz: f64) -> Matrix4D {
         let origin = p3!(0, 0, 0);
         let x_axis = Vector3D::x_axis() * sx;
         let y_axis = Vector3D::y_axis() * sy;
