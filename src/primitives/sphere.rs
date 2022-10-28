@@ -16,9 +16,9 @@ impl Primitive for Sphere {
     fn find_first_positive_hit(&self, ray: &Ray) -> Option<Hit> {
         let delta: Vector3D = ray.origin - p3!(0, 0, 0);
         let radius: f64 = 1.0;
-        let a = ray.direction.dot(ray.direction);
-        let b = 2.0 * delta.dot(ray.direction);
-        let c = delta.dot(delta) - radius.powi(2);
+        let a = ray.direction.dot(&ray.direction);
+        let b = 2.0 * delta.dot(&ray.direction);
+        let c = delta.dot(&delta) - radius.powi(2);
         let quad_eq = QuadraticEquation::new(a, b, c);
 
         match quad_eq.solve() {
