@@ -29,7 +29,7 @@ impl Vector3D {
         self.coords[2]
     }
 
-    pub fn dot(&self, v: Vector3D) -> f64 {
+    pub fn dot(&self, v: &Vector3D) -> f64 {
         let x = self.x() * v.x();
         let y = self.y() * v.y();
         let z = self.z() * v.z();
@@ -94,7 +94,7 @@ mod tests {
     #[case(v3!(0, 0, 2), v3!(0, 0, -1), -2.0)]
     #[case(v3!(1, 2, 3), v3!(1, 2, 3), 1.0 + 4.0 + 9.0)]
     fn dot_product(#[case] u: Vector3D, #[case] v: Vector3D, #[case] expected: f64) {
-        let actual = u.dot(v);
+        let actual = u.dot(&v);
 
         assert_eq!(expected, actual);
     }
