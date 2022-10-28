@@ -12,6 +12,8 @@ macro_rules! v2 {
 
 pub use v2;
 
+use super::metric::Metric;
+
 impl Vector2D {
     pub fn new(x: f64, y: f64) -> Vector2D {
         Vector2D { coords: [x, y] }
@@ -75,6 +77,12 @@ impl std::ops::Mul<f64> for Vector2D {
         let y = self.y() * rhs;
 
         Vector2D::new(x, y)
+    }
+}
+
+impl Metric for Vector2D {
+    fn distance(&self, rhs: &Self) -> f64 {
+        (*self - *rhs).norm()
     }
 }
 
@@ -151,5 +159,20 @@ mod tests {
     fn is_orthogonal_on(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: bool) {
         assert_eq!(expected, u.is_orthogonal_on(&v));
         assert_eq!(expected, v.is_orthogonal_on(&u));
+    }
+
+    #[rstest]
+    #[case(v2!(0, 0), v2!(0, 0), 0.0)]
+    #[case(v2!(1, 0), v2!(0, 0), 1.0)]
+    #[case(v2!(0, 1), v2!(0, 0), 1.0)]
+    #[case(v2!(0, 0), v2!(1, 0), 1.0)]
+    #[case(v2!(0, 0), v2!(0, 1), 1.0)]
+    #[case(v2!(2, 0), v2!(0, 0), 2.0)]
+    #[case(v2!(3, 4), v2!(0, 0), 5.0)]
+    #[case(v2!(4, 5), v2!(1, 1), 5.0)]
+    fn distance(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: f64) {
+        let actual = u.distance(&v);
+
+        assert_eq!(expected, actual);
     }
 }
