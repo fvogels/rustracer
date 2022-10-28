@@ -17,7 +17,7 @@ impl Rectangle3D {
         }
     }
 
-    pub fn from_relative(&self, p: Point2D) -> Point3D {
+    pub fn from_relative(&self, p: &Point2D) -> Point3D {
         self.origin + self.x_axis * p.x() + self.y_axis * p.y()
     }
 }
@@ -43,7 +43,7 @@ mod tests {
         #[case] p: Point2D,
         #[case] expected: Point3D,
     ) {
-        let actual = rectangle.from_relative(p);
+        let actual = rectangle.from_relative(&p);
 
         assert_eq!(expected, actual);
     }
