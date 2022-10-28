@@ -1,3 +1,5 @@
+use crate::math::approx::approx;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector3D {
     coords: [f64; 3],
@@ -11,6 +13,8 @@ macro_rules! v3 {
 }
 
 pub use v3;
+
+use super::{approx, metric::Metric};
 
 impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
@@ -71,6 +75,10 @@ impl Vector3D {
         *self * self.norm().recip()
     }
 
+    pub fn is_normal(&self) -> bool {
+        approx(1.0) == self.norm_sqr()
+    }
+
     pub fn is_orthogonal_on(&self, v: &Vector3D) -> bool {
         self.dot(v) == 0.0
     }
@@ -83,6 +91,18 @@ impl std::ops::Add for Vector3D {
         let x = self.x() + v.x();
         let y = self.y() + v.y();
         let z = self.z() + v.z();
+
+        Vector3D::new(x, y, z)
+    }
+}
+
+impl std::ops::Sub for Vector3D {
+    type Output = Self;
+
+    fn sub(self, v: Vector3D) -> Self::Output {
+        let x = self.x() - v.x();
+        let y = self.y() - v.y();
+        let z = self.z() - v.z();
 
         Vector3D::new(x, y, z)
     }
