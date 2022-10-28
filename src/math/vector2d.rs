@@ -56,6 +56,17 @@ impl std::ops::Add for Vector2D {
     }
 }
 
+impl std::ops::Sub for Vector2D {
+    type Output = Self;
+
+    fn sub(self, v: Vector2D) -> Self::Output {
+        let x = self.x() - v.x();
+        let y = self.y() - v.y();
+
+        Vector2D::new(x, y)
+    }
+}
+
 impl std::ops::Mul<f64> for Vector2D {
     type Output = Self;
 
