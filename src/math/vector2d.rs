@@ -39,6 +39,10 @@ impl Vector2D {
     pub fn norm(&self) -> f64 {
         self.norm_sqr().sqrt()
     }
+
+    pub fn is_orthogonal_on(&self, v: &Vector2D) -> bool {
+        self.dot(v) == 0.0
+    }
 }
 
 impl std::ops::Add for Vector2D {
@@ -124,5 +128,17 @@ mod tests {
         let actual = v.norm();
 
         assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(v2!(1, 0), v2!(0, 1), true)]
+    #[case(v2!(1, 0), v2!(0, 2), true)]
+    #[case(v2!(1, 0), v2!(0, 5), true)]
+    #[case(v2!(2, 0), v2!(0, 5), true)]
+    #[case(v2!(4, 0), v2!(0, 5), true)]
+    #[case(v2!(4, 1), v2!(0, 5), false)]
+    fn is_orthogonal_on(#[case] u: Vector2D, #[case] v: Vector2D, #[case] expected: bool) {
+        assert_eq!(expected, u.is_orthogonal_on(&v));
+        assert_eq!(expected, v.is_orthogonal_on(&u));
     }
 }
