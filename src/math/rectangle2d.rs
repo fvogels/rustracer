@@ -15,4 +15,34 @@ impl Rectangle2D {
             y_axis,
         }
     }
+
+    pub fn from_relative(&self, p: Point2D) -> Point2D {
+        self.origin + self.x_axis * p.x() + self.y_axis * p.y()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(test)]
+    use super::*;
+    use crate::math::point2d::p2;
+    use crate::math::vector2d::{Vector2D, v2};
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1)), p2!(0, 0), p2!(0, 0))]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1)), p2!(1, 0), p2!(1, 0))]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1)), p2!(0, 1), p2!(0, 1))]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1)), p2!(1, 1), p2!(1, 1))]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(2, 0), v2!(0, 4)), p2!(1, 0), p2!(2, 0))]
+    #[case(Rectangle2D::new(p2!(0, 0), v2!(2, 0), v2!(0, 4)), p2!(0, 1), p2!(0, 4))]
+    fn from_relative(
+        #[case] rectangle: Rectangle2D,
+        #[case] p: Point2D,
+        #[case] expected: Point2D,
+    ) {
+        let actual = rectangle.from_relative(p);
+
+        assert_eq!(expected, actual);
+    }
 }
