@@ -1,3 +1,4 @@
+pub mod angle;
 pub mod approx;
 pub mod matrix4d;
 pub mod metric;
