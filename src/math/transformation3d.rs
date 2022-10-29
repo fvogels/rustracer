@@ -20,3 +20,26 @@ impl Transformation3D {
         Transformation3D { matrix, inverse_matrix }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    #[cfg(test)]
+    use super::*;
+
+    #[cfg(test)]
+    use crate::math::{vector3d::v3, approx::approx};
+
+    #[rstest]
+    #[case(v3!(0, 0, 0))]
+    #[case(v3!(1, 0, 0))]
+    #[case(v3!(0, 1, 0))]
+    #[case(v3!(0, 0, 1))]
+    #[case(v3!(5, 4, 3))]
+    fn translate_inverse_matrix(#[case] displacement: Vector3D) {
+        let transformation = Transformation3D::translate(&displacement);
+
+        assert_eq!(approx(Matrix4D::identity()), &transformation.matrix * &transformation.inverse_matrix);
+    }
+}
