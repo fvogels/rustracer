@@ -14,6 +14,7 @@ impl<T: Metric> Approx for T {
     }
 }
 
+#[derive(Debug)]
 pub struct ApproxWrapper<T: Approx> {
     value: T,
 }
