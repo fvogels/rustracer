@@ -33,7 +33,7 @@ pub fn vec_diff<T : PartialEq>(xs: &Vec<T>, ys: &Vec<T>) -> VecDiffResult {
     VecDiffResult { shared, left_only, right_only }
 }
 
-
+#[macro_export]
 macro_rules! assert_same_elements {
     ($left: expr, $right: expr) => {{
         let result = $crate::util::algorithms::vec_diff(&$left, &$right);
@@ -55,6 +55,8 @@ macro_rules! assert_same_elements {
         }
     }};
 }
+
+pub use assert_same_elements;
 
 #[cfg(test)]
 mod tests {
