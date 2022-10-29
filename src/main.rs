@@ -5,6 +5,7 @@ mod primitives;
 mod samplers;
 mod util;
 mod materials;
+mod lights;
 
 use std::rc::Rc;
 
