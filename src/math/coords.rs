@@ -5,7 +5,6 @@ pub struct Cartesian2D {
     pub y: f64,
 }
 
-
 pub struct Polar {
     pub radius: f64,
     pub theta: Angle,
