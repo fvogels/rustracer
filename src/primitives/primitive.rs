@@ -10,11 +10,11 @@ pub struct Hit {
 #[derive(Copy, Clone)]
 pub struct HitPosition {
     pub global: Point3D,
-    pub local: LocalHitPosition,
+    pub local: LocalPosition,
 }
 
 #[derive(Copy, Clone)]
-pub struct LocalHitPosition {
+pub struct LocalPosition {
     pub xyz: Point3D,
     pub uv: Point2D,
 }

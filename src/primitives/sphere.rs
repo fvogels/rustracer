@@ -1,4 +1,4 @@
-use super::primitive::{Hit, HitPosition, Primitive, LocalHitPosition};
+use super::primitive::{Hit, HitPosition, Primitive, LocalPosition};
 use crate::math::{approx::approx, coords::Cartesian3D, point2d::{p2, Point2D}, point3d::{p3, Point3D}, quadratic::QuadraticEquation, ray::Ray, vector3d::Vector3D, interval::{Interval, IntervalMapper}, angle::Angle};
 
 pub struct Sphere {}
@@ -49,7 +49,7 @@ impl Primitive for Sphere {
                     let p = ray.at(t);
                     let position = HitPosition {
                         global: p,
-                        local: LocalHitPosition { xyz: p, uv: compute_uv_coordinates(&p) },
+                        local: LocalPosition { xyz: p, uv: compute_uv_coordinates(&p) },
                     };
                     let normal = p - p3!(0, 0, 0);
                     let hit = Hit {
