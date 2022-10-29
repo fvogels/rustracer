@@ -8,7 +8,7 @@ pub struct Vector3D {
 #[macro_export]
 macro_rules! v3 {
     ( $x:expr, $y:expr, $z:expr ) => {{
-        Vector3D::new($x as f64, $y as f64, $z as f64)
+        $crate::Vector3D::new($x as f64, $y as f64, $z as f64)
     }};
 }
 
