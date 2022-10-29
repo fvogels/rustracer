@@ -21,7 +21,7 @@ impl Rasterizer3D {
         assert!(0 <= position.y && position.y < self.height as i32);
 
         let x_axis = self.rectangle.x_axis * (1.0 / (self.width as f64));
-        let y_axis = self.rectangle.y_axis * (1.0 / (self.width as f64));
+        let y_axis = self.rectangle.y_axis * (1.0 / (self.height as f64));
         let origin =
             self.rectangle.origin + x_axis * (position.x as f64) + y_axis * (position.y as f64);
 
