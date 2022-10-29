@@ -3,7 +3,9 @@ use std::ops::Mul;
 use super::{
     point3d::{p3, Point3D},
     ray::Ray,
-    vector3d::Vector3D, approx::Approx,
+    vector3d::{v3, Vector3D},
+    approx::Approx,
+    angle::Angle,
 };
 
 #[derive(Debug)]
@@ -63,6 +65,39 @@ impl Matrix4D {
         let x_axis = Vector3D::x_axis() * sx;
         let y_axis = Vector3D::y_axis() * sy;
         let z_axis = Vector3D::z_axis() * sz;
+        Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
+    }
+
+    pub fn rotate_around_x(angle: Angle) -> Matrix4D {
+        let s = angle.sin();
+        let c = angle.cos();
+
+        let origin = p3!(0, 0, 0);
+        let x_axis = v3!(1, 0, 0);
+        let y_axis = v3!(0, c, s);
+        let z_axis = v3!(0, -s, c);
+        Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
+    }
+
+    pub fn rotate_around_y(angle: Angle) -> Matrix4D {
+        let s = angle.sin();
+        let c = angle.cos();
+
+        let origin = p3!(0, 0, 0);
+        let x_axis = v3!(c, 0, -s);
+        let y_axis = v3!(0, 1, 0);
+        let z_axis = v3!(s, 0, c);
+        Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
+    }
+
+    pub fn rotate_around_z(angle: Angle) -> Matrix4D {
+        let s = angle.sin();
+        let c = angle.cos();
+
+        let origin = p3!(0, 0, 0);
+        let x_axis = v3!(c, s, 0);
+        let y_axis = v3!(-s, c, 0);
+        let z_axis = v3!(0, 0, 1);
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 }
@@ -142,7 +177,7 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::{point3d::p3, vector3d::v3};
+    use crate::math::{point3d::p3, vector3d::v3, approx::approx};
 
     #[rstest]
     #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
@@ -203,5 +238,61 @@ mod tests {
         let actual = &matrix * &v;
 
         assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
+    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
+    #[case(p3!(1, 0, 0), 90.0, p3!(1, 0, 0))]
+    #[case(p3!(0, 1, 0), 90.0, p3!(0, 0, 1))]
+    #[case(p3!(0, 0, 1), 90.0, p3!(0, -1, 0))]
+    #[case(p3!(0, -1, 0), 90.0, p3!(0, 0, -1))]
+    #[case(p3!(0, 0, -1), 90.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 0, -1), 180.0, p3!(0, 0, 1))]
+    #[case(p3!(0, 0, 1), 180.0, p3!(0, 0, -1))]
+    fn rotate_point_around_x(#[case] p: Point3D, #[case] degrees: f64, #[case] expected: Point3D, #[values(1.0, 2.0, 5.0, -1.0)] factor: f64) {
+        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = p3!(expected.x() * factor, expected.y() * factor, expected.z() * factor);
+        let matrix = Matrix4D::rotate_around_x(Angle::degrees(degrees));
+        let actual = &matrix * &scaled_p;
+
+        assert_eq!(approx(scaled_expected), actual);
+    }
+
+    #[rstest]
+    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
+    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
+    #[case(p3!(1, 0, 0), 90.0, p3!(0, 0, -1))]
+    #[case(p3!(0, 1, 0), 90.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 0, 1), 90.0, p3!(1, 0, 0))]
+    #[case(p3!(0, 0, -1), 90.0, p3!(-1, 0, 0))]
+    #[case(p3!(-1, 0, 0), 90.0, p3!(0, 0, 1))]
+    fn rotate_point_around_y(#[case] p: Point3D, #[case] degrees: f64, #[case] expected: Point3D, #[values(1.0, 2.0, 5.0, -1.0)] factor: f64) {
+        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = p3!(expected.x() * factor, expected.y() * factor, expected.z() * factor);
+        let matrix = Matrix4D::rotate_around_y(Angle::degrees(degrees));
+        let actual = &matrix * &scaled_p;
+
+        assert_eq!(approx(scaled_expected), actual);
+    }
+
+    #[rstest]
+    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
+    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
+    #[case(p3!(1, 0, 0), 90.0, p3!(0, 1, 0))]
+    #[case(p3!(0, 1, 0), 90.0, p3!(-1, 0, 0))]
+    #[case(p3!(0, 0, 1), 90.0, p3!(0, 0, 1))]
+    #[case(p3!(-1, 0, 0), 90.0, p3!(0, -1, 0))]
+    #[case(p3!(0, -1, 0), 90.0, p3!(1, 0, 0))]
+    fn rotate_point_around_z(#[case] p: Point3D, #[case] degrees: f64, #[case] expected: Point3D, #[values(1.0, 2.0, 5.0, -1.0)] factor: f64) {
+        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = p3!(expected.x() * factor, expected.y() * factor, expected.z() * factor);
+        let matrix = Matrix4D::rotate_around_z(Angle::degrees(degrees));
+        let actual = &matrix * &scaled_p;
+
+        assert_eq!(approx(scaled_expected), actual);
     }
 }
