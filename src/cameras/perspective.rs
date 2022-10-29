@@ -50,7 +50,7 @@ impl PerspectiveCamera {
             debug_assert!(x_axis.is_orthogonal_to(&z_axis));
             debug_assert!(y_axis.is_orthogonal_to(&z_axis));
 
-            Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
+            Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
         }
 
         fn create_screen(parameters: &PerspectiveCameraParameters) -> Rectangle3D {
