@@ -1,5 +1,6 @@
 pub mod angle;
 pub mod approx;
+pub mod coords;
 pub mod matrix4d;
 pub mod metric;
 pub mod point2d;
@@ -14,4 +15,3 @@ pub mod rectangle2d;
 pub mod rectangle3d;
 pub mod vector2d;
 pub mod vector3d;
-pub mod coords;

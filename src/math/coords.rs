@@ -46,15 +46,19 @@ impl Cartesian3D {
         let azimuth = Angle::radians(-self.z.atan2(self.x));
         let elevation = if radius > 0.0 {
             Angle::degrees(90.0) - Angle::radians((self.y / radius).acos())
-         } else {
+        } else {
             Angle::radians(0.0)
-         };
+        };
 
         debug_assert!(radius >= 0.0);
         debug_assert!(Angle::degrees(-180.0) <= azimuth && azimuth <= Angle::degrees(180.0));
         debug_assert!(Angle::degrees(-90.0) <= elevation && elevation <= Angle::degrees(90.0));
 
-        Spherical { radius, azimuth, elevation }
+        Spherical {
+            radius,
+            azimuth,
+            elevation,
+        }
     }
 }
 
@@ -79,7 +83,10 @@ mod tests {
     use crate::math::approx::approx;
 
     #[rstest]
-    fn cartesian2d_polar_back_and_forth(#[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] x: f64, #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] y: f64) {
+    fn cartesian2d_polar_back_and_forth(
+        #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] x: f64,
+        #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] y: f64,
+    ) {
         let cartesian = Cartesian2D { x, y };
         let polar = cartesian.to_polar();
         let cartesian2 = polar.to_cartesian2d();
@@ -95,14 +102,19 @@ mod tests {
 
         assert_eq!(approx(actual.radius), spherical.radius, "Wrong radius");
         assert_eq!(approx(actual.azimuth), spherical.azimuth, "Wrong azimuth");
-        assert_eq!(approx(actual.elevation), spherical.elevation, "Wrong elevation");
+        assert_eq!(
+            approx(actual.elevation),
+            spherical.elevation,
+            "Wrong elevation"
+        );
     }
 
     #[rstest]
     fn cartesian3d_spherical_back_and_forth(
         #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] x: f64,
         #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] y: f64,
-        #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] z: f64) {
+        #[values(0.0, 1.0, -1.0, 2.0, -2.0, 5.0, -11.0)] z: f64,
+    ) {
         let cartesian = Cartesian3D { x, y, z };
         let polar = cartesian.to_spherical();
         let cartesian2 = polar.to_cartesian3d();
