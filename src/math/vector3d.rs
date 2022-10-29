@@ -130,6 +130,14 @@ impl std::ops::Sub for Vector3D {
     type Output = Self;
 
     fn sub(self, v: Vector3D) -> Self::Output {
+        &self - &v
+    }
+}
+
+impl std::ops::Sub for &Vector3D {
+    type Output = Vector3D;
+
+    fn sub(self, v: &Vector3D) -> Self::Output {
         let x = self.x() - v.x();
         let y = self.y() - v.y();
         let z = self.z() - v.z();
