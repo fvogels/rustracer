@@ -11,6 +11,12 @@ impl Ray {
         Ray { origin, direction }
     }
 
+    pub fn through(origin: Point3D, point: Point3D) -> Ray {
+        let direction = point - origin;
+
+        Ray::new(origin, direction)
+    }
+
     pub fn at(&self, t: f64) -> Point3D {
         self.origin + self.direction * t
     }
