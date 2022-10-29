@@ -150,6 +150,14 @@ impl std::ops::Mul<f64> for Vector3D {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
+        &self * rhs
+    }
+}
+
+impl std::ops::Mul<f64> for &Vector3D {
+    type Output = Vector3D;
+
+    fn mul(self, rhs: f64) -> Self::Output {
         let x = self.x() * rhs;
         let y = self.y() * rhs;
         let z = self.z() * rhs;
