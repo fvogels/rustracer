@@ -6,6 +6,7 @@ use super::{
     vector3d::Vector3D, approx::Approx,
 };
 
+#[derive(Debug)]
 pub struct Matrix4D {
     m: [[f64; 4]; 4],
 }
