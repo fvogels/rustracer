@@ -80,6 +80,10 @@ impl Vector3D {
     pub fn is_orthogonal_to(&self, v: &Vector3D) -> bool {
         approx(0.0) == self.dot(v)
     }
+
+    pub fn cos_angle_between(&self, v: &Vector3D) -> f64 {
+        self.normalized().dot(&v.normalized())
+    }
 }
 
 impl std::ops::Add for Vector3D {
