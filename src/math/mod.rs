@@ -14,3 +14,4 @@ pub mod rectangle2d;
 pub mod rectangle3d;
 pub mod vector2d;
 pub mod vector3d;
+pub mod coords;
