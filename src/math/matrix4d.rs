@@ -57,7 +57,7 @@ impl Matrix4D {
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
-    pub fn scaling(sx: f64, sy: f64, sz: f64) -> Matrix4D {
+    pub fn scale(sx: f64, sy: f64, sz: f64) -> Matrix4D {
         let origin = p3!(0, 0, 0);
         let x_axis = Vector3D::x_axis() * sx;
         let y_axis = Vector3D::y_axis() * sy;
@@ -186,7 +186,7 @@ mod tests {
         #[case] v: Vector3D,
         #[case] expected: Vector3D,
     ) {
-        let matrix = Matrix4D::scaling(sx, sy, sz);
+        let matrix = Matrix4D::scale(sx, sy, sz);
         let actual = &matrix * &v;
 
         assert_eq!(expected, actual);
