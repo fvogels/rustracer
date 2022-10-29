@@ -8,7 +8,7 @@ pub struct Point3D {
 #[macro_export]
 macro_rules! p3 {
     ( $x:expr, $y:expr, $z:expr ) => {{
-        $crate::Point3D::new($x as f64, $y as f64, $z as f64)
+        $crate::math::point3d::Point3D::new($x as f64, $y as f64, $z as f64)
     }};
 }
 
