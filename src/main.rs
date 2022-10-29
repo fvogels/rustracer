@@ -11,7 +11,10 @@ use std::rc::Rc;
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
+use materials::material::MaterialProperties;
+use materials::uniform::UniformMaterial;
 use math::{position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D, transformation3d::Transformation3D};
+use primitives::decorator::Decorator;
 use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
 use primitives::sphere::Sphere;
 use samplers::{sampler::Sampler2D, stratified::StratifiedSampler2D};
@@ -21,6 +24,12 @@ fn create_scene() -> Rc<impl Primitive> {
 
     let left_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(-1, 0, 0)), sphere.clone()));
     let right_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere.clone()));
+
+    let red_material = Rc::new(UniformMaterial::new(MaterialProperties { color: Color::red() }));
+    let blue_material = Rc::new(UniformMaterial::new(MaterialProperties { color: Color::blue() }));
+
+    let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
+    let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
     let union = Union::new(vec![left_sphere, right_sphere]);
 
@@ -55,12 +64,12 @@ fn main() {
                 let camera_rays = camera.enumerate_rays(sample);
 
                 for ray in camera_rays {
-                    let hit = match scene.find_first_positive_hit(&ray) {
-                        None => false,
-                        Some(_) => true,
+                    let sample_color = match scene.find_first_positive_hit(&ray) {
+                        None => Color::black(),
+                        Some(hit) => {
+                            hit.material.map(|m| m.at(hit.position.local).color).unwrap_or_else(|| Color::black())
+                        },
                     };
-
-                    let sample_color = if hit { Color::white() } else { Color::black() };
 
                     sample_count += 1;
                     accumulated_color += &sample_color;
