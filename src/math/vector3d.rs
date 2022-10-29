@@ -86,6 +86,14 @@ impl std::ops::Add for Vector3D {
     type Output = Self;
 
     fn add(self, v: Vector3D) -> Self::Output {
+        &self + &v
+    }
+}
+
+impl std::ops::Add for &Vector3D {
+    type Output = Vector3D;
+
+    fn add(self, v: &Vector3D) -> Self::Output {
         let x = self.x() + v.x();
         let y = self.y() + v.y();
         let z = self.z() + v.z();
