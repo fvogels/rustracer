@@ -1,9 +1,10 @@
-use crate::{math::vector3d::Vector3D, imaging::color::Color};
+use crate::{imaging::color::Color, primitives::primitive::LocalPosition};
 
-pub trait Material3D {
-    fn at(position: Vector3D) -> MaterialProperties;
+pub trait Material {
+    fn at(&self, position: LocalPosition) -> MaterialProperties;
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct MaterialProperties {
     pub color: Color,
 }
