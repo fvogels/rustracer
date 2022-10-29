@@ -18,7 +18,7 @@ impl Primitive for Union {
         let mut result: Option<Hit> = None;
 
         for child in self.children.iter() {
-            match (std::mem::take(&mut result), child.find_first_positive_hit(ray)) {
+            match (result.take(), child.find_first_positive_hit(ray)) {
                 (None, None) => { },
                 (Some(h), None) => { result = Some(h); }
                 (None, Some(h)) => { result = Some(h); },
