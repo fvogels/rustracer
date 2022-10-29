@@ -25,6 +25,6 @@ impl Iterator for SampleIterator {
     type Item = Point2D;
 
     fn next(&mut self) -> Option<Self::Item> {
-        std::mem::replace(&mut self.data, None)
+        self.data.take()
     }
 }
