@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use super::primitive::{Hit, Primitive};
 use crate::math::ray::Ray;
-use crate::math::transformation3d::Transformation3D;
 
 pub struct Union {
     children: Vec<Rc<dyn Primitive>>,
@@ -19,11 +18,12 @@ impl Primitive for Union {
         let mut result: Option<Hit> = None;
 
         for child in self.children.iter() {
-            match (result, child.find_first_positive_hit(ray)) {
-                (_, None) => { },
+            match (std::mem::take(&mut result), child.find_first_positive_hit(ray)) {
+                (None, None) => { },
+                (Some(h), None) => { result = Some(h); }
                 (None, Some(h)) => { result = Some(h); },
-                (Some(mut h1), Some(h2)) => {
-                    h1.overwrite_if_closer(&h2);
+                (Some(h1), Some(h2)) => {
+                    result = Hit::smallest_positive(h1, h2)
                 }
             }
         }
