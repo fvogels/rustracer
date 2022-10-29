@@ -41,7 +41,7 @@ fn main() {
     let camera = PerspectiveCamera::new(&camera_parameters);
     let rectangle = Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1));
     let rasterizer = Rasterizer2D::new(&rectangle, width, height);
-    let sampler = StratifiedSampler2D::new(4, 4);
+    let sampler = StratifiedSampler2D::new(2, 2);
     let scene = create_scene();
 
     for y in 0..height {
