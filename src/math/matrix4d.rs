@@ -34,10 +34,10 @@ impl Matrix4D {
     }
 
     pub fn from_coordinate_system(
-        origin: Point3D,
-        x_axis: Vector3D,
-        y_axis: Vector3D,
-        z_axis: Vector3D,
+        origin: &Point3D,
+        x_axis: &Vector3D,
+        y_axis: &Vector3D,
+        z_axis: &Vector3D,
     ) -> Matrix4D {
         let m = [
             [x_axis.x(), y_axis.x(), z_axis.x(), origin.x()],
@@ -49,12 +49,12 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    pub fn translation(v: Vector3D) -> Matrix4D {
+    pub fn translate(v: &Vector3D) -> Matrix4D {
         let origin = p3!(v.x(), v.y(), v.z());
         let x_axis = Vector3D::x_axis();
         let y_axis = Vector3D::y_axis();
         let z_axis = Vector3D::z_axis();
-        Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
+        Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
     pub fn scaling(sx: f64, sy: f64, sz: f64) -> Matrix4D {
@@ -62,7 +62,7 @@ impl Matrix4D {
         let x_axis = Vector3D::x_axis() * sx;
         let y_axis = Vector3D::y_axis() * sy;
         let z_axis = Vector3D::z_axis() * sz;
-        Matrix4D::from_coordinate_system(origin, x_axis, y_axis, z_axis)
+        Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 }
 
@@ -145,7 +145,7 @@ mod tests {
         #[case] v: Vector3D,
         #[case] expected: Vector3D,
     ) {
-        let matrix = Matrix4D::translation(displacement);
+        let matrix = Matrix4D::translate(&displacement);
         let actual = &matrix * &v;
 
         assert_eq!(expected, actual);
@@ -166,7 +166,7 @@ mod tests {
         #[case] p: Point3D,
         #[case] expected: Point3D,
     ) {
-        let matrix = Matrix4D::translation(displacement);
+        let matrix = Matrix4D::translate(&displacement);
         let actual = &matrix * &p;
 
         assert_eq!(expected, actual);
