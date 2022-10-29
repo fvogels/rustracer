@@ -49,6 +49,7 @@ mod tests {
     #[case(vec![0, 1], vec![0, 2], vec![(0, 0)], vec![1], vec![1])]
     #[case(vec![0, 1], vec![1, 0], vec![(0, 1), (1, 0)], vec![], vec![])]
     #[case(vec![0, 1, 2], vec![1, 0, 3], vec![(0, 1), (1, 0)], vec![2], vec![2])]
+    #[case(vec![0, 0, 0], vec![1, 0], vec![(0, 1)], vec![1, 2], vec![0])]
     fn test_vec_diff(#[case] xs: Vec<i32>, #[case] ys: Vec<i32>, #[case] expected_shared: Vec<(usize, usize)>, #[case] expected_left: Vec<usize>, #[case] expected_right: Vec<usize>) {
         let actual = vec_diff(&xs, &ys);
 
