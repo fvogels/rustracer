@@ -52,8 +52,8 @@ impl std::ops::Add for Color {
     }
 }
 
-impl std::ops::AddAssign for Color {
-    fn add_assign(&mut self, rhs: Self) {
+impl std::ops::AddAssign<&Color> for Color {
+    fn add_assign(&mut self, rhs: &Color) {
         for i in 0..3 {
             self.rgb[i] += rhs.rgb[i];
         }
