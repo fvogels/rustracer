@@ -4,25 +4,17 @@ mod math;
 mod primitives;
 mod samplers;
 mod util;
+mod materials;
 
 use std::rc::Rc;
 
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
-use math::matrix4d::Matrix4D;
-use math::point2d::Point2D;
-use math::point3d::Point3D;
-use math::position2d::Position2D;
-use math::rasterizer2d::Rasterizer2D;
-use math::rectangle2d::Rectangle2D;
-use math::transformation3d::Transformation3D;
-use math::vector2d::Vector2D;
-use math::vector3d::Vector3D;
-use primitives::union::Union;
-use primitives::{primitive::Primitive, transformer::Transformer};
+use math::{position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D, transformation3d::Transformation3D};
+use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
 use primitives::sphere::Sphere;
-use samplers::{sampler::Sampler2D, single::SingleSampler2D, stratified::StratifiedSampler2D};
+use samplers::{sampler::Sampler2D, stratified::StratifiedSampler2D};
 
 fn create_scene() -> Rc<impl Primitive> {
     let sphere = Rc::new(Sphere::new());
