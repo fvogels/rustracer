@@ -1,6 +1,4 @@
-use crate::math::point3d::Point3D;
-use crate::math::ray::Ray;
-use crate::math::vector3d::Vector3D;
+use crate::math::{point3d::Point3D, ray::Ray, vector3d::Vector3D, point2d::Point2D};
 
 #[derive(Copy, Clone)]
 pub struct Hit {
@@ -12,7 +10,13 @@ pub struct Hit {
 #[derive(Copy, Clone)]
 pub struct HitPosition {
     pub global: Point3D,
-    pub local: Point3D,
+    pub local: LocalHitPosition,
+}
+
+#[derive(Copy, Clone)]
+pub struct LocalHitPosition {
+    pub xyz: Point3D,
+    pub uv: Point2D,
 }
 
 pub trait Primitive {
