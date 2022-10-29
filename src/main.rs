@@ -61,9 +61,6 @@ fn main() {
                     sample_count += 1;
                     accumulated_color += &sample_color;
                 }
-
-                // println!("accumulated color: {:?}, sample_count: {:?}", accumulated_color, sample_count);
-
             }
 
             accumulated_color /= sample_count as f64;
