@@ -1,4 +1,4 @@
-use super::metric::Metric;
+use super::{metric::Metric, interval::Linear};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Angle {
@@ -106,5 +106,42 @@ impl std::cmp::PartialOrd for Angle {
 impl Metric for Angle {
     fn distance(&self, rhs: &Self) -> f64 {
         self.in_radians().distance(&rhs.in_radians())
+    }
+}
+
+impl Linear for Angle {
+    fn position(lower: &Self, upper: &Self, x: &Self) -> f64 {
+        f64::position(&lower.in_radians(), &upper.in_radians(), &x.in_radians())
+    }
+
+    fn from_position(lower: &Self, upper: &Self, t: f64) -> Self {
+        let radians = f64::from_position(&lower.in_radians(), &upper.in_radians(), t);
+        Angle::radians(radians)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    #[cfg(test)]
+    use super::*;
+
+    #[cfg(test)]
+    use crate::math::{approx::approx, interval::{Interval, IntervalMapper}};
+
+    #[rstest]
+    #[case(Interval::new(0.0, 1.0), Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0)), 0.0, Angle::degrees(-180.0))]
+    #[case(Interval::new(0.0, 1.0), Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0)), 0.5, Angle::degrees(0.0))]
+    #[case(Interval::new(0.0, 1.0), Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0)), 1.0, Angle::degrees(180.0))]
+    #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0)), 0.0, Angle::degrees(0.0))]
+    #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), 0.0, Angle::degrees(45.0))]
+    #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), -1.0, Angle::degrees(0.0))]
+    #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), 1.0, Angle::degrees(90.0))]
+    fn interval_mapping_f64_to_angle(#[case] source: Interval<f64>, #[case] target: Interval<Angle>, #[case] value: f64, #[case] angle: Angle) {
+        let mapper = IntervalMapper::new(source, target);
+
+        assert_eq!(approx(angle), mapper.map(value));
+        assert_eq!(approx(value), mapper.inverse_map(angle));
     }
 }
