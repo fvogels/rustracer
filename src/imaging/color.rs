@@ -120,6 +120,18 @@ impl std::ops::Div<f64> for Color {
     }
 }
 
+impl std::ops::Mul for Color {
+    type Output = Self;
+
+    fn mul(self, rhs: Color) -> Self::Output {
+        let r = self.r() * rhs.r();
+        let g = self.g() * rhs.g();
+        let b = self.b() * rhs.b();
+
+        Color::new(r, g, b)
+    }
+}
+
 impl std::ops::Div<f64> for &Color {
     type Output = Color;
 
