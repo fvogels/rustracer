@@ -26,7 +26,7 @@ fn main() {
     let camera_parameters = PerspectiveCameraParameters {
         aspect_ratio: 1.0,
         distance_to_screen: 1.0,
-        eye: p3!(0, 0, -5),
+        eye: p3!(0, 0, -3),
         look_at: p3!(0, 0, 0),
         up: v3!(0, 1, 0),
     };
@@ -44,8 +44,6 @@ fn main() {
             let mut accumulated_color = Color::black();
 
             for sample in sampler.sample(&pixel) {
-                sample_count += 1;
-
                 let camera_rays = camera.enumerate_rays(sample);
 
                 for ray in camera_rays {
@@ -60,12 +58,16 @@ fn main() {
                         Color::black()
                     };
 
+                    sample_count += 1;
                     accumulated_color += &sample_color;
                 }
 
-                accumulated_color /= sample_count as f64;
-                *image.get_mut(position) = accumulated_color;
+                // println!("accumulated color: {:?}, sample_count: {:?}", accumulated_color, sample_count);
+
             }
+
+            accumulated_color /= sample_count as f64;
+            *image.get_mut(position) = accumulated_color;
         }
     }
 
