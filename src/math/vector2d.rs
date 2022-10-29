@@ -58,6 +58,17 @@ impl std::ops::Add for Vector2D {
     }
 }
 
+impl std::ops::Neg for Vector2D {
+    type Output = Vector2D;
+
+    fn neg(self) -> Self::Output {
+        let x = -self.x();
+        let y = -self.y();
+
+        v2!(x, y)
+    }
+}
+
 impl std::ops::Sub for Vector2D {
     type Output = Self;
 
