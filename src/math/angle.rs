@@ -1,6 +1,6 @@
 use super::metric::Metric;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Angle {
     size_in_radians: f64,
 }
