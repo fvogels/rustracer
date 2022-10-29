@@ -56,11 +56,7 @@ impl std::ops::Add for Color {
     type Output = Self;
 
     fn add(self, c: Color) -> Self::Output {
-        let r = self.r() + c.r();
-        let g = self.g() + c.g();
-        let b = self.b() + c.b();
-
-        Color::new(r, g, b)
+        &self + &c
     }
 }
 
