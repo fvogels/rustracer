@@ -13,7 +13,7 @@ impl SingleSampler2D {
     }
 }
 
-impl Sampler2D for SingleSampler2D {
+impl<'a> Sampler2D<'a> for SingleSampler2D {
     fn sample(&self, rectangle: &Rectangle2D) -> Box<dyn Iterator<Item=Point2D>> {
         let data = Some(rectangle.center());
 
