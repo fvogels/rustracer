@@ -42,4 +42,16 @@ mod tests {
 
         assert_eq!(approx(Matrix4D::identity()), &transformation.matrix * &transformation.inverse_matrix);
     }
+
+    #[rstest]
+    #[case(1.0, 1.0, 1.0)]
+    #[case(2.0, 1.0, 1.0)]
+    #[case(1.0, 2.0, 1.0)]
+    #[case(1.0, 1.0, 2.0)]
+    #[case(3.0, 4.0, 5.0)]
+    fn scale_inverse_matrix(#[case] sx: f64, #[case] sy: f64, #[case] sz: f64) {
+        let transformation = Transformation3D::scale(sx, sy, sz);
+
+        assert_eq!(approx(Matrix4D::identity()), &transformation.matrix * &transformation.inverse_matrix);
+    }
 }
