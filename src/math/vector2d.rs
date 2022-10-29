@@ -9,7 +9,7 @@ pub struct Vector2D {
 #[macro_export]
 macro_rules! v2 {
     ( $x:expr, $y:expr ) => {{
-        Vector2D::new($x as f64, $y as f64)
+        $crate::Vector2D::new($x as f64, $y as f64)
     }};
 }
 
