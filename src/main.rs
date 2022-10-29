@@ -5,23 +5,33 @@ mod primitives;
 mod samplers;
 mod util;
 
+use std::rc::Rc;
+
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
+use math::matrix4d::Matrix4D;
 use math::point2d::Point2D;
 use math::point3d::Point3D;
 use math::position2d::Position2D;
 use math::rasterizer2d::Rasterizer2D;
 use math::rectangle2d::Rectangle2D;
+use math::transformation3d::Transformation3D;
 use math::vector2d::Vector2D;
 use math::vector3d::Vector3D;
-use primitives::primitive::Primitive;
+use primitives::{primitive::Primitive, transformer::Transformer};
 use primitives::sphere::Sphere;
 use samplers::{sampler::Sampler2D, single::SingleSampler2D, stratified::StratifiedSampler2D};
 
+fn create_scene() -> Rc<impl Primitive> {
+    let sphere = Rc::new(Sphere::new());
+
+    Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere))
+}
+
 fn main() {
-    let width: u32 = 100;
-    let height: u32 = 100;
+    let width: u32 = 500;
+    let height: u32 = 500;
     let mut image = Image::new(width, height);
     let camera_parameters = PerspectiveCameraParameters {
         aspect_ratio: 1.0,
@@ -34,7 +44,7 @@ fn main() {
     let rectangle = Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1));
     let rasterizer = Rasterizer2D::new(&rectangle, width, height);
     let sampler = StratifiedSampler2D::new(4, 4);
-    let sphere = Sphere::new();
+    let scene = create_scene();
 
     for y in 0..height {
         for x in 0..width {
@@ -47,7 +57,7 @@ fn main() {
                 let camera_rays = camera.enumerate_rays(sample);
 
                 for ray in camera_rays {
-                    let hit = match sphere.find_first_positive_hit(&ray) {
+                    let hit = match scene.find_first_positive_hit(&ray) {
                         None => false,
                         Some(_) => true,
                     };
