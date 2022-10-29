@@ -1,5 +1,4 @@
-use super::metric::Metric;
-use crate::math::approx::approx;
+use crate::math::{approx::approx, metric::Metric};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector2D {

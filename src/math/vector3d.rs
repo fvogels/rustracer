@@ -1,4 +1,4 @@
-use crate::math::approx::approx;
+use crate::math::{approx::approx, metric::Metric};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector3D {
@@ -13,8 +13,6 @@ macro_rules! v3 {
 }
 
 pub use v3;
-
-use super::metric::Metric;
 
 impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
