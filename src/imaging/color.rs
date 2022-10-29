@@ -100,18 +100,6 @@ impl std::ops::Mul<f64> for &Color {
     }
 }
 
-impl std::ops::Div<f64> for Color {
-    type Output = Self;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        let r = self.r() / rhs;
-        let g = self.g() / rhs;
-        let b = self.b() / rhs;
-
-        Color::new(r, g, b)
-    }
-}
-
 impl std::ops::Mul for Color {
     type Output = Self;
 
@@ -133,6 +121,14 @@ impl std::ops::Mul for &Color {
         let b = self.b() * rhs.b();
 
         Color::new(r, g, b)
+    }
+}
+
+impl std::ops::Div<f64> for Color {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        &self / rhs
     }
 }
 
