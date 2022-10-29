@@ -72,6 +72,18 @@ impl std::ops::AddAssign<&Color> for Color {
     }
 }
 
+impl std::ops::Div<f64> for Color {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        let r = self.r() / rhs;
+        let g = self.g() / rhs;
+        let b = self.b() / rhs;
+
+        Color::new(r, g, b)
+    }
+}
+
 impl std::ops::DivAssign<f64> for Color {
     fn div_assign(&mut self, rhs: f64) {
         for i in 0..3 {
