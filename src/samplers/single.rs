@@ -7,8 +7,14 @@ struct SampleIterator {
     data: Option<Point2D>,
 }
 
+impl SingleSampler2D {
+    pub fn new() -> SingleSampler2D {
+        SingleSampler2D { }
+    }
+}
+
 impl Sampler2D for SingleSampler2D {
-    fn sample(rectangle: &Rectangle2D) -> Box<dyn Iterator<Item=Point2D>> {
+    fn sample(&self, rectangle: &Rectangle2D) -> Box<dyn Iterator<Item=Point2D>> {
         let data = Some(rectangle.center());
 
         Box::new(SampleIterator { data })
