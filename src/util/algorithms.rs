@@ -1,7 +1,7 @@
 pub struct VecDiffResult {
-    shared: Vec<(usize, usize)>,
-    left_only: Vec<usize>,
-    right_only: Vec<usize>,
+    pub shared: Vec<(usize, usize)>,
+    pub left_only: Vec<usize>,
+    pub right_only: Vec<usize>,
 }
 
 pub fn vec_diff<T : PartialEq>(xs: &Vec<T>, ys: &Vec<T>) -> VecDiffResult {
