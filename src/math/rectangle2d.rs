@@ -1,4 +1,4 @@
-use super::point2d::{Point2D, p2};
+use super::point2d::{p2, Point2D};
 use super::vector2d::Vector2D;
 
 pub struct Rectangle2D {

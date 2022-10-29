@@ -1,9 +1,9 @@
-mod util;
 mod cameras;
 mod imaging;
 mod math;
 mod primitives;
 mod samplers;
+mod util;
 
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
@@ -49,14 +49,10 @@ fn main() {
                 for ray in camera_rays {
                     let hit = match sphere.find_first_positive_hit(&ray) {
                         None => false,
-                        Some(_) => true
+                        Some(_) => true,
                     };
 
-                    let sample_color = if hit {
-                        Color::white()
-                    } else {
-                        Color::black()
-                    };
+                    let sample_color = if hit { Color::white() } else { Color::black() };
 
                     sample_count += 1;
                     accumulated_color += &sample_color;

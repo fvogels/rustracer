@@ -1,4 +1,4 @@
-use super::point2d::{Point2D, p2};
+use super::point2d::{p2, Point2D};
 use super::point3d::Point3D;
 use super::vector3d::Vector3D;
 
