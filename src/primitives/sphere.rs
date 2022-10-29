@@ -19,7 +19,7 @@ fn compute_uv_coordinates(p: &Point3D) -> Point2D {
     let elevation_interval = Interval::new(Angle::degrees(-90.0), Angle::degrees(90.0));
 
     debug_assert!(azimuth_interval.contains(spherical.azimuth));
-    debug_assert!(elevation_interval.contains(spherical.azimuth));
+    debug_assert!(elevation_interval.contains(spherical.elevation));
 
     let azimuth_mapper = IntervalMapper::new(azimuth_interval, Interval::new(0.0, 1.0));
     let elevation_mapper = IntervalMapper::new(elevation_interval, Interval::new(0.0, 1.0));
@@ -56,6 +56,7 @@ impl Primitive for Sphere {
                         t,
                         position,
                         normal,
+                        material: None,
                     };
 
                     Some(hit)
