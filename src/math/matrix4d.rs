@@ -3,7 +3,7 @@ use std::ops::Mul;
 use super::{
     point3d::{p3, Point3D},
     ray::Ray,
-    vector3d::Vector3D,
+    vector3d::Vector3D, approx::Approx,
 };
 
 pub struct Matrix4D {
@@ -119,6 +119,18 @@ impl Mul<&Ray> for &Matrix4D {
         let direction = self * &ray.direction;
 
         Ray::new(origin, direction)
+    }
+}
+
+impl Approx for Matrix4D {
+    fn approx_eps(&self, rhs: &Self, epsilon: f64) -> bool {
+        (0..4).all(|row| {
+            (0..4).all(|col| {
+                let left = self.m[row][col];
+                let right = rhs.m[row][col];
+                left.approx_eps(&right, epsilon)
+            })
+        })
     }
 }
 
