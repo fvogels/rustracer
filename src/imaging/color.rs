@@ -59,3 +59,11 @@ impl std::ops::AddAssign<&Color> for Color {
         }
     }
 }
+
+impl std::ops::DivAssign<f64> for Color {
+    fn div_assign(&mut self, rhs: f64) {
+        for i in 0..3 {
+            self.rgb[i] /= rhs;
+        }
+    }
+}
