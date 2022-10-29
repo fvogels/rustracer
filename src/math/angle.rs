@@ -55,6 +55,14 @@ impl std::ops::AddAssign for Angle {
     }
 }
 
+impl std::ops::Neg for Angle {
+    type Output = Angle;
+
+    fn neg(self) -> Self::Output {
+        Angle::radians(-self.in_radians())
+    }
+}
+
 impl std::ops::Sub for Angle {
     type Output = Angle;
 
