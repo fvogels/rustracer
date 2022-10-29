@@ -1,3 +1,6 @@
+use super::metric::Metric;
+
+#[derive(Debug)]
 pub struct Angle {
     size_in_radians: f64,
 }
@@ -14,11 +17,11 @@ impl Angle {
     }
 
     fn degrees_to_radians(degrees: f64) -> f64 {
-        degrees * 180.0 / std::f64::consts::PI
+        degrees / 180.0 * std::f64::consts::PI
     }
 
     fn radians_to_degrees(radians: f64) -> f64 {
-        radians * std::f64::consts::PI / 180.0
+        radians / std::f64::consts::PI * 180.0
     }
 
     pub fn in_degrees(&self) -> f64 {
@@ -89,5 +92,11 @@ impl std::cmp::PartialEq for Angle {
 impl std::cmp::PartialOrd for Angle {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.size_in_radians.partial_cmp(&other.size_in_radians)
+    }
+}
+
+impl Metric for Angle {
+    fn distance(&self, rhs: &Self) -> f64 {
+        self.in_radians().distance(&rhs.in_radians())
     }
 }
