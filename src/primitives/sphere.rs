@@ -1,5 +1,5 @@
 use super::primitive::{Hit, HitPosition, Primitive, LocalHitPosition};
-use crate::math::{approx::approx, coords::Cartesian3D, point2d::{p2, Point2D}, point3d::{p3, Point3D}, quadratic::QuadraticEquation, ray::Ray, vector3d::Vector3D};
+use crate::math::{approx::approx, coords::Cartesian3D, point2d::{p2, Point2D}, point3d::{p3, Point3D}, quadratic::QuadraticEquation, ray::Ray, vector3d::Vector3D, interval::{Interval, IntervalMapper}, angle::Angle};
 
 pub struct Sphere {}
 
@@ -15,12 +15,19 @@ fn compute_uv_coordinates(p: &Point3D) -> Point2D {
 
     debug_assert_eq!(approx(1.0), spherical.radius);
 
-    // TODO map to [0, 1] interval
-    let u = spherical.azimuth;
-    let v = spherical.elevation;
+    let azimuth_interval = Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0));
+    let elevation_interval = Interval::new(Angle::degrees(-90.0), Angle::degrees(90.0));
 
-    //p2!(u, v)
-    p2!(0, 0)
+    debug_assert!(azimuth_interval.contains(spherical.azimuth));
+    debug_assert!(elevation_interval.contains(spherical.azimuth));
+
+    let azimuth_mapper = IntervalMapper::new(azimuth_interval, Interval::new(0.0, 1.0));
+    let elevation_mapper = IntervalMapper::new(elevation_interval, Interval::new(0.0, 1.0));
+
+    let u = azimuth_mapper.map(spherical.azimuth);
+    let v = elevation_mapper.map(spherical.elevation);
+
+    p2!(u, v)
 }
 
 impl Primitive for Sphere {
