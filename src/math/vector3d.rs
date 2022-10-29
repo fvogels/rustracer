@@ -94,6 +94,30 @@ impl std::ops::Add for Vector3D {
     }
 }
 
+impl std::ops::Neg for Vector3D {
+    type Output = Vector3D;
+
+    fn neg(self) -> Self::Output {
+        let x = -self.x();
+        let y = -self.y();
+        let z = -self.z();
+
+        v3!(x, y, z)
+    }
+}
+
+impl std::ops::Neg for &Vector3D {
+    type Output = Vector3D;
+
+    fn neg(self) -> Self::Output {
+        let x = -self.x();
+        let y = -self.y();
+        let z = -self.z();
+
+        v3!(x, y, z)
+    }
+}
+
 impl std::ops::Sub for Vector3D {
     type Output = Self;
 
