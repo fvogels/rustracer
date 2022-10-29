@@ -19,6 +19,7 @@ use math::rectangle2d::Rectangle2D;
 use math::transformation3d::Transformation3D;
 use math::vector2d::Vector2D;
 use math::vector3d::Vector3D;
+use primitives::union::Union;
 use primitives::{primitive::Primitive, transformer::Transformer};
 use primitives::sphere::Sphere;
 use samplers::{sampler::Sampler2D, single::SingleSampler2D, stratified::StratifiedSampler2D};
@@ -26,7 +27,12 @@ use samplers::{sampler::Sampler2D, single::SingleSampler2D, stratified::Stratifi
 fn create_scene() -> Rc<impl Primitive> {
     let sphere = Rc::new(Sphere::new());
 
-    Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere))
+    let left_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(-1, 0, 0)), sphere.clone()));
+    let right_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere.clone()));
+
+    let union = Union::new(vec![left_sphere, right_sphere]);
+
+    Rc::new(union)
 }
 
 fn main() {
