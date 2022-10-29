@@ -17,43 +17,43 @@ pub struct IntervalMapper<T: Linear, U: Linear> {
 }
 
 impl<T> Interval<T> {
-    fn new(lower_bound: T, upper_bound: T) -> Interval<T> {
+    pub fn new(lower_bound: T, upper_bound: T) -> Interval<T> {
         Interval { lower_bound, upper_bound }
     }
 }
 
 impl<T: Linear> Interval<T> {
-    fn contains(&self, x: T) -> bool {
+    pub fn contains(&self, x: T) -> bool {
         let t = self.position(x);
         0.0 <= t && t <= 1.0
     }
 
-    fn position(&self, x: T) -> f64 {
+    pub fn position(&self, x: T) -> f64 {
         T::position(&self.lower_bound, &self.upper_bound, &x)
     }
 
-    fn from_position(&self, t: f64) -> T {
+    pub fn from_position(&self, t: f64) -> T {
         T::from_position(&self.lower_bound, &self.upper_bound, t)
     }
 }
 
 impl<'a, T: 'a> Interval<T> where &'a T : Sub<&'a T, Output=T> {
-    fn width(&'a self) -> T {
+    pub fn width(&'a self) -> T {
         &self.upper_bound - &self.lower_bound
     }
 }
 
 impl<T: Linear, U: Linear> IntervalMapper<T, U> {
-    fn new(source: Interval<T>, target: Interval<U>) -> IntervalMapper<T, U> {
+    pub fn new(source: Interval<T>, target: Interval<U>) -> IntervalMapper<T, U> {
         IntervalMapper { source, target }
     }
 
-    fn map(&self, x: T) -> U {
+    pub fn map(&self, x: T) -> U {
         let t = self.source.position(x);
         self.target.from_position(t)
     }
 
-    fn inverse_map(&self, y: U) -> T {
+    pub fn inverse_map(&self, y: U) -> T {
         let t = self.target.position(y);
         self.source.from_position(t)
     }
