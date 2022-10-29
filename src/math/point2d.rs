@@ -8,7 +8,7 @@ pub struct Point2D {
 #[macro_export]
 macro_rules! p2 {
     ( $x:expr, $y:expr ) => {{
-        Point2D::new($x as f64, $y as f64)
+        $crate::Point2D::new($x as f64, $y as f64)
     }};
 }
 
