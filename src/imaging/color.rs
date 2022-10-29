@@ -84,11 +84,7 @@ impl std::ops::Mul<f64> for Color {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        let r = self.r() * rhs;
-        let g = self.g() * rhs;
-        let b = self.b() * rhs;
-
-        Color::new(r, g, b)
+        &self * rhs
     }
 }
 
