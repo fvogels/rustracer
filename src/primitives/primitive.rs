@@ -1,4 +1,7 @@
-use crate::{math::{point3d::Point3D, ray::Ray, vector3d::Vector3D, point2d::Point2D}, materials::material::{Material, MaterialProperties}};
+use crate::{
+    materials::material::{Material, MaterialProperties},
+    math::{point2d::Point2D, point3d::Point3D, ray::Ray, vector3d::Vector3D},
+};
 
 pub struct Hit {
     pub t: f64,
@@ -33,8 +36,7 @@ impl Hit {
                 debug_assert!(hit1.t < 0.0 && hit2.t >= 0.0);
                 Some(hit2)
             }
-        }
-        else if hit2.t < 0.0 {
+        } else if hit2.t < 0.0 {
             debug_assert!(hit1.t >= 0.0 && hit2.t < 0.0);
             Some(hit1)
         } else {

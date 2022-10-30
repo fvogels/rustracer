@@ -1,7 +1,10 @@
-use crate::{math::{ray::Ray, point3d::Point3D}, imaging::color::Color};
+use crate::{
+    imaging::color::Color,
+    math::{point3d::Point3D, ray::Ray},
+};
 
 pub trait LightSource {
-    fn lightrays_to(&self, point: Point3D) -> Box<dyn Iterator<Item=LightRay>>;
+    fn lightrays_to(&self, point: Point3D) -> Box<dyn Iterator<Item = LightRay>>;
 }
 
 pub struct LightRay {

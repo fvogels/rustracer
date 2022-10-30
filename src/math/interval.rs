@@ -1,4 +1,4 @@
-use std::ops::{Sub, Deref};
+use std::ops::{Deref, Sub};
 
 pub trait Linear {
     fn position(lower: &Self, upper: &Self, x: &Self) -> f64;
@@ -18,7 +18,10 @@ pub struct IntervalMapper<T: Linear, U: Linear> {
 
 impl<T> Interval<T> {
     pub fn new(lower_bound: T, upper_bound: T) -> Interval<T> {
-        Interval { lower_bound, upper_bound }
+        Interval {
+            lower_bound,
+            upper_bound,
+        }
     }
 }
 
@@ -37,7 +40,10 @@ impl<T: Linear> Interval<T> {
     }
 }
 
-impl<'a, T: 'a> Interval<T> where &'a T : Sub<&'a T, Output=T> {
+impl<'a, T: 'a> Interval<T>
+where
+    &'a T: Sub<&'a T, Output = T>,
+{
     pub fn width(&'a self) -> T {
         &self.upper_bound - &self.lower_bound
     }

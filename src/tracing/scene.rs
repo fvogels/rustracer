@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::{cameras::perspective::PerspectiveCamera, primitives::primitive::Primitive, lights::light::LightSource};
+use crate::{
+    cameras::perspective::PerspectiveCamera, lights::light::LightSource,
+    primitives::primitive::Primitive,
+};
 
 pub struct Scene {
     pub camera: PerspectiveCamera,

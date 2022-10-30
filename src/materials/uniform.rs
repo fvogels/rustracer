@@ -1,6 +1,6 @@
 use crate::primitives::primitive::LocalPosition;
 
-use super::material::{MaterialProperties, Material};
+use super::material::{Material, MaterialProperties};
 
 pub struct UniformMaterial {
     properties: MaterialProperties,

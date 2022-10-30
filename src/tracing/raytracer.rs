@@ -1,4 +1,10 @@
-use crate::{imaging::color::Color, math::ray::Ray, lights::light::{LightSource, LightRay}, primitives::primitive::Hit, materials::material::MaterialProperties};
+use crate::{
+    imaging::color::Color,
+    lights::light::{LightRay, LightSource},
+    materials::material::MaterialProperties,
+    math::ray::Ray,
+    primitives::primitive::Hit,
+};
 
 use super::scene::Scene;
 
@@ -17,16 +23,18 @@ impl RayTracer {
 
     pub fn trace(&self, ray: &Ray) -> TraceResult {
         match self.scene.root.find_first_positive_hit(ray) {
-            None => TraceResult { color: Color::black() },
-            Some(hit) => {
-                match hit.material_properties {
-                    None => TraceResult { color: Color::black() },
-                    Some(ref material_properties) => {
-                        let light_color = self.process_lights(&hit, material_properties);
-                        TraceResult { color: light_color }
-                    }
+            None => TraceResult {
+                color: Color::black(),
+            },
+            Some(hit) => match hit.material_properties {
+                None => TraceResult {
+                    color: Color::black(),
+                },
+                Some(ref material_properties) => {
+                    let light_color = self.process_lights(&hit, material_properties);
+                    TraceResult { color: light_color }
                 }
-            }
+            },
         }
     }
 
@@ -40,7 +48,12 @@ impl RayTracer {
         result
     }
 
-    fn process_light(&self, hit: &Hit, material_properties: &MaterialProperties, light_source: &dyn LightSource) -> Color {
+    fn process_light(
+        &self,
+        hit: &Hit,
+        material_properties: &MaterialProperties,
+        light_source: &dyn LightSource,
+    ) -> Color {
         let mut result = Color::black();
         let mut n_lightrays = 0;
 
@@ -54,12 +67,15 @@ impl RayTracer {
         result
     }
 
-    fn process_light_ray(&self, hit: &Hit, material_properties: &MaterialProperties, light_ray: &LightRay) -> Color {
+    fn process_light_ray(
+        &self,
+        hit: &Hit,
+        material_properties: &MaterialProperties,
+        light_ray: &LightRay,
+    ) -> Color {
         let is_shadowed = match self.scene.root.find_first_positive_hit(&light_ray.ray) {
             None => false,
-            Some(ref hit) => {
-                hit.t < 0.999
-            }
+            Some(ref hit) => hit.t < 0.999,
         };
 
         if is_shadowed {

@@ -1,5 +1,15 @@
-use super::primitive::{Hit, HitPosition, Primitive, LocalPosition};
-use crate::math::{approx::approx, coords::Cartesian3D, point2d::{p2, Point2D}, point3d::{p3, Point3D}, quadratic::QuadraticEquation, ray::Ray, vector3d::Vector3D, interval::{Interval, IntervalMapper}, angle::Angle};
+use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
+use crate::math::{
+    angle::Angle,
+    approx::approx,
+    coords::Cartesian3D,
+    interval::{Interval, IntervalMapper},
+    point2d::{p2, Point2D},
+    point3d::{p3, Point3D},
+    quadratic::QuadraticEquation,
+    ray::Ray,
+    vector3d::Vector3D,
+};
 
 pub struct Sphere {}
 
@@ -10,7 +20,11 @@ impl Sphere {
 }
 
 fn compute_uv_coordinates(p: &Point3D) -> Point2D {
-    let cartesian = Cartesian3D { x: p.x(), y: p.y(), z: p.z() };
+    let cartesian = Cartesian3D {
+        x: p.x(),
+        y: p.y(),
+        z: p.z(),
+    };
     let spherical = cartesian.to_spherical();
 
     debug_assert_eq!(approx(1.0), spherical.radius);
@@ -49,7 +63,10 @@ impl Primitive for Sphere {
                     let p = ray.at(t);
                     let position = HitPosition {
                         global: p,
-                        local: LocalPosition { xyz: p, uv: compute_uv_coordinates(&p) },
+                        local: LocalPosition {
+                            xyz: p,
+                            uv: compute_uv_coordinates(&p),
+                        },
                     };
                     let normal = p - p3!(0, 0, 0);
                     let hit = Hit {

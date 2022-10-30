@@ -1,6 +1,9 @@
-use crate::{imaging::color::Color, math::{point3d::Point3D, ray::Ray}};
+use crate::{
+    imaging::color::Color,
+    math::{point3d::Point3D, ray::Ray},
+};
 
-use super::light::{LightSource, LightRay};
+use super::light::{LightRay, LightSource};
 
 pub struct PointLight {
     color: Color,
@@ -18,10 +21,12 @@ impl PointLight {
 }
 
 impl LightSource for PointLight {
-    fn lightrays_to(&self, point: Point3D) -> Box<dyn Iterator<Item=LightRay>> {
+    fn lightrays_to(&self, point: Point3D) -> Box<dyn Iterator<Item = LightRay>> {
         let ray = Ray::through(self.position, point);
         let lightray = LightRay::new(self.color, ray);
-        let iterator = PointLightIterator { lightray: Some(lightray) };
+        let iterator = PointLightIterator {
+            lightray: Some(lightray),
+        };
 
         Box::new(iterator)
     }

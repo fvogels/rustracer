@@ -1,12 +1,12 @@
 mod cameras;
 mod imaging;
+mod lights;
+mod materials;
 mod math;
 mod primitives;
 mod samplers;
-mod util;
-mod materials;
-mod lights;
 mod tracing;
+mod util;
 
 use std::rc::Rc;
 
@@ -16,16 +16,18 @@ use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
-use math::{position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D, transformation3d::Transformation3D};
+use math::{
+    position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D,
+    transformation3d::Transformation3D,
+};
 use primitives::decorator::Decorator;
-use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
 use primitives::sphere::Sphere;
+use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
 use samplers::{sampler::Sampler2D, stratified::StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
 
 use crate::primitives::plane::PlaneXY;
-
 
 fn create_scene() -> Scene {
     fn create_camera() -> PerspectiveCamera {
@@ -44,13 +46,28 @@ fn create_scene() -> Scene {
         let plane = Rc::new(PlaneXY::new());
         let sphere = Rc::new(Sphere::new());
 
-        let background = Rc::new(Transformer::new(Transformation3D::translate(&v3!(0, 0, -5)), plane.clone()));
-        let left_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(-1, 0, 0)), sphere.clone()));
-        let right_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere.clone()));
+        let background = Rc::new(Transformer::new(
+            Transformation3D::translate(&v3!(0, 0, -5)),
+            plane.clone(),
+        ));
+        let left_sphere = Rc::new(Transformer::new(
+            Transformation3D::translate(&v3!(-1, 0, 0)),
+            sphere.clone(),
+        ));
+        let right_sphere = Rc::new(Transformer::new(
+            Transformation3D::translate(&v3!(1, 0, 0)),
+            sphere.clone(),
+        ));
 
-        let red_material = Rc::new(UniformMaterial::new(MaterialProperties { diffuse: Color::red() }));
-        let green_material = Rc::new(UniformMaterial::new(MaterialProperties { diffuse: Color::green() }));
-        let blue_material = Rc::new(UniformMaterial::new(MaterialProperties { diffuse: Color::blue() }));
+        let red_material = Rc::new(UniformMaterial::new(MaterialProperties {
+            diffuse: Color::red(),
+        }));
+        let green_material = Rc::new(UniformMaterial::new(MaterialProperties {
+            diffuse: Color::green(),
+        }));
+        let blue_material = Rc::new(UniformMaterial::new(MaterialProperties {
+            diffuse: Color::blue(),
+        }));
 
         let background = Rc::new(Decorator::new(green_material, background));
         let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
@@ -64,14 +81,18 @@ fn create_scene() -> Scene {
     fn create_light_sources() -> Vec<Rc<dyn LightSource>> {
         let light = Rc::new(PointLight::new(Color::white(), p3!(0, 5, 3)));
 
-        vec![ light ]
+        vec![light]
     }
 
     let camera = create_camera();
     let root = create_root();
     let light_sources = create_light_sources();
 
-    Scene { camera, root, light_sources }
+    Scene {
+        camera,
+        root,
+        light_sources,
+    }
 }
 
 fn main() {

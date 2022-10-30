@@ -1,4 +1,4 @@
-use super::{metric::Metric, interval::Linear};
+use super::{interval::Linear, metric::Metric};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Angle {
@@ -128,7 +128,10 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::{approx::approx, interval::{Interval, IntervalMapper}};
+    use crate::math::{
+        approx::approx,
+        interval::{Interval, IntervalMapper},
+    };
 
     #[rstest]
     #[case(Interval::new(0.0, 1.0), Interval::new(Angle::degrees(-180.0), Angle::degrees(180.0)), 0.0, Angle::degrees(-180.0))]
@@ -138,7 +141,12 @@ mod tests {
     #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), 0.0, Angle::degrees(45.0))]
     #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), -1.0, Angle::degrees(0.0))]
     #[case(Interval::new(-1.0, 1.0), Interval::new(Angle::degrees(0.0), Angle::degrees(90.0)), 1.0, Angle::degrees(90.0))]
-    fn interval_mapping_f64_to_angle(#[case] source: Interval<f64>, #[case] target: Interval<Angle>, #[case] value: f64, #[case] angle: Angle) {
+    fn interval_mapping_f64_to_angle(
+        #[case] source: Interval<f64>,
+        #[case] target: Interval<Angle>,
+        #[case] value: f64,
+        #[case] angle: Angle,
+    ) {
         let mapper = IntervalMapper::new(source, target);
 
         assert_eq!(approx(angle), mapper.map(value));

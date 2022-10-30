@@ -19,12 +19,14 @@ impl Primitive for Union {
 
         for child in self.children.iter() {
             match (result.take(), child.find_first_positive_hit(ray)) {
-                (None, None) => { },
-                (Some(h), None) => { result = Some(h); }
-                (None, Some(h)) => { result = Some(h); },
-                (Some(h1), Some(h2)) => {
-                    result = Hit::smallest_positive(h1, h2)
+                (None, None) => {}
+                (Some(h), None) => {
+                    result = Some(h);
                 }
+                (None, Some(h)) => {
+                    result = Some(h);
+                }
+                (Some(h1), Some(h2)) => result = Hit::smallest_positive(h1, h2),
             }
         }
 

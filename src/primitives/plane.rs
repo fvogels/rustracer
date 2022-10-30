@@ -1,5 +1,10 @@
-use super::primitive::{Hit, HitPosition, Primitive, LocalPosition};
-use crate::math::{point2d::{p2, Point2D}, point3d::{p3, Point3D}, ray::Ray, vector3d::v3};
+use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
+use crate::math::{
+    point2d::{p2, Point2D},
+    point3d::{p3, Point3D},
+    ray::Ray,
+    vector3d::v3,
+};
 
 pub struct PlaneXY {}
 
@@ -22,7 +27,13 @@ impl Primitive for PlaneXY {
         } else {
             let t = (p3!(0, 0, 0) - ray.origin).z() / d;
             let p = ray.at(t);
-            let position = HitPosition { global: p, local: LocalPosition { xyz: p, uv: compute_uv_coordinates(&p) } };
+            let position = HitPosition {
+                global: p,
+                local: LocalPosition {
+                    xyz: p,
+                    uv: compute_uv_coordinates(&p),
+                },
+            };
             let normal = v3!(0, 0, 1);
             let material_properties = None;
             let hit = Hit {
