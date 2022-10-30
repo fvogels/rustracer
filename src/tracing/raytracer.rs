@@ -1,4 +1,4 @@
-use crate::{imaging::color::Color, math::ray::Ray, lights::light::{LightSource, LightRay}, primitives::primitive::Hit};
+use crate::{imaging::color::Color, math::ray::Ray, lights::light::{LightSource, LightRay}, primitives::primitive::Hit, materials::material::MaterialProperties};
 
 use super::scene::Scene;
 
@@ -19,35 +19,33 @@ impl RayTracer {
         match self.scene.root.find_first_positive_hit(ray) {
             None => TraceResult { color: Color::black() },
             Some(hit) => {
-                match hit.material {
+                match hit.material_properties {
                     None => TraceResult { color: Color::black() },
-                    Some(ref material) => {
-                        let total_light = self.process_lights(&hit);
-                        let object_color = material.at(hit.position.local).color;
-                        let color = total_light * object_color;
-                        TraceResult { color }
+                    Some(ref material_properties) => {
+                        let light_color = self.process_lights(&hit, material_properties);
+                        TraceResult { color: light_color }
                     }
                 }
             }
         }
     }
 
-    fn process_lights(&self, hit: &Hit) -> Color {
+    fn process_lights(&self, hit: &Hit, material_properties: &MaterialProperties) -> Color {
         let mut result = Color::black();
 
         for light_source in self.scene.light_sources.iter() {
-            result += self.process_light(hit, light_source.as_ref());
+            result += self.process_light(hit, material_properties, light_source.as_ref());
         }
 
         result
     }
 
-    fn process_light(&self, hit: &Hit, light_source: &dyn LightSource) -> Color {
+    fn process_light(&self, hit: &Hit, material_properties: &MaterialProperties, light_source: &dyn LightSource) -> Color {
         let mut result = Color::black();
         let mut n_lightrays = 0;
 
         for light_ray in light_source.lightrays_to(hit.position.global) {
-            result += self.process_light_ray(hit, &light_ray);
+            result += self.process_light_ray(hit, material_properties, &light_ray);
 
             n_lightrays += 1;
         }
@@ -56,11 +54,11 @@ impl RayTracer {
         result
     }
 
-    fn process_light_ray(&self, hit: &Hit, light_ray: &LightRay) -> Color {
+    fn process_light_ray(&self, hit: &Hit, material_properties: &MaterialProperties, light_ray: &LightRay) -> Color {
         let cos_angle = -hit.normal.cos_angle_between(&light_ray.ray.direction);
 
         if cos_angle > 0.0 {
-            light_ray.color * cos_angle
+            light_ray.color * cos_angle * material_properties.diffuse
         } else {
             Color::black()
         }

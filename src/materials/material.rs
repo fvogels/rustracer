@@ -6,5 +6,5 @@ pub trait Material {
 
 #[derive(Debug, Copy, Clone)]
 pub struct MaterialProperties {
-    pub color: Color,
+    pub diffuse: Color,
 }

@@ -1,12 +1,10 @@
-use std::rc::Rc;
-
-use crate::{math::{point3d::Point3D, ray::Ray, vector3d::Vector3D, point2d::Point2D}, materials::material::Material};
+use crate::{math::{point3d::Point3D, ray::Ray, vector3d::Vector3D, point2d::Point2D}, materials::material::{Material, MaterialProperties}};
 
 pub struct Hit {
     pub t: f64,
     pub position: HitPosition,
     pub normal: Vector3D,
-    pub material: Option<Rc<dyn Material>>,
+    pub material_properties: Option<MaterialProperties>,
 }
 
 #[derive(Copy, Clone)]

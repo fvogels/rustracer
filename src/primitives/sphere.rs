@@ -56,7 +56,7 @@ impl Primitive for Sphere {
                         t,
                         position,
                         normal,
-                        material: None,
+                        material_properties: None,
                     };
 
                     Some(hit)

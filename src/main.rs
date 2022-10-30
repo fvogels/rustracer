@@ -44,8 +44,8 @@ fn create_scene() -> Scene {
         let left_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(-1, 0, 0)), sphere.clone()));
         let right_sphere = Rc::new(Transformer::new(Transformation3D::translate(&v3!(1, 0, 0)), sphere.clone()));
 
-        let red_material = Rc::new(UniformMaterial::new(MaterialProperties { color: Color::red() }));
-        let blue_material = Rc::new(UniformMaterial::new(MaterialProperties { color: Color::blue() }));
+        let red_material = Rc::new(UniformMaterial::new(MaterialProperties { diffuse: Color::red() }));
+        let blue_material = Rc::new(UniformMaterial::new(MaterialProperties { diffuse: Color::blue() }));
 
         let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
