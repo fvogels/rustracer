@@ -6,13 +6,14 @@ mod samplers;
 mod util;
 mod materials;
 mod lights;
+mod tracing;
 
 use std::rc::Rc;
 
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
-use lights::light::LightSource;
+use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
 use math::{position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D, transformation3d::Transformation3D};
@@ -20,14 +21,9 @@ use primitives::decorator::Decorator;
 use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
 use primitives::sphere::Sphere;
 use samplers::{sampler::Sampler2D, stratified::StratifiedSampler2D};
+use tracing::raytracer::RayTracer;
+use tracing::scene::Scene;
 
-use crate::lights::point::PointLight;
-
-pub struct Scene {
-    camera: PerspectiveCamera,
-    root: Rc<dyn Primitive>,
-    light_sources: Vec<Rc<dyn LightSource>>,
-}
 
 fn create_scene() -> Scene {
     fn create_camera() -> PerspectiveCamera {
@@ -81,6 +77,7 @@ fn main() {
     let rasterizer = Rasterizer2D::new(&rectangle, width, height);
     let sampler = StratifiedSampler2D::new(2, 2);
     let scene = create_scene();
+    let ray_tracer = RayTracer::new(scene);
 
     for y in 0..height {
         for x in 0..width {
@@ -90,43 +87,12 @@ fn main() {
             let mut accumulated_color = Color::black();
 
             for sample in sampler.sample(&pixel) {
-                let camera_rays = scene.camera.enumerate_rays(sample);
+                let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
 
                 for ray in camera_rays {
-                    let sample_color = match scene.root.find_first_positive_hit(&ray) {
-                        None => Color::black(),
-                        Some(hit) => {
-                            match hit.material {
-                                None => Color::black(),
-                                Some(ref material) => {
-                                    let mut total_light = Color::black();
-                                    let object_color = material.at(hit.position.local).color;
-
-                                    for light_source in scene.light_sources.iter() {
-                                        let mut accumulated_light = Color::black();
-                                        let mut n_lightrays = 0;
-
-                                        for light_ray in light_source.lightrays_to(hit.position.global) {
-                                            let cos_angle = -hit.normal.cos_angle_between(&light_ray.ray.direction);
-
-                                            if cos_angle > 0.0 {
-                                                accumulated_light += &(light_ray.color * cos_angle);
-                                            }
-
-                                            n_lightrays += 1;
-                                        }
-
-                                        total_light += &(accumulated_light / (n_lightrays as f64));
-                                    }
-
-                                    total_light * object_color
-                                }
-                            }
-                        },
-                    };
-
+                    let trace_result = ray_tracer.trace(&ray);
                     sample_count += 1;
-                    accumulated_color += &sample_color;
+                    accumulated_color += &trace_result.color;
                 }
             }
 
