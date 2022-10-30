@@ -28,3 +28,39 @@ impl Primitive for Transformer {
         Some(hit)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use crate::{primitives::sphere::Sphere, math::{vector3d::v3, point3d::p3, approx::approx}};
+
+    #[cfg(test)]
+    use super::*;
+
+    #[rstest]
+    fn translated_sphere(#[values(-1.2,0.75,0.0,0.2,1.5)] ox: f64, #[values(-1.2,0.75,0.0,0.2,1.5)] oy: f64, #[values(-1.0,-0.25,0.0,0.25,1.0)] dx: f64, #[values(-1.0,-0.25,0.0,0.25,1.0)] dy: f64) {
+        let original = Rc::new(Sphere::new());
+        let translation_vector = v3!(1, 0, 0);
+        let transformation = Transformation3D::translate(&translation_vector);
+        let transformed = Transformer::new(transformation, original.clone());
+
+        let origin1 = p3!(ox, oy, 5);
+        let origin2 = &origin1 + &translation_vector;
+        let direction = v3!(dx, dy, 1);
+        let ray1 = Ray::new(origin1, direction);
+        let ray2 = Ray::new(origin2, direction);
+
+        let hit1 = original.find_first_positive_hit(&ray1);
+        let hit2 = transformed.find_first_positive_hit(&ray2);
+
+        match (hit1, hit2) {
+            (None, None) => { },
+            (Some(hit1), Some(hit2)) => {
+                assert_eq!(approx(hit1.t), hit2.t);
+                assert_eq!(approx(hit1.position.global), &hit1.position.global + &translation_vector);
+            },
+            _ => { panic!("Different results!") }
+        }
+    }
+}
