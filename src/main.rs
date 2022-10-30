@@ -32,7 +32,7 @@ fn create_scene() -> Scene {
         let camera_parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: p3!(0, 0, 3),
+            eye: p3!(0, 5, 5),
             look_at: p3!(0, 0, 0),
             up: v3!(0, 1, 0),
         };

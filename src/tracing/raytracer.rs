@@ -55,12 +55,23 @@ impl RayTracer {
     }
 
     fn process_light_ray(&self, hit: &Hit, material_properties: &MaterialProperties, light_ray: &LightRay) -> Color {
-        let cos_angle = -hit.normal.cos_angle_between(&light_ray.ray.direction);
+        let is_shadowed = match self.scene.root.find_first_positive_hit(&light_ray.ray) {
+            None => false,
+            Some(ref hit) => {
+                hit.t < 0.999
+            }
+        };
 
-        if cos_angle > 0.0 {
-            light_ray.color * cos_angle * material_properties.diffuse
-        } else {
+        if is_shadowed {
             Color::black()
+        } else {
+            let cos_angle = -hit.normal.cos_angle_between(&light_ray.ray.direction);
+
+            if cos_angle > 0.0 {
+                light_ray.color * cos_angle * material_properties.diffuse
+            } else {
+                Color::black()
+            }
         }
     }
 }
