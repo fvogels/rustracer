@@ -5,6 +5,7 @@ mod materials;
 mod math;
 mod primitives;
 mod samplers;
+mod scripting;
 mod tracing;
 mod util;
 
@@ -51,7 +52,7 @@ fn create_scene() -> Scene {
             plane.clone(),
         ));
         let left_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&v3!(-1, 0, 0)),
+            Transformation3D::translate(&v3!(-2, 0, 0)),
             sphere.clone(),
         ));
         let right_sphere = Rc::new(Transformer::new(
