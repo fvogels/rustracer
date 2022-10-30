@@ -48,6 +48,14 @@ impl std::ops::Sub<Point3D> for Point3D {
     type Output = Vector3D;
 
     fn sub(self, p: Point3D) -> Self::Output {
+        &self - &p
+    }
+}
+
+impl std::ops::Sub<&Point3D> for &Point3D {
+    type Output = Vector3D;
+
+    fn sub(self, p: &Point3D) -> Self::Output {
         let x = self.x() - p.x();
         let y = self.y() - p.y();
         let z = self.z() - p.z();
