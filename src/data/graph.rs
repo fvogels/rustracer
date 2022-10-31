@@ -47,6 +47,14 @@ impl<N, A> Graph<N, A> {
         Ok(())
     }
 
+    pub fn node_label(&self, node: NodeId) -> Result<&N, Error> {
+        Ok(&self.get_node(node)?.label)
+    }
+
+    pub fn node_label_mut(&mut self, node: NodeId) -> Result<&mut N, Error> {
+        Ok(&mut self.get_node_mut(node)?.label)
+    }
+
     pub fn node_count(&self) -> usize {
         self.nodes.len()
     }
@@ -65,6 +73,15 @@ impl<N, A> Graph<N, A> {
 
     fn get_node_mut(&mut self, id: NodeId) -> Result<&mut Node<N, A>, Error> {
         self.nodes.get_mut(id.id).ok_or(Error::InvalidNode)
+    }
+}
+
+impl<N, A: PartialEq> Graph<N, A> {
+    pub fn reachable_by(&self, node: NodeId, arc_label: &A) -> Result<Vec<NodeId>, Error> {
+        let reachable = self.reachable_from(node)?;
+        let result = reachable.iter().filter(|&&to| self.arcs_between(node, to).unwrap().contains(arc_label)).map(|&n| n).collect();
+
+        Ok(result)
     }
 }
 
@@ -122,6 +139,27 @@ mod tests {
         assert_same_elements!(vec![n2, n3], graph.reachable_from(n1).unwrap());
         assert_same_elements!(vec![n3], graph.reachable_from(n2).unwrap());
         assert_same_elements!(vec![n1], graph.reachable_from(n3).unwrap());
+    }
+
+    #[test]
+    fn reachable_by() {
+        let mut graph: Graph<(), i32> = Graph::new();
+
+        let n1 = graph.create_node(());
+        let n2 = graph.create_node(());
+        let n3 = graph.create_node(());
+        let n4 = graph.create_node(());
+
+        graph.link(n1, n2, 1).expect("bug");
+        graph.link(n1, n3, 1).expect("bug");
+        graph.link(n1, n3, 2).expect("bug");
+        graph.link(n1, n4, 2).expect("bug");
+        graph.link(n1, n1, 3).expect("bug");
+
+        assert_same_elements!(vec![n2, n3], graph.reachable_by(n1, &1).unwrap());
+        assert_same_elements!(vec![n3, n4], graph.reachable_by(n1, &2).unwrap());
+        assert_same_elements!(vec![n1], graph.reachable_by(n1, &3).unwrap());
+        assert_same_elements!(vec![], graph.reachable_by(n1, &4).unwrap());
     }
 
     #[test]
