@@ -1,11 +1,12 @@
 mod cameras;
+mod data;
 mod imaging;
 mod lights;
 mod materials;
 mod math;
 mod primitives;
 mod samplers;
-mod scripting;
+// mod scripting;
 mod tracing;
 mod util;
 
