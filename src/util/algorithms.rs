@@ -40,18 +40,20 @@ pub fn vec_diff<T: PartialEq>(xs: &Vec<T>, ys: &Vec<T>) -> VecDiffResult {
 #[macro_export]
 macro_rules! assert_same_elements {
     ($left: expr, $right: expr) => {{
-        let result = $crate::util::algorithms::vec_diff(&$left, &$right);
+        let left = $left;
+        let right = $right;
+        let result = $crate::util::algorithms::vec_diff(&left, &right);
         let mut message = String::new();
         let mut failed = false;
 
         if result.left_only.len() > 0 {
             failed = true;
-            message.push_str(format!("Only left: {:?}\n", result.left_only).as_str());
+            message.push_str(format!("Only left: {:?}\n", result.left_only.iter().map(|&i| left[i]).collect::<Vec<_>>()).as_str());
         }
 
         if result.right_only.len() > 0 {
             failed = true;
-            message.push_str(format!("Only right: {:?}\n", result.right_only).as_str());
+            message.push_str(format!("Only right: {:?}\n", result.right_only.iter().map(|&i| right[i]).collect::<Vec<_>>()).as_str());
         }
 
         if failed {
