@@ -1,5 +1,5 @@
 use crate::{
-    materials::material::{MaterialProperties},
+    materials::material::MaterialProperties,
     math::{point2d::Point2D, point3d::Point3D, ray::Ray, vector3d::Vector3D},
 };
 
