@@ -26,7 +26,9 @@ pub struct Rays<'a> {
     consumed: bool,
 }
 
-fn create_coordinate_system(parameters: &PerspectiveCameraParameters) -> (Point3D, Vector3D, Vector3D, Vector3D) {
+fn create_coordinate_system(
+    parameters: &PerspectiveCameraParameters,
+) -> (Point3D, Vector3D, Vector3D, Vector3D) {
     let look_direction = (parameters.look_at - parameters.eye).normalized();
     let right = look_direction.cross(&parameters.up).normalized();
     let up = right.cross(&look_direction);
@@ -138,7 +140,8 @@ mod tests {
             up,
         };
 
-        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) = create_coordinate_system(&parameters);
+        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) =
+            create_coordinate_system(&parameters);
 
         assert_eq!(approx(expected_origin), actual_origin);
         assert_eq!(approx(expected_x_axis), actual_x_axis);
@@ -164,7 +167,8 @@ mod tests {
             up,
         };
 
-        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) = create_coordinate_system(&parameters);
+        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) =
+            create_coordinate_system(&parameters);
 
         assert_eq!(approx(expected_origin), actual_origin);
         assert_eq!(approx(expected_x_axis), actual_x_axis);
@@ -190,7 +194,8 @@ mod tests {
             up,
         };
 
-        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) = create_coordinate_system(&parameters);
+        let (actual_origin, actual_x_axis, actual_y_axis, actual_z_axis) =
+            create_coordinate_system(&parameters);
 
         assert_eq!(approx(expected_origin), actual_origin);
         assert_eq!(approx(expected_x_axis), actual_x_axis);
