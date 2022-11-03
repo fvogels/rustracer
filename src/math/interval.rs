@@ -1,4 +1,4 @@
-use std::ops::{Deref, Sub};
+use std::ops::Sub;
 
 pub trait Linear {
     fn position(lower: &Self, upper: &Self, x: &Self) -> f64;
