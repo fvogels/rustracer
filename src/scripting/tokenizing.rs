@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use crate::data::graph::{Graph, VertexId};
+use crate::{data::graph::{Graph, VertexId}, util::tag::{Tag, define_tag}};
+
+define_tag!(NFA);
+define_tag!(DFA);
 
 pub struct Tokenizer {}
 
@@ -23,15 +26,18 @@ enum EdgeLabel {
     Char(char),
 }
 
-type RegexGraph = Graph<VertexLabel, EdgeLabel>;
+type RegexGraph<Tag> = Graph<VertexLabel, EdgeLabel, Tag>;
+
+type NFAGraph = RegexGraph<NFA>;
+type DFAGraph = RegexGraph<DFA>;
 
 fn add_to_graph(
-    graph: &mut RegexGraph,
+    graph: &mut NFAGraph,
     regex: &Regex,
-    start_node: VertexId,
+    start_node: VertexId<NFA>,
     node_label: VertexLabel,
 ) {
-    fn add(graph: &mut RegexGraph, regex: &Regex, start_node: VertexId) -> VertexId {
+    fn add(graph: &mut NFAGraph, regex: &Regex, start_node: VertexId<NFA>) -> VertexId<NFA> {
         match regex {
             Regex::Epsilon => {
                 let node = graph.create_vertex(VertexLabel::NonTerminal);
@@ -54,13 +60,13 @@ fn add_to_graph(
     *graph.vertex_label_mut(exit_node).expect("Bug") = node_label;
 }
 
-struct GraphWalker<'a> {
-    graph: &'a RegexGraph,
-    current_position: HashSet<VertexId>,
+struct GraphWalker<'a, T: Tag> {
+    graph: &'a RegexGraph<T>,
+    current_position: HashSet<VertexId<T>>,
 }
 
-impl<'a> GraphWalker<'a> {
-    pub fn new(graph: &'a RegexGraph, start_node: VertexId) -> GraphWalker<'a> {
+impl<'a, T: Tag> GraphWalker<'a, T> {
+    pub fn new(graph: &'a RegexGraph<T>, start_node: VertexId<T>) -> GraphWalker<'a, T> {
         let mut result = GraphWalker {
             graph,
             current_position: HashSet::from([start_node]),
@@ -87,13 +93,13 @@ impl<'a> GraphWalker<'a> {
             false
         } else {
             self.current_position = new_position;
+            self.follow_epsilons();
             true
         }
     }
 
     fn follow_epsilons(&mut self) {
         let mut todo: Vec<_> = self.current_position.iter().map(|&x| x).collect();
-        let mut new_position = HashSet::new();
 
         while let Some(node) = todo.pop() {
             let reachable_by_epsilon = self
@@ -102,8 +108,9 @@ impl<'a> GraphWalker<'a> {
                 .expect("Bug");
 
             for n in reachable_by_epsilon {
-                new_position.insert(n);
-                todo.push(n);
+                if self.current_position.insert(n) {
+                    todo.push(n);
+                }
             }
         }
     }
@@ -119,12 +126,12 @@ mod tests {
     use super::*;
 
     #[rstest]
-    fn graphwalker_follow() {
-        fn ps(walker: &GraphWalker) -> Vec<VertexId> {
+    fn graphwalker_follow_no_epsilons() {
+        fn ps(walker: &GraphWalker<NFA>) -> Vec<VertexId<NFA>> {
             walker.current_position.iter().copied().collect()
         }
 
-        let mut graph: RegexGraph = Graph::new();
+        let mut graph: NFAGraph = Graph::new();
 
         let v1 = graph.create_vertex(VertexLabel::NonTerminal);
         let v2 = graph.create_vertex(VertexLabel::NonTerminal);
@@ -176,5 +183,43 @@ mod tests {
 
         assert!(walker.follow('b'));
         assert_same_elements!(vec![v3, v4], ps(&walker));
+    }
+
+    #[rstest]
+    fn graphwalker_follow_with_epsilons() {
+        fn ps(walker: &GraphWalker<NFA>) -> Vec<VertexId<NFA>> {
+            walker.current_position.iter().copied().collect()
+        }
+
+        let mut graph: NFAGraph = Graph::new();
+
+        let v1 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v2 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v3 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v4 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v5 = graph.create_vertex(VertexLabel::NonTerminal);
+
+        for (s, e, c) in vec![
+            (v1, v2, EdgeLabel::Epsilon),
+            (v1, v5, EdgeLabel::Char('a')),
+            (v1, v3, EdgeLabel::Char('a')),
+            (v1, v4, EdgeLabel::Char('a')),
+            (v4, v1, EdgeLabel::Char('a')),
+            (v4, v5, EdgeLabel::Epsilon),
+        ] {
+            graph.create_edge(s, e, c);
+        }
+
+        let mut walker = GraphWalker::new(&graph, v1);
+        assert_same_elements!(vec![v1, v2], ps(&walker));
+
+        assert!(walker.follow('a'));
+        assert_same_elements!(vec![v3, v4, v5], ps(&walker));
+
+        assert!(walker.follow('a'));
+        assert_same_elements!(vec![v1, v2], ps(&walker));
+
+        assert!(!walker.follow('b'));
+        assert_same_elements!(vec![v1, v2], ps(&walker));
     }
 }
