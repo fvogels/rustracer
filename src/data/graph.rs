@@ -1,33 +1,38 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData, hash::Hash};
 
-pub struct Graph<VertexLabel, EdgeLabel> {
-    vertices: Vec<Vertex<VertexLabel, EdgeLabel>>,
+use crate::util::tag::Tag;
+
+pub struct Graph<VertexLabel, EdgeLabel, T: Tag = ()> {
+    vertices: Vec<Vertex<VertexLabel, EdgeLabel, T>>,
+    tag: PhantomData<T>,
 }
 
-pub struct Vertex<VertexLabel, EdgeLabel> {
+pub struct Vertex<VertexLabel, EdgeLabel, T: Tag> {
     label: VertexLabel,
-    departing_edges: HashMap<VertexId, Vec<EdgeLabel>>,
+    departing_edges: HashMap<VertexId<T>, Vec<EdgeLabel>>,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
-pub struct VertexId {
+pub struct VertexId<T: Tag = ()> {
     index: usize,
+    tag: PhantomData<T>,
 }
 
 #[derive(Debug)]
-pub enum Error {
-    InvalidVertexId(VertexId),
-    NoArcsTo(VertexId),
+pub enum Error<T: Tag> {
+    InvalidVertexId(VertexId<T>),
+    NoArcsTo(VertexId<T>),
 }
 
-impl<VertexLabel, EdgeLabel> Graph<VertexLabel, EdgeLabel> {
-    pub fn new() -> Graph<VertexLabel, EdgeLabel> {
+impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
+    pub fn new() -> Graph<VertexLabel, EdgeLabel, T> {
         Graph {
             vertices: Vec::new(),
+            tag: PhantomData,
         }
     }
 
-    pub fn create_vertex(&mut self, label: VertexLabel) -> VertexId {
+    pub fn create_vertex(&mut self, label: VertexLabel) -> VertexId<T> {
         let index = self.vertices.len();
         let vertex = Vertex {
             label,
@@ -35,28 +40,28 @@ impl<VertexLabel, EdgeLabel> Graph<VertexLabel, EdgeLabel> {
         };
         self.vertices.push(vertex);
 
-        VertexId { index }
+        VertexId { index, tag: PhantomData }
     }
 
-    pub fn vertex_label(&self, vertex: VertexId) -> Result<&VertexLabel, Error> {
+    pub fn vertex_label(&self, vertex: VertexId<T>) -> Result<&VertexLabel, Error<T>> {
         self.get_vertex(vertex).map(|v| &v.label)
     }
 
-    pub fn vertex_label_mut(&mut self, vertex: VertexId) -> Result<&mut VertexLabel, Error> {
+    pub fn vertex_label_mut(&mut self, vertex: VertexId<T>) -> Result<&mut VertexLabel, Error<T>> {
         self.get_vertex_mut(vertex).map(|v| &mut v.label)
     }
 
     pub fn create_edge(
         &mut self,
-        start: VertexId,
-        end: VertexId,
+        start: VertexId<T>,
+        end: VertexId<T>,
         label: EdgeLabel,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error<T>> {
         let start = self.get_vertex_mut(start)?;
         start.add_edge_to(end, label)
     }
 
-    pub fn get_vertex(&self, id: VertexId) -> Result<&Vertex<VertexLabel, EdgeLabel>, Error> {
+    pub fn get_vertex(&self, id: VertexId<T>) -> Result<&Vertex<VertexLabel, EdgeLabel, T>, Error<T>> {
         self.vertices
             .get(id.index)
             .ok_or(Error::InvalidVertexId(id))
@@ -64,18 +69,18 @@ impl<VertexLabel, EdgeLabel> Graph<VertexLabel, EdgeLabel> {
 
     pub fn get_vertex_mut(
         &mut self,
-        id: VertexId,
-    ) -> Result<&mut Vertex<VertexLabel, EdgeLabel>, Error> {
+        id: VertexId<T>,
+    ) -> Result<&mut Vertex<VertexLabel, EdgeLabel, T>, Error<T>> {
         self.vertices
             .get_mut(id.index)
             .ok_or(Error::InvalidVertexId(id))
     }
 
-    pub fn reachable_from(&self, id: VertexId) -> Result<Vec<VertexId>, Error> {
+    pub fn reachable_from(&self, id: VertexId<T>) -> Result<Vec<VertexId<T>>, Error<T>> {
         self.get_vertex(id).map(|v| v.reachable_from())
     }
 
-    pub fn arcs_between(&self, from: VertexId, to: VertexId) -> Result<&Vec<EdgeLabel>, Error> {
+    pub fn arcs_between(&self, from: VertexId<T>, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
         self.get_vertex(from).and_then(|v| v.arcs_to(to))
     }
 
@@ -84,18 +89,18 @@ impl<VertexLabel, EdgeLabel> Graph<VertexLabel, EdgeLabel> {
     }
 }
 
-impl<VertexLabel, EdgeLabel: PartialEq> Graph<VertexLabel, EdgeLabel> {
+impl<VertexLabel, EdgeLabel: PartialEq, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
     pub fn reachable_through(
         &self,
-        id: VertexId,
+        id: VertexId<T>,
         label: &EdgeLabel,
-    ) -> Result<Vec<VertexId>, Error> {
+    ) -> Result<Vec<VertexId<T>>, Error<T>> {
         self.get_vertex(id).map(|v| v.reachable_through(label))
     }
 }
 
-impl<VertexLabel, EdgeLabel> Vertex<VertexLabel, EdgeLabel> {
-    fn add_edge_to(&mut self, end: VertexId, label: EdgeLabel) -> Result<(), Error> {
+impl<VertexLabel, EdgeLabel, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
+    fn add_edge_to(&mut self, end: VertexId<T>, label: EdgeLabel) -> Result<(), Error<T>> {
         let vector = self
             .departing_edges
             .entry(end)
@@ -104,17 +109,17 @@ impl<VertexLabel, EdgeLabel> Vertex<VertexLabel, EdgeLabel> {
         Ok(())
     }
 
-    fn reachable_from(&self) -> Vec<VertexId> {
+    fn reachable_from(&self) -> Vec<VertexId<T>> {
         self.departing_edges.keys().copied().collect()
     }
 
-    fn arcs_to(&self, to: VertexId) -> Result<&Vec<EdgeLabel>, Error> {
+    fn arcs_to(&self, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
         self.departing_edges.get(&to).ok_or(Error::NoArcsTo(to))
     }
 }
 
-impl<VertexLabel, EdgeLabel: PartialEq> Vertex<VertexLabel, EdgeLabel> {
-    fn reachable_through(&self, label: &EdgeLabel) -> Vec<VertexId> {
+impl<VertexLabel, EdgeLabel: PartialEq, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
+    fn reachable_through(&self, label: &EdgeLabel) -> Vec<VertexId<T>> {
         self.departing_edges
             .iter()
             .filter_map(|(&id, edges)| {
