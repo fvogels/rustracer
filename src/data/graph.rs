@@ -87,15 +87,13 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
     pub fn vertex_count(&self) -> usize {
         self.vertices.len()
     }
-}
 
-impl<VertexLabel, EdgeLabel: PartialEq, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
-    pub fn reachable_through(
+    pub fn reachable_through<P: Fn(&EdgeLabel) -> bool>(
         &self,
         id: VertexId<T>,
-        label: &EdgeLabel,
+        predicate: P,
     ) -> Result<Vec<VertexId<T>>, Error<T>> {
-        self.get_vertex(id).map(|v| v.reachable_through(label))
+        self.get_vertex(id).map(|v| v.reachable_through(predicate))
     }
 }
 
@@ -116,14 +114,12 @@ impl<VertexLabel, EdgeLabel, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
     fn arcs_to(&self, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
         self.departing_edges.get(&to).ok_or(Error::NoArcsTo(to))
     }
-}
 
-impl<VertexLabel, EdgeLabel: PartialEq, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
-    fn reachable_through(&self, label: &EdgeLabel) -> Vec<VertexId<T>> {
+    fn reachable_through<P: Fn(&EdgeLabel) -> bool>(&self, predicate: P) -> Vec<VertexId<T>> {
         self.departing_edges
             .iter()
             .filter_map(|(&id, edges)| {
-                if edges.contains(&label) {
+                if edges.iter().any(|lbl| predicate(lbl)) {
                     Some(id)
                 } else {
                     None
@@ -193,7 +189,7 @@ mod tests {
     }
 
     #[rstest]
-    fn reachable_by() {
+    fn reachable_through() {
         let mut graph: Graph<i32, char> = Graph::new();
 
         let v1 = graph.create_vertex(1);
@@ -209,9 +205,9 @@ mod tests {
         graph.create_edge(v1, v3, 'c');
         graph.create_edge(v1, v4, 'c');
 
-        assert_same_elements!(vec![v1, v2], graph.reachable_through(v1, &'a').unwrap());
-        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, &'b').unwrap());
-        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, &'b').unwrap());
-        assert_same_elements!(vec![v2, v3, v4], graph.reachable_through(v1, &'c').unwrap());
+        assert_same_elements!(vec![v1, v2], graph.reachable_through(v1, |lbl: &char| *lbl == 'a').unwrap());
+        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, |lbl: &char| *lbl == 'b').unwrap());
+        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, |lbl: &char| *lbl == 'b').unwrap());
+        assert_same_elements!(vec![v2, v3, v4], graph.reachable_through(v1, |lbl: &char| *lbl == 'c').unwrap());
     }
 }
