@@ -9,7 +9,7 @@ use crate::math::{
 pub struct PlaneXY {}
 
 impl PlaneXY {
-    pub fn new() -> PlaneXY {
+    pub fn new() -> Self {
         PlaneXY {}
     }
 }

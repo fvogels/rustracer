@@ -10,7 +10,7 @@ pub struct Decorator {
 }
 
 impl Decorator {
-    pub fn new(material: Rc<dyn Material>, child: Rc<dyn Primitive>) -> Decorator {
+    pub fn new(material: Rc<dyn Material>, child: Rc<dyn Primitive>) -> Self {
         Decorator { material, child }
     }
 }

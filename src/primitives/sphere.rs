@@ -14,7 +14,7 @@ use crate::math::{
 pub struct Sphere {}
 
 impl Sphere {
-    pub fn new() -> Sphere {
+    pub fn new() -> Self {
         Sphere {}
     }
 }

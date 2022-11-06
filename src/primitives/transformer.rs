@@ -10,7 +10,7 @@ pub struct Transformer {
 }
 
 impl Transformer {
-    pub fn new(transformation: Transformation3D, child: Rc<dyn Primitive>) -> Transformer {
+    pub fn new(transformation: Transformation3D, child: Rc<dyn Primitive>) -> Self {
         Transformer {
             transformation,
             child,

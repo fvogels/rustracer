@@ -8,7 +8,7 @@ pub struct Union {
 }
 
 impl Union {
-    pub fn new(children: Vec<Rc<dyn Primitive>>) -> Union {
+    pub fn new(children: Vec<Rc<dyn Primitive>>) -> Self {
         Union { children }
     }
 }
