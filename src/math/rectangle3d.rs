@@ -9,7 +9,7 @@ pub struct Rectangle3D {
 }
 
 impl Rectangle3D {
-    pub fn new(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D) -> Rectangle3D {
+    pub fn new(origin: Point3D, x_axis: Vector3D, y_axis: Vector3D) -> Self {
         Rectangle3D {
             origin,
             x_axis,

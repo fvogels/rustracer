@@ -15,19 +15,19 @@ macro_rules! v3 {
 pub use v3;
 
 impl Vector3D {
-    pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3D { coords: [x, y, z] }
     }
 
-    pub fn x_axis() -> Vector3D {
+    pub fn x_axis() -> Self {
         Vector3D::new(1.0, 0.0, 0.0)
     }
 
-    pub fn y_axis() -> Vector3D {
+    pub fn y_axis() -> Self {
         Vector3D::new(0.0, 1.0, 0.0)
     }
 
-    pub fn z_axis() -> Vector3D {
+    pub fn z_axis() -> Self {
         Vector3D::new(0.0, 0.0, 1.0)
     }
 

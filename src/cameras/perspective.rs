@@ -74,7 +74,7 @@ fn create_canonical_screen(parameters: &PerspectiveCameraParameters) -> Rectangl
 }
 
 impl PerspectiveCamera {
-    pub fn new(parameters: &PerspectiveCameraParameters) -> PerspectiveCamera {
+    pub fn new(parameters: &PerspectiveCameraParameters) -> Self {
         let screen = create_canonical_screen(parameters);
         let transformation_matrix = create_transformation_matrix(parameters);
 

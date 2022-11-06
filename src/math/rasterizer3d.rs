@@ -8,7 +8,7 @@ pub struct Rasterizer3D {
 }
 
 impl Rasterizer3D {
-    pub fn new(rectangle: Rectangle3D, width: u32, height: u32) -> Rasterizer3D {
+    pub fn new(rectangle: Rectangle3D, width: u32, height: u32) -> Self {
         Rasterizer3D {
             rectangle,
             width,

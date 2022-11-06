@@ -15,7 +15,7 @@ macro_rules! p3 {
 pub use p3;
 
 impl Point3D {
-    pub fn new(x: f64, y: f64, z: f64) -> Point3D {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         Point3D { coords: [x, y, z] }
     }
 

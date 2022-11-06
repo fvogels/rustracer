@@ -7,11 +7,11 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(origin: Point3D, direction: Vector3D) -> Ray {
+    pub fn new(origin: Point3D, direction: Vector3D) -> Self {
         Ray { origin, direction }
     }
 
-    pub fn through(origin: Point3D, point: Point3D) -> Ray {
+    pub fn through(origin: Point3D, point: Point3D) -> Self {
         let direction = point - origin;
 
         Ray::new(origin, direction)

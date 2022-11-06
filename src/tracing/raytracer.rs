@@ -17,7 +17,7 @@ pub struct TraceResult {
 }
 
 impl RayTracer {
-    pub fn new(scene: Scene) -> RayTracer {
+    pub fn new(scene: Scene) -> Self {
         RayTracer { scene }
     }
 

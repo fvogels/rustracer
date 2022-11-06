@@ -8,7 +8,7 @@ pub struct Rasterizer2D<'a> {
 }
 
 impl<'a> Rasterizer2D<'a> {
-    pub fn new(rectangle: &'a Rectangle2D, width: u32, height: u32) -> Rasterizer2D {
+    pub fn new(rectangle: &'a Rectangle2D, width: u32, height: u32) -> Self {
         Rasterizer2D {
             rectangle,
             width,

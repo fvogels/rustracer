@@ -15,7 +15,7 @@ macro_rules! v2 {
 pub use v2;
 
 impl Vector2D {
-    pub fn new(x: f64, y: f64) -> Vector2D {
+    pub fn new(x: f64, y: f64) -> Self {
         Vector2D { coords: [x, y] }
     }
 

@@ -5,7 +5,7 @@ pub struct QuadraticEquation {
 }
 
 impl QuadraticEquation {
-    pub fn new(a: f64, b: f64, c: f64) -> QuadraticEquation {
+    pub fn new(a: f64, b: f64, c: f64) -> Self {
         QuadraticEquation { a, b, c }
     }
 

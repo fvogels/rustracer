@@ -5,7 +5,7 @@ pub struct Position2D {
 }
 
 impl Position2D {
-    pub fn new(x: i32, y: i32) -> Position2D {
+    pub fn new(x: i32, y: i32) -> Self {
         Position2D { x, y }
     }
 }

@@ -17,7 +17,7 @@ struct SampleIterator<'a> {
 }
 
 impl StratifiedSampler2D {
-    pub fn new(horizontal: u32, vertical: u32) -> StratifiedSampler2D {
+    pub fn new(horizontal: u32, vertical: u32) -> Self {
         StratifiedSampler2D {
             horizontal,
             vertical,

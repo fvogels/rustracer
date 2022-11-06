@@ -17,7 +17,7 @@ pub enum WriteError {
 }
 
 impl Image {
-    pub fn new(width: u32, height: u32) -> Image {
+    pub fn new(width: u32, height: u32) -> Self {
         let pixel_count = width * height;
         let mut pixels = Vec::new();
         pixels.resize(pixel_count as usize, Color::black());

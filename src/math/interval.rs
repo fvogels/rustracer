@@ -17,7 +17,7 @@ pub struct IntervalMapper<T: Linear, U: Linear> {
 }
 
 impl<T> Interval<T> {
-    pub fn new(lower_bound: T, upper_bound: T) -> Interval<T> {
+    pub fn new(lower_bound: T, upper_bound: T) -> Self {
         Interval {
             lower_bound,
             upper_bound,
@@ -50,7 +50,7 @@ where
 }
 
 impl<T: Linear, U: Linear> IntervalMapper<T, U> {
-    pub fn new(source: Interval<T>, target: Interval<U>) -> IntervalMapper<T, U> {
+    pub fn new(source: Interval<T>, target: Interval<U>) -> Self {
         IntervalMapper { source, target }
     }
 

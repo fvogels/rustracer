@@ -6,27 +6,27 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn new(r: f64, g: f64, b: f64) -> Color {
+    pub fn new(r: f64, g: f64, b: f64) -> Self {
         Color { rgb: [r, g, b] }
     }
 
-    pub fn black() -> Color {
+    pub fn black() -> Self {
         Color::new(0.0, 0.0, 0.0)
     }
 
-    pub fn white() -> Color {
+    pub fn white() -> Self {
         Color::new(1.0, 1.0, 1.0)
     }
 
-    pub fn red() -> Color {
+    pub fn red() -> Self {
         Color::new(1.0, 0.0, 0.0)
     }
 
-    pub fn green() -> Color {
+    pub fn green() -> Self {
         Color::new(0.0, 1.0, 0.0)
     }
 
-    pub fn blue() -> Color {
+    pub fn blue() -> Self {
         Color::new(0.0, 0.0, 1.0)
     }
 

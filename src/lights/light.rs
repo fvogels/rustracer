@@ -13,7 +13,7 @@ pub struct LightRay {
 }
 
 impl LightRay {
-    pub fn new(color: Color, ray: Ray) -> LightRay {
+    pub fn new(color: Color, ray: Ray) -> Self {
         LightRay { color, ray }
     }
 }

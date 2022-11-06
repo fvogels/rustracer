@@ -15,7 +15,7 @@ pub struct PointLightIterator {
 }
 
 impl PointLight {
-    pub fn new(color: Color, position: Point3D) -> PointLight {
+    pub fn new(color: Color, position: Point3D) -> Self {
         PointLight { color, position }
     }
 }

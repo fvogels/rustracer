@@ -8,7 +8,7 @@ struct SampleIterator {
 }
 
 impl SingleSampler2D {
-    pub fn new() -> SingleSampler2D {
+    pub fn new() -> Self {
         SingleSampler2D {}
     }
 }

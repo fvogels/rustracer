@@ -6,7 +6,7 @@ pub struct Position3D {
 }
 
 impl Position3D {
-    pub fn new(x: i32, y: i32, z: i32) -> Position3D {
+    pub fn new(x: i32, y: i32, z: i32) -> Self {
         Position3D { x, y, z }
     }
 }

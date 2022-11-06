@@ -7,7 +7,7 @@ pub struct UniformMaterial {
 }
 
 impl UniformMaterial {
-    pub fn new(properties: MaterialProperties) -> UniformMaterial {
+    pub fn new(properties: MaterialProperties) -> Self {
         UniformMaterial { properties }
     }
 }

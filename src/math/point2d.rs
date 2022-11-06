@@ -15,7 +15,7 @@ macro_rules! p2 {
 pub use p2;
 
 impl Point2D {
-    pub fn new(x: f64, y: f64) -> Point2D {
+    pub fn new(x: f64, y: f64) -> Self {
         Point2D { coords: [x, y] }
     }
 
