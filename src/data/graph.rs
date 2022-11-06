@@ -7,7 +7,7 @@ pub struct Graph<VertexLabel, EdgeLabel, T: Tag = ()> {
     tag: PhantomData<T>,
 }
 
-pub struct Vertex<VertexLabel, EdgeLabel, T: Tag> {
+struct Vertex<VertexLabel, EdgeLabel, T: Tag> {
     label: VertexLabel,
     departing_edges: HashMap<VertexId<T>, Vec<EdgeLabel>>,
 }
@@ -24,8 +24,20 @@ pub enum Error<T: Tag> {
     NoArcsTo(VertexId<T>),
 }
 
+impl<T: Tag> PartialOrd for VertexId<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.index.partial_cmp(&other.index)
+    }
+}
+
+impl<T: Tag> Ord for VertexId<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.index.cmp(&other.index)
+    }
+}
+
 impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
-    pub fn new() -> Graph<VertexLabel, EdgeLabel, T> {
+    pub fn new() -> Self {
         Graph {
             vertices: Vec::new(),
             tag: PhantomData,
@@ -78,6 +90,12 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
 
     pub fn reachable_from(&self, id: VertexId<T>) -> Result<Vec<VertexId<T>>, Error<T>> {
         self.get_vertex(id).map(|v| v.reachable_from())
+    }
+
+    pub fn arcs_departing_from(&self, from: VertexId<T>) -> Result<Vec<&EdgeLabel>, Error<T>> {
+        let vertex = self.get_vertex(from)?;
+
+        Ok(vertex.departing_edges.values().flatten().collect::<Vec<&EdgeLabel>>())
     }
 
     pub fn arcs_between(&self, from: VertexId<T>, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
