@@ -76,15 +76,11 @@ mod tests {
         builder.add(&Regex::Literal('b'), 2);
 
         let mut walker = GraphWalker::new(builder.nfa(), builder.start_vertex());
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        walker.follow(|lbl| *lbl == EdgeLabel::Char('a'));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(|lbl| *lbl == 'a');
         assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
 
         walker.set_active_positions(&HashSet::from([builder.start_vertex()]));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        walker.follow(|lbl| *lbl == EdgeLabel::Char('b'));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(|lbl| *lbl == 'b');
         assert_same_elements!(vec![&VertexLabel::Terminal(2)], walker.active_vertex_labels());
     }
 
@@ -99,15 +95,10 @@ mod tests {
         builder.add(&regex, 1);
 
         let mut walker = GraphWalker::new(builder.nfa(), builder.start_vertex());
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        walker.follow(|lbl| *lbl == EdgeLabel::Char('a'));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        walker.follow(|lbl| *lbl == EdgeLabel::Char('b'));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        walker.follow(|lbl| *lbl == EdgeLabel::Char('c'));
-        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(|lbl| *lbl == 'a');
+        walker.walk(|lbl| *lbl == 'b');
+        walker.walk(|lbl| *lbl == 'c');
 
-        let labels =  walker.active_vertex_labels();
         assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
     }
 }
