@@ -3,7 +3,7 @@ use crate::{data::graph::{Graph, VertexId}, util::tag::Tag};
 
 pub struct GraphWalker<'a, V, E: Hash + Eq, T: Tag = ()> {
     graph: &'a Graph<V, E, T>,
-    active_positions: HashSet<VertexId<T>>,
+    pub active_positions: HashSet<VertexId<T>>,
 }
 
 impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {

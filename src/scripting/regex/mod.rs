@@ -1,9 +1,22 @@
 mod nfa;
+mod dfa;
 
-enum Regex {
+pub enum Regex<T> {
     Epsilon,
-    Literal(char),
-    Sequence(Vec<Box<Regex>>),
+    Literal(T),
+    Sequence(Vec<Box<Regex<T>>>),
     // Alternatives(Vec<Box<Regex>>),
     // Kleene(Box<Regex>),
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum VertexLabel<T> {
+    NonTerminal,
+    Terminal(T),
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum EdgeLabel<T> {
+    Epsilon,
+    Char(T),
 }
