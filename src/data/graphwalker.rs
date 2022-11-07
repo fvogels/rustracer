@@ -1,13 +1,13 @@
 use std::{collections::HashSet, hash::Hash};
-use crate::{data::graph::{Graph, VertexId}, util::tag::Tag};
+use crate::{data::graph::{Graph, VertexId}, util::tag::Tag, scripting::regex::{VertexLabel, EdgeLabel}};
 
 pub struct GraphWalker<'a, V, E: Hash + Eq, T: Tag = ()> {
-    graph: &'a Graph<V, E, T>,
+    graph: &'a Graph<VertexLabel<V>, EdgeLabel<E>, T>,
     pub active_positions: HashSet<VertexId<T>>,
 }
 
 impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
-    pub fn new(graph: &'a Graph<V, E, T>, start_vertex: VertexId<T>) -> Self {
+    pub fn new(graph: &'a Graph<VertexLabel<V>, EdgeLabel<E>, T>, start_vertex: VertexId<T>) -> Self {
         let mut result = GraphWalker {
             graph,
             active_positions: HashSet::from([start_vertex]),
@@ -16,7 +16,7 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
         result
     }
 
-    pub fn follow<P: Fn(&E) -> bool>(&mut self, predicate: P) -> bool {
+    pub fn follow<P: Fn(&EdgeLabel<E>) -> bool>(&mut self, predicate: P) -> bool {
         let mut new_position = HashSet::new();
 
         for vertex in self.active_positions.iter() {
@@ -37,7 +37,7 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
         }
     }
 
-    pub fn follow_transitively<P: Fn(&E) -> bool>(&mut self, predicate: P) {
+    pub fn follow_transitively<P: Fn(&EdgeLabel<E>) -> bool>(&mut self, predicate: P) {
         let mut todo: Vec<_> = self.active_positions.iter().map(|&x| x).collect();
 
         while let Some(vertex) = todo.pop() {
@@ -54,11 +54,11 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
         }
     }
 
-    pub fn active_vertex_labels(&self) -> Vec<&V> {
+    pub fn active_vertex_labels(&self) -> Vec<&VertexLabel<V>> {
         self.active_positions.iter().copied().map(|v| self.graph.vertex_label(v).expect("Bug")).collect()
     }
 
-    pub fn departing_arcs(&self) -> HashSet<E> {
+    pub fn departing_arcs(&self) -> HashSet<EdgeLabel<E>> {
         let mut result = HashSet::new();
 
         for active_position in self.active_positions.iter() {
@@ -90,12 +90,12 @@ mod tests {
             walker.active_positions.iter().copied().collect()
         }
 
-        let mut graph = Graph::new();
+        let mut graph: Graph<VertexLabel<()>, EdgeLabel<char>, ()> = Graph::new();
 
-        let v1 = graph.create_vertex(());
-        let v2 = graph.create_vertex(());
-        let v3 = graph.create_vertex(());
-        let v4 = graph.create_vertex(());
+        let v1 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v2 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v3 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v4 = graph.create_vertex(VertexLabel::NonTerminal);
 
         for (s, e, c) in vec![
             (v1, v2, 'a'),
@@ -110,37 +110,37 @@ mod tests {
             (v3, v4, 'b'),
             (v4, v1, 'c'),
         ] {
-            graph.create_edge(s, e, c);
+            graph.create_edge(s, e, EdgeLabel::Char(c));
         }
 
         let mut walker = GraphWalker::new(&graph, v1);
         assert_same_elements!(vec![v1], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'a'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('a')));
         assert_same_elements!(vec![v2], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'd'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('d')));
         assert_same_elements!(vec![v2], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'a'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('a')));
         assert_same_elements!(vec![v3], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'b'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('b')));
         assert_same_elements!(vec![v3, v4], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'b'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('b')));
         assert_same_elements!(vec![v3, v4], ps(&walker));
 
-        assert!(!walker.follow(|lbl| *lbl == 'x'));
+        assert!(!walker.follow(|lbl| *lbl == EdgeLabel::Char('x')));
         assert_same_elements!(vec![v3, v4], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'c'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('c')));
         assert_same_elements!(vec![v1], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'b'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('b')));
         assert_same_elements!(vec![v2, v3], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'b'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('b')));
         assert_same_elements!(vec![v3, v4], ps(&walker));
     }
 
@@ -150,13 +150,13 @@ mod tests {
             walker.active_positions.iter().copied().collect()
         }
 
-        let mut graph = Graph::new();
+        let mut graph: Graph<VertexLabel<()>, EdgeLabel<char>, ()> = Graph::new();
 
-        let v1 = graph.create_vertex(());
-        let v2 = graph.create_vertex(());
-        let v3 = graph.create_vertex(());
-        let v4 = graph.create_vertex(());
-        let v5 = graph.create_vertex(());
+        let v1 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v2 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v3 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v4 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v5 = graph.create_vertex(VertexLabel::NonTerminal);
 
         for (s, e, c) in vec![
             (v1, v1, 'a'),
@@ -167,28 +167,28 @@ mod tests {
             (v3, v4, 'a'),
             (v5, v1, 'b'),
         ] {
-            graph.create_edge(s, e, c).unwrap();
+            graph.create_edge(s, e, EdgeLabel::Char(c)).unwrap();
         }
 
         let mut walker = GraphWalker::new(&graph, v1);
         assert_same_elements!(vec![v1], ps(&walker));
 
-        walker.follow_transitively(|lbl| *lbl == 'a');
+        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Char('a'));
         assert_same_elements!(vec![v1, v2, v3, v4, v5], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'b'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('b')));
         assert_same_elements!(vec![v1], ps(&walker));
 
-        walker.follow_transitively(|lbl| *lbl == 'c');
+        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Char('c'));
         assert_same_elements!(vec![v1], ps(&walker));
 
-        walker.follow_transitively(|lbl| *lbl == 'a');
+        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Char('a'));
         assert_same_elements!(vec![v1, v2, v3, v4, v5], ps(&walker));
 
-        assert!(walker.follow(|lbl| *lbl == 'c'));
+        assert!(walker.follow(|lbl| *lbl == EdgeLabel::Char('c')));
         assert_same_elements!(vec![v3], ps(&walker));
 
-        walker.follow_transitively(|lbl| *lbl == 'a');
+        walker.follow_transitively(|lbl| *lbl == EdgeLabel::Char('a'));
         assert_same_elements!(vec![v3, v4], ps(&walker));
     }
 }
