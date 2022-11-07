@@ -30,7 +30,7 @@ mod tests {
     #[cfg(test)]
     use super::*;
     use crate::math::point2d::p2;
-    use crate::math::vector2d::{v2, Vector2D};
+    use crate::math::vector2d::{v2};
     use rstest::rstest;
 
     #[rstest]
