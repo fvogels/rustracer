@@ -36,7 +36,7 @@ impl<T: Tag> Ord for VertexId<T> {
     }
 }
 
-impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
+impl<V, E, T: Tag> Graph<V, E, T> {
     pub fn new() -> Self {
         Graph {
             vertices: Vec::new(),
@@ -44,7 +44,7 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
         }
     }
 
-    pub fn create_vertex(&mut self, label: VertexLabel) -> VertexId<T> {
+    pub fn create_vertex(&mut self, label: V) -> VertexId<T> {
         let index = self.vertices.len();
         let vertex = Vertex {
             label,
@@ -55,11 +55,11 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
         VertexId { index, tag: PhantomData }
     }
 
-    pub fn vertex_label(&self, vertex: VertexId<T>) -> Result<&VertexLabel, Error<T>> {
+    pub fn vertex_label(&self, vertex: VertexId<T>) -> Result<&V, Error<T>> {
         self.get_vertex(vertex).map(|v| &v.label)
     }
 
-    pub fn vertex_label_mut(&mut self, vertex: VertexId<T>) -> Result<&mut VertexLabel, Error<T>> {
+    pub fn vertex_label_mut(&mut self, vertex: VertexId<T>) -> Result<&mut V, Error<T>> {
         self.get_vertex_mut(vertex).map(|v| &mut v.label)
     }
 
@@ -67,13 +67,13 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
         &mut self,
         start: VertexId<T>,
         end: VertexId<T>,
-        label: EdgeLabel,
+        label: E,
     ) -> Result<(), Error<T>> {
         let start = self.get_vertex_mut(start)?;
         start.add_edge_to(end, label)
     }
 
-    pub fn get_vertex(&self, id: VertexId<T>) -> Result<&Vertex<VertexLabel, EdgeLabel, T>, Error<T>> {
+    pub fn get_vertex(&self, id: VertexId<T>) -> Result<&Vertex<V, E, T>, Error<T>> {
         self.vertices
             .get(id.index)
             .ok_or(Error::InvalidVertexId(id))
@@ -82,7 +82,7 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
     pub fn get_vertex_mut(
         &mut self,
         id: VertexId<T>,
-    ) -> Result<&mut Vertex<VertexLabel, EdgeLabel, T>, Error<T>> {
+    ) -> Result<&mut Vertex<V, E, T>, Error<T>> {
         self.vertices
             .get_mut(id.index)
             .ok_or(Error::InvalidVertexId(id))
@@ -92,13 +92,13 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
         self.get_vertex(id).map(|v| v.reachable_from())
     }
 
-    pub fn arcs_departing_from(&self, from: VertexId<T>) -> Result<Vec<&EdgeLabel>, Error<T>> {
+    pub fn arcs_departing_from(&self, from: VertexId<T>) -> Result<Vec<&E>, Error<T>> {
         let vertex = self.get_vertex(from)?;
 
-        Ok(vertex.departing_edges.values().flatten().collect::<Vec<&EdgeLabel>>())
+        Ok(vertex.departing_edges.values().flatten().collect::<Vec<&E>>())
     }
 
-    pub fn arcs_between(&self, from: VertexId<T>, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
+    pub fn arcs_between(&self, from: VertexId<T>, to: VertexId<T>) -> Result<&Vec<E>, Error<T>> {
         self.get_vertex(from).and_then(|v| v.arcs_to(to))
     }
 
@@ -106,17 +106,17 @@ impl<VertexLabel, EdgeLabel, T: Tag> Graph<VertexLabel, EdgeLabel, T> {
         self.vertices.len()
     }
 
-    pub fn reachable_through<P: Fn(&EdgeLabel) -> bool>(
+    pub fn reachable_through<P: Fn(&E) -> bool>(
         &self,
         id: VertexId<T>,
         predicate: P,
     ) -> Result<Vec<VertexId<T>>, Error<T>> {
-        self.get_vertex(id).map(|v| v.reachable_through(predicate))
+        self.get_vertex(id).map(|v| v.reachable_through(&predicate))
     }
 }
 
-impl<VertexLabel, EdgeLabel, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
-    fn add_edge_to(&mut self, end: VertexId<T>, label: EdgeLabel) -> Result<(), Error<T>> {
+impl<V, E, T: Tag> Vertex<V, E, T> {
+    fn add_edge_to(&mut self, end: VertexId<T>, label: E) -> Result<(), Error<T>> {
         let vector = self
             .departing_edges
             .entry(end)
@@ -129,11 +129,11 @@ impl<VertexLabel, EdgeLabel, T: Tag> Vertex<VertexLabel, EdgeLabel, T> {
         self.departing_edges.keys().copied().collect()
     }
 
-    fn arcs_to(&self, to: VertexId<T>) -> Result<&Vec<EdgeLabel>, Error<T>> {
+    fn arcs_to(&self, to: VertexId<T>) -> Result<&Vec<E>, Error<T>> {
         self.departing_edges.get(&to).ok_or(Error::NoArcsTo(to))
     }
 
-    fn reachable_through<P: Fn(&EdgeLabel) -> bool>(&self, predicate: P) -> Vec<VertexId<T>> {
+    fn reachable_through<P: Fn(&E) -> bool>(&self, predicate: &P) -> Vec<VertexId<T>> {
         self.departing_edges
             .iter()
             .filter_map(|(&id, edges)| {

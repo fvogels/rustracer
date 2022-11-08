@@ -2,11 +2,11 @@ use std::{collections::{HashSet, HashMap}, hash::Hash};
 
 use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
 
-use super::{EdgeLabel, VertexLabel, NFA, DFA};
+use super::{EdgeLabel, VertexLabel, NFA, DFA, nfa::NFAWalker};
 
 
 struct Converter<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
-    walker: GraphWalker<'a, V, E, NFA>,
+    walker: NFAWalker<'a, V, E, NFA>,
     dfa: Graph<VertexLabel<V>, E, DFA>,
     mapping: HashMap<Vec<VertexId<NFA>>, VertexId<DFA>>,
 }
@@ -14,7 +14,7 @@ struct Converter<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
 impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E, NFA, DFA> {
     fn new(nfa: &'a Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> Self {
         Converter {
-            walker: GraphWalker::new(nfa, start_vertex),
+            walker: NFAWalker::new(nfa, start_vertex),
             dfa: Graph::new(),
             mapping: HashMap::new(),
         }
@@ -34,11 +34,11 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E,
     }
 
     fn walk(&mut self, ch: E) {
-        self.walker.walk(|lbl| *lbl == ch);
+        self.walker.walk(ch);
     }
 
     fn convert(&mut self) {
-        let mut queue = vec![self.walker.active_positions.clone()];
+        let mut queue = vec![self.walker.active_positions().clone()];
 
         while let Some(nfa_departure_vertices) = queue.pop() {
             let (dfa_departure_vertex, _) = self.map_to_dfa_vertex(&nfa_departure_vertices);
@@ -50,7 +50,7 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E,
                     EdgeLabel::Char(ch) => {
                         self.walk(ch);
 
-                        let nfa_arrival_vertices = self.walker.active_positions.clone();
+                        let nfa_arrival_vertices = self.walker.active_positions().clone();
                         let (dfa_arrival_vertex, is_new) = self.map_to_dfa_vertex(&nfa_arrival_vertices);
                         self.dfa.create_edge(dfa_departure_vertex, dfa_arrival_vertex, ch).expect("Bug");
 
@@ -73,6 +73,35 @@ fn nfa_to_dfa<V, E: Hash + Eq + Copy + Clone>(nfa: &Graph<VertexLabel<V>, EdgeLa
     converter.dfa
 }
 
+pub struct DFAWalker<'a, V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
+    walker: GraphWalker<'a, V, E, T>,
+}
+
+impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
+    pub fn new(graph: &'a Graph<V, E, T>, start_vertex: VertexId<T>) -> Self {
+        DFAWalker { walker: GraphWalker::new(graph, start_vertex) }
+    }
+
+    pub fn walk(&mut self, ch: E) -> bool {
+        self.walker.walk(&|lbl| *lbl == ch)
+    }
+
+    pub fn active_vertex_labels(&self) -> Vec<&V> {
+        self.walker.active_vertex_labels()
+    }
+
+    pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
+        self.walker.set_active_positions(positions)
+    }
+
+    pub fn active_positions(&self) -> &HashSet<VertexId<T>> {
+        &self.walker.active_positions
+    }
+
+    pub fn departing_arcs(&self) -> HashSet<E> {
+        self.walker.departing_arcs()
+    }
+}
 
 
 #[cfg(test)]

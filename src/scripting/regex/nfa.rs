@@ -1,5 +1,7 @@
+use std::{hash::Hash, collections::HashSet};
+
 use super::{Regex, VertexLabel, EdgeLabel};
-use crate::{data::{graph::{Graph, VertexId}}, util::tag::Tag};
+use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
 
 
 pub struct NFABuilder<V, E: Copy + Clone, T: Tag> {
@@ -57,6 +59,64 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
 }
 
 
+pub struct NFAWalker<'a, V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
+    walker: GraphWalker<'a, VertexLabel<V>, EdgeLabel<E>, T>,
+}
+
+impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<'a, V, E, T> {
+    pub fn new(graph: &'a Graph<VertexLabel<V>, EdgeLabel<E>, T>, start_vertex: VertexId<T>) -> Self {
+        NFAWalker { walker: GraphWalker::new(graph, start_vertex) }
+    }
+
+    pub fn walk(&mut self, ch: E) -> bool {
+        if self.walk_char(ch) {
+            self.walk_epsilon();
+            true
+        } else {
+            false
+        }
+    }
+
+    fn walk_char(&mut self, ch: E) -> bool {
+        fn is_char<E: Eq>(lbl: &EdgeLabel<E>, ch: E) -> bool {
+            match lbl {
+                EdgeLabel::Epsilon => false,
+                EdgeLabel::Char(c) => *c == ch,
+            }
+        }
+
+        self.walker.walk(&|lbl| is_char(lbl, ch))
+    }
+
+    fn walk_epsilon(&mut self) {
+        fn is_epsilon<E>(lbl: &EdgeLabel<E>) -> bool {
+            match lbl {
+                EdgeLabel::Epsilon => true,
+                EdgeLabel::Char(c) => false,
+            }
+        }
+
+        self.walker.walk_transitively(&is_epsilon)
+    }
+
+    pub fn active_vertex_labels(&self) -> Vec<&VertexLabel<V>> {
+        self.walker.active_vertex_labels()
+    }
+
+    pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
+        self.walker.set_active_positions(positions)
+    }
+
+    pub fn active_positions(&self) -> &HashSet<VertexId<T>> {
+        &self.walker.active_positions
+    }
+
+    pub fn departing_arcs(&self) -> HashSet<EdgeLabel<E>> {
+        self.walker.departing_arcs()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -73,14 +133,14 @@ mod tests {
         let mut builder: NFABuilder<i32, char, ()> = NFABuilder::new();
         builder.add(&Regex::Literal('a'), 1);
         builder.add(&Regex::Literal('b'), 2);
-
         let (mut nfa, start) = builder.eject();
-        let mut walker = GraphWalker::new(&nfa, start);
-        walker.walk(|lbl| *lbl == 'a');
+
+        let mut walker = NFAWalker::new(&nfa, start);
+        walker.walk('a');
         assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
 
         walker.set_active_positions(&HashSet::from([start]));
-        walker.walk(|lbl| *lbl == 'b');
+        walker.walk('b');
         assert_same_elements!(vec![&VertexLabel::Terminal(2)], walker.active_vertex_labels());
     }
 
@@ -95,10 +155,10 @@ mod tests {
         builder.add(&regex, 1);
 
         let (mut nfa, start) = builder.eject();
-        let mut walker = GraphWalker::new(&nfa, start);
-        walker.walk(|lbl| *lbl == 'a');
-        walker.walk(|lbl| *lbl == 'b');
-        walker.walk(|lbl| *lbl == 'c');
+        let mut walker = NFAWalker::new(&nfa, start);
+        walker.walk('a');
+        walker.walk('b');
+        walker.walk('c');
 
         assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
     }
