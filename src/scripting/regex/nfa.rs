@@ -46,7 +46,17 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
                 }
 
                 finish
-            }
+            },
+            Regex::Alternatives(ref children) => {
+                let mut finish = self.graph.create_vertex(VertexLabel::NonTerminal);
+
+                for child in children {
+                    let vertex = self.add_helper(child, start_vertex);
+                    self.graph.create_edge(vertex, finish, EdgeLabel::Epsilon);
+                }
+
+                finish
+            },
         }
     }
 
@@ -103,6 +113,17 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<'a, V, E, T> {
         self.walker.active_vertex_labels()
     }
 
+    pub fn active_terminal_labels(&self) -> Vec<&V> {
+        fn aux<'a, V>(lbl: &'a VertexLabel<V>) -> Option<&'a V> {
+            match lbl {
+                VertexLabel::NonTerminal => None,
+                VertexLabel::Terminal(lbl) => Some(lbl),
+            }
+        }
+
+        self.active_vertex_labels().iter().filter_map(|&lbl| aux(lbl)).collect()
+    }
+
     pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
         self.walker.set_active_positions(positions)
     }
@@ -153,13 +174,54 @@ mod tests {
         let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
         let regex = Regex::Sequence(vec![Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')), Box::new(Regex::Literal('c'))]);
         builder.add(&regex, 1);
-
         let (mut nfa, start) = builder.eject();
+
         let mut walker = NFAWalker::new(&nfa, start);
         walker.walk('a');
         walker.walk('b');
         walker.walk('c');
 
-        assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+    }
+
+    #[rstest]
+    fn nfa_alternatives1(#[values('a', 'b', 'c')] ch: char) {
+        type V = i32;
+        type E = char;
+        type T = ();
+
+        let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
+        let regex = Regex::Alternatives(vec![Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')), Box::new(Regex::Literal('c'))]);
+        builder.add(&regex, 1);
+        let (mut nfa, start) = builder.eject();
+
+        let mut walker = NFAWalker::new(&nfa, start);
+
+        assert_same_elements!(vec![], walker.active_terminal_labels());
+        walker.walk(ch);
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+    }
+
+    #[rstest]
+    fn nfa_alternatives2(#[values('a', 'b', 'c')] first: char, #[values('x', 'y', 'z')] second: char) {
+        type V = i32;
+        type E = char;
+        type T = ();
+
+        let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
+        let regex = Regex::Sequence(vec![
+            Box::new(Regex::Alternatives(vec![Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')), Box::new(Regex::Literal('c'))])),
+            Box::new(Regex::Alternatives(vec![Box::new(Regex::Literal('x')), Box::new(Regex::Literal('y')), Box::new(Regex::Literal('z'))])),
+        ]);
+        builder.add(&regex, 1);
+        let (mut nfa, start) = builder.eject();
+
+        let mut walker = NFAWalker::new(&nfa, start);
+
+        assert_same_elements!(vec![], walker.active_terminal_labels());
+        walker.walk(first);
+        assert_same_elements!(vec![], walker.active_terminal_labels());
+        walker.walk(second);
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
     }
 }

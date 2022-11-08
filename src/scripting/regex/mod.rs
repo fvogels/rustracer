@@ -8,7 +8,7 @@ pub enum Regex<T> {
     Epsilon,
     Literal(T),
     Sequence(Vec<Box<Regex<T>>>),
-    // Alternatives(Vec<Box<Regex>>),
+    Alternatives(Vec<Box<Regex<T>>>),
     // Kleene(Box<Regex>),
 }
 
