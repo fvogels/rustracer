@@ -9,20 +9,35 @@ struct Converter<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
     walker: NFAWalker<'a, V, E, NFA>,
     dfa: Graph<VertexLabel<V>, E, DFA>,
     mapping: HashMap<Vec<VertexId<NFA>>, VertexId<DFA>>,
+    start: VertexId<DFA>,
 }
 
-impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E, NFA, DFA> {
+impl<'a, V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E, NFA, DFA> {
     fn new(nfa: &'a Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> Self {
+        let walker = NFAWalker::new(nfa, start_vertex);
+        let mut dfa = Graph::new();
+        let nfa_start = walker.active_positions();
+        let dfa_start = dfa.create_vertex(VertexLabel::NonTerminal);
+        let mut mapping = HashMap::new();
+        mapping.insert(Self::canonical_vertices(nfa_start), dfa_start);
+
         Converter {
-            walker: NFAWalker::new(nfa, start_vertex),
-            dfa: Graph::new(),
-            mapping: HashMap::new(),
+            walker,
+            dfa,
+            mapping,
+            start: dfa_start
         }
     }
 
-    fn map_to_dfa_vertex(&mut self, nfa_vertices: &HashSet<VertexId<NFA>>) -> (VertexId<DFA>, bool) {
+    fn canonical_vertices(nfa_vertices: &HashSet<VertexId<NFA>>) -> Vec<VertexId<NFA>> {
         let mut sorted_vertices: Vec<_> = nfa_vertices.iter().copied().collect();
         sorted_vertices.sort();
+
+        sorted_vertices
+    }
+
+    fn map_to_dfa_vertex(&mut self, nfa_vertices: &HashSet<VertexId<NFA>>) -> (VertexId<DFA>, bool) {
+        let mut sorted_vertices: Vec<_> = Self::canonical_vertices(nfa_vertices);
 
         if let Some(dfa_vertex) = self.mapping.get(&sorted_vertices) {
             (*dfa_vertex, false)
@@ -45,6 +60,20 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E,
 
             self.walker.set_active_positions(&nfa_departure_vertices);
 
+            let labels: Vec<_> = self.walker.active_vertex_labels().iter().filter_map(|&lbl| {
+                match lbl {
+                    VertexLabel::NonTerminal => None,
+                    VertexLabel::Terminal(_) => Some(lbl)
+                }
+            }).collect();
+
+            if labels.len() != 0 {
+                assert_eq!(1, labels.len());
+                let label = labels[0];
+                let r = self.dfa.vertex_label_mut(dfa_departure_vertex).expect("Bug");
+                *self.dfa.vertex_label_mut(dfa_departure_vertex).expect("Bug") = label.clone();
+            }
+
             for edge_label in self.walker.departing_arcs() {
                 match edge_label {
                     EdgeLabel::Char(ch) => {
@@ -65,33 +94,46 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E,
             }
         }
     }
+
+    pub fn eject(&mut self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+        let dfa = std::mem::replace(&mut self.dfa, Graph::new());
+
+        (dfa, self.start)
+    }
 }
 
-fn nfa_to_dfa<V, E: Hash + Eq + Copy + Clone>(nfa: &Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> Graph<VertexLabel<V>, E, DFA> {
+fn nfa_to_dfa<V: Copy + Clone, E: Hash + Eq + Copy + Clone>(nfa: &Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
     let mut converter = Converter::new(nfa, start_vertex);
     converter.convert();
-    converter.dfa
+    converter.eject()
 }
 
 pub struct DFAWalker<'a, V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
-    walker: GraphWalker<'a, V, E, T>,
+    walker: GraphWalker<'a, VertexLabel<V>, E, T>,
 }
 
 impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
-    pub fn new(graph: &'a Graph<V, E, T>, start_vertex: VertexId<T>) -> Self {
+    pub fn new(graph: &'a Graph<VertexLabel<V>, E, T>, start_vertex: VertexId<T>) -> Self {
         DFAWalker { walker: GraphWalker::new(graph, start_vertex) }
     }
 
     pub fn walk(&mut self, ch: E) -> bool {
-        self.walker.walk(&|lbl| *lbl == ch)
+        if self.walker.walk(&|lbl| *lbl == ch) {
+            debug_assert_eq!(1, self.walker.active_positions.len());
+            true
+        } else {
+            false
+        }
     }
 
-    pub fn active_vertex_labels(&self) -> Vec<&V> {
-        self.walker.active_vertex_labels()
+    pub fn active_vertex_label(&self) -> &VertexLabel<V> {
+        let labels = self.walker.active_vertex_labels();
+        debug_assert_eq!(1, labels.len());
+        labels[0]
     }
 
-    pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
-        self.walker.set_active_positions(positions)
+    pub fn set_active_position(&mut self, position: VertexId<T>) {
+        self.walker.set_active_positions(&HashSet::from([position]));
     }
 
     pub fn active_positions(&self) -> &HashSet<VertexId<T>> {
@@ -120,18 +162,23 @@ mod tests {
         nfa_builder.add(&Regex::Literal('a'), 1);
         nfa_builder.add(&Regex::Literal('b'), 2);
         let (mut nfa, start_vertex) = nfa_builder.eject();
-        let dfa = nfa_to_dfa(&nfa, start_vertex);
+        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
 
-        // let mut walker = GraphWalker::new(&nfa, start_vertex);
-        // walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        // walker.follow(|lbl| *lbl == EdgeLabel::Char('a'));
-        // walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        // assert_same_elements!(vec![&Some(1)], walker.active_vertex_labels());
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+            assert!(walker.walk('a'));
+            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        }
 
-        // walker.reset();
-        // walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        // walker.follow(|lbl| *lbl == EdgeLabel::Char('b'));
-        // walker.follow_transitively(|lbl| *lbl == EdgeLabel::Epsilon);
-        // assert_same_elements!(vec![&Some(2)], walker.active_vertex_labels());
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+            assert!(walker.walk('b'));
+            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+        }
+
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+            assert!(!walker.walk('c'));
+        }
     }
 }
