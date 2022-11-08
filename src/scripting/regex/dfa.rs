@@ -156,7 +156,7 @@ mod tests {
     use super::*;
 
     #[rstest]
-    fn dfa_literal() {
+    fn literal() {
         let mut nfa_builder = NFABuilder::new();
         nfa_builder.add(&Regex::Literal('a'), 1);
         nfa_builder.add(&Regex::Literal('b'), 2);
@@ -182,7 +182,7 @@ mod tests {
     }
 
     #[rstest]
-    fn dfa_sequence() {
+    fn sequence() {
         let mut nfa_builder = NFABuilder::new();
         let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')) ]);
         nfa_builder.add(&regex, 1);
@@ -225,7 +225,7 @@ mod tests {
     }
 
     #[rstest]
-    fn dfa_alternatives() {
+    fn alternatives() {
         let mut nfa_builder = NFABuilder::new();
         let regex = Regex::Alternatives(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')) ]);
         nfa_builder.add(&regex, 1);
@@ -265,5 +265,25 @@ mod tests {
             assert!(walker.walk('y'));
             assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
         }
+    }
+
+    #[rstest]
+    fn kleene() {
+        let mut nfa_builder = NFABuilder::new();
+        let regex = Regex::Kleene(Box::new(Regex::Literal('a')));
+        nfa_builder.add(&regex, 1);
+        let (mut nfa, start_vertex) = nfa_builder.eject();
+        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+
+        let mut walker = DFAWalker::new(&dfa, start);
+
+        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert!(walker.walk('a'));
+        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert!(walker.walk('a'));
+        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert!(walker.walk('a'));
+        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert!(walker.walk('a'));
     }
 }

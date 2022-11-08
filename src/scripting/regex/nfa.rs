@@ -162,7 +162,7 @@ mod tests {
     use super::*;
 
     #[rstest]
-    fn nfa_literal() {
+    fn literal() {
         let mut builder: NFABuilder<i32, char, ()> = NFABuilder::new();
         builder.add(&Regex::Literal('a'), 1);
         builder.add(&Regex::Literal('b'), 2);
@@ -178,7 +178,7 @@ mod tests {
     }
 
     #[rstest]
-    fn nfa_sequence() {
+    fn sequence() {
         type V = i32;
         type E = char;
         type T = ();
@@ -197,7 +197,7 @@ mod tests {
     }
 
     #[rstest]
-    fn nfa_alternatives1(#[values('a', 'b', 'c')] ch: char) {
+    fn alternatives1(#[values('a', 'b', 'c')] ch: char) {
         type V = i32;
         type E = char;
         type T = ();
@@ -215,7 +215,7 @@ mod tests {
     }
 
     #[rstest]
-    fn nfa_alternatives2(#[values('a', 'b', 'c')] first: char, #[values('x', 'y', 'z')] second: char) {
+    fn alternatives2(#[values('a', 'b', 'c')] first: char, #[values('x', 'y', 'z')] second: char) {
         type V = i32;
         type E = char;
         type T = ();
@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[rstest]
-    fn nfa_kleene() {
+    fn kleene() {
         type V = i32;
         type E = char;
         type T = ();
@@ -259,7 +259,7 @@ mod tests {
     }
 
     #[rstest]
-    fn nfa_kleene_of_sequence() {
+    fn kleene_of_sequence() {
         type V = i32;
         type E = char;
         type T = ();
