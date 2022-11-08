@@ -155,7 +155,6 @@ mod tests {
     #[cfg(test)]
     use super::*;
 
-
     #[rstest]
     fn dfa_literal() {
         let mut nfa_builder = NFABuilder::new();
@@ -179,6 +178,49 @@ mod tests {
         {
             let mut walker = DFAWalker::new(&dfa, start);
             assert!(!walker.walk('c'));
+        }
+    }
+
+    #[rstest]
+    fn dfa_sequence() {
+        let mut nfa_builder = NFABuilder::new();
+        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')) ]);
+        nfa_builder.add(&regex, 1);
+        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('c')) ]);
+        nfa_builder.add(&regex, 2);
+        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('x')), Box::new(Regex::Literal('y')) ]);
+        nfa_builder.add(&regex, 3);
+        let (mut nfa, start_vertex) = nfa_builder.eject();
+        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('a'));
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('b'));
+            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        }
+
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('a'));
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('c'));
+            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+        }
+
+        {
+            let mut walker = DFAWalker::new(&dfa, start);
+
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('x'));
+            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert!(walker.walk('y'));
+            assert_eq!(VertexLabel::Terminal(3), *walker.active_vertex_label());
         }
     }
 }
