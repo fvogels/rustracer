@@ -1,6 +1,9 @@
 mod nfa;
 mod dfa;
 
+use crate::{util::tag::define_tag};
+
+
 pub enum Regex<T> {
     Epsilon,
     Literal(T),
@@ -20,3 +23,6 @@ pub enum EdgeLabel<T> {
     Epsilon,
     Char(T),
 }
+
+define_tag!(NFA);
+define_tag!(DFA);

@@ -13,6 +13,8 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
             active_positions: HashSet::from([start_vertex]),
         };
 
+        result.walk_epsilons();
+
         result
     }
 
@@ -86,6 +88,7 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
 
     pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
         self.active_positions.clone_from(positions);
+        self.walk_epsilons();
     }
 }
 

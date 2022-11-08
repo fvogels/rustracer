@@ -48,12 +48,11 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
         }
     }
 
-    fn nfa<'a>(&'a self) -> &'a Graph<VertexLabel<V>, EdgeLabel<E>, T> {
-        &self.graph
-    }
+    pub fn eject<'a>(&'a mut self) -> (Graph<VertexLabel<V>, EdgeLabel<E>, T>, VertexId<T>) {
+        let mut graph = Graph::new();
+        let start = graph.create_vertex(VertexLabel::NonTerminal);
 
-    fn start_vertex(&self) -> VertexId<T> {
-        self.start
+        (std::mem::replace(&mut self.graph, graph), std::mem::replace(&mut self.start, start))
     }
 }
 
@@ -75,11 +74,12 @@ mod tests {
         builder.add(&Regex::Literal('a'), 1);
         builder.add(&Regex::Literal('b'), 2);
 
-        let mut walker = GraphWalker::new(builder.nfa(), builder.start_vertex());
+        let (mut nfa, start) = builder.eject();
+        let mut walker = GraphWalker::new(&nfa, start);
         walker.walk(|lbl| *lbl == 'a');
         assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
 
-        walker.set_active_positions(&HashSet::from([builder.start_vertex()]));
+        walker.set_active_positions(&HashSet::from([start]));
         walker.walk(|lbl| *lbl == 'b');
         assert_same_elements!(vec![&VertexLabel::Terminal(2)], walker.active_vertex_labels());
     }
@@ -94,7 +94,8 @@ mod tests {
         let regex = Regex::Sequence(vec![Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')), Box::new(Regex::Literal('c'))]);
         builder.add(&regex, 1);
 
-        let mut walker = GraphWalker::new(builder.nfa(), builder.start_vertex());
+        let (mut nfa, start) = builder.eject();
+        let mut walker = GraphWalker::new(&nfa, start);
         walker.walk(|lbl| *lbl == 'a');
         walker.walk(|lbl| *lbl == 'b');
         walker.walk(|lbl| *lbl == 'c');
