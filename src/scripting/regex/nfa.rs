@@ -48,12 +48,22 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
                 finish
             },
             Regex::Alternatives(ref children) => {
-                let mut finish = self.graph.create_vertex(VertexLabel::NonTerminal);
+                let finish = self.graph.create_vertex(VertexLabel::NonTerminal);
 
                 for child in children {
                     let vertex = self.add_helper(child, start_vertex);
-                    self.graph.create_edge(vertex, finish, EdgeLabel::Epsilon);
+                    self.graph.create_edge(vertex, finish, EdgeLabel::Epsilon).expect("Bug");
                 }
+
+                finish
+            },
+            Regex::Kleene(ref child) => {
+                let finish = self.graph.create_vertex(VertexLabel::NonTerminal);
+                let exit = self.add_helper(child, start_vertex);
+
+                self.graph.create_edge(start_vertex, finish, EdgeLabel::Epsilon).expect("Bug");
+                self.graph.create_edge(exit, finish, EdgeLabel::Epsilon).expect("Bug");
+                self.graph.create_edge(exit, start_vertex, EdgeLabel::Epsilon).expect("Bug");
 
                 finish
             },
@@ -75,7 +85,9 @@ pub struct NFAWalker<'a, V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
 
 impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<'a, V, E, T> {
     pub fn new(graph: &'a Graph<VertexLabel<V>, EdgeLabel<E>, T>, start_vertex: VertexId<T>) -> Self {
-        NFAWalker { walker: GraphWalker::new(graph, start_vertex) }
+        let mut result = NFAWalker { walker: GraphWalker::new(graph, start_vertex) };
+        result.walk_epsilon();
+        result
     }
 
     pub fn walk(&mut self, ch: E) -> bool {
@@ -222,6 +234,56 @@ mod tests {
         walker.walk(first);
         assert_same_elements!(vec![], walker.active_terminal_labels());
         walker.walk(second);
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+    }
+
+    #[rstest]
+    fn nfa_kleene() {
+        type V = i32;
+        type E = char;
+        type T = ();
+
+        let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
+        let regex = Regex::Kleene(Box::new(Regex::Literal('a')));
+        builder.add(&regex, 1);
+        let (mut nfa, start) = builder.eject();
+
+        let mut walker = NFAWalker::new(&nfa, start);
+
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        walker.walk('a');
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        walker.walk('a');
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        walker.walk('a');
+    }
+
+    #[rstest]
+    fn nfa_kleene_of_sequence() {
+        type V = i32;
+        type E = char;
+        type T = ();
+
+        let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
+        let regex = Regex::Kleene(Box::new(
+            Regex::Sequence(vec![
+                Box::new(Regex::Literal('a')),
+                Box::new(Regex::Literal('b')),
+            ]),
+        ));
+        builder.add(&regex, 1);
+        let (mut nfa, start) = builder.eject();
+
+        let mut walker = NFAWalker::new(&nfa, start);
+
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        walker.walk('a');
+        assert_same_elements!(vec![], walker.active_terminal_labels());
+        walker.walk('b');
+        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        walker.walk('a');
+        assert_same_elements!(vec![], walker.active_terminal_labels());
+        walker.walk('b');
         assert_same_elements!(vec![&1], walker.active_terminal_labels());
     }
 }

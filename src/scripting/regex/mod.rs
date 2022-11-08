@@ -9,7 +9,7 @@ pub enum Regex<T> {
     Literal(T),
     Sequence(Vec<Box<Regex<T>>>),
     Alternatives(Vec<Box<Regex<T>>>),
-    // Kleene(Box<Regex>),
+    Kleene(Box<Regex<T>>),
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
