@@ -59,7 +59,7 @@ impl<T> Automaton<T> {
 mod tests {
     use rstest::rstest;
 
-    use crate::scripting::regex::literal_seq;
+    use crate::scripting::regex::{literal_seq, digit, one_or_more, positive_integer, optional, literal, sequence, integer};
 
     #[cfg(test)]
     use super::*;
@@ -71,25 +71,93 @@ mod tests {
         builder.add(literal_seq("123".chars()), 2);
         let mut automaton = builder.eject();
 
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('a'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('b'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('c'));
+        assert_eq!(Some(&1), automaton.finish());
         assert!(!automaton.feed('d'));
         assert_eq!(Some(&1), automaton.finish());
         automaton.reset();
 
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('a'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('b'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('c'));
+        assert_eq!(Some(&1), automaton.finish());
         assert!(!automaton.feed('d'));
         assert_eq!(Some(&1), automaton.finish());
         automaton.reset();
 
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('1'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('2'));
+        assert_eq!(None, automaton.finish());
         assert!(automaton.feed('3'));
+        assert_eq!(Some(&2), automaton.finish());
         assert!(!automaton.feed('4'));
         assert_eq!(Some(&2), automaton.finish());
         automaton.reset();
+    }
+
+    #[rstest]
+    fn match_positive_integer(#[values("1", "2", "123", "9876543210")] input: &str) {
+        let mut builder = AutomatonBuilder::new();
+        let regex = positive_integer();
+        builder.add(regex, 1);
+        let mut automaton = builder.eject();
+
+        for ch in input.chars() {
+            assert!(automaton.feed(ch));
+        }
+
+        assert_eq!(Some(&1), automaton.finish());
+    }
+
+    #[rstest]
+    fn match_optional() {
+        let mut builder = AutomatonBuilder::new();
+        let regex = optional(literal('x'));
+        builder.add(regex, 1);
+        let mut automaton = builder.eject();
+
+        assert_eq!(Some(&1), automaton.finish());
+        automaton.feed('x');
+        assert_eq!(Some(&1), automaton.finish());
+    }
+
+    #[rstest]
+    fn match_two_optionals(#[values("", "x", "y", "xy")] input: &str) {
+        let mut builder = AutomatonBuilder::new();
+        let regex = sequence([optional(literal('x')), optional(literal('y'))].into_iter());
+        builder.add(regex, 1);
+        let mut automaton = builder.eject();
+
+        assert_eq!(Some(&1), automaton.finish());
+
+        for ch in input.chars() {
+            automaton.feed(ch);
+        }
+
+        assert_eq!(Some(&1), automaton.finish());
+    }
+
+    #[rstest]
+    fn match_integer(#[values("1", "2", "123", "9876543210", "-1", "-2", "-123", "-9876543210")] input: &str) {
+        let mut builder = AutomatonBuilder::new();
+        let regex = integer();
+        builder.add(regex, 1);
+        let mut automaton = builder.eject();
+
+        for ch in input.chars() {
+            assert!(automaton.feed(ch));
+        }
+
+        assert_eq!(Some(&1), automaton.finish());
     }
 }
