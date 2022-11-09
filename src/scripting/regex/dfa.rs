@@ -1,9 +1,13 @@
 use std::{collections::{HashSet, HashMap}, hash::Hash};
 
 use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
+use crate::{util::tag::define_tag};
 
-use super::{EdgeLabel, VertexLabel, NFA, DFA, nfa::NFAWalker};
+use super::{defs::{EdgeLabel, VertexLabel}, nfa::NFAWalker};
 
+
+define_tag!(NFA);
+define_tag!(DFA);
 
 struct Converter<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
     walker: NFAWalker<'a, V, E, NFA>,
@@ -150,7 +154,7 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
 mod tests {
     use rstest::rstest;
 
-    use crate::{assert_same_elements, scripting::regex::{Regex, nfa::NFABuilder}};
+    use crate::{assert_same_elements, scripting::regex::{defs::Regex, nfa::NFABuilder}};
 
     #[cfg(test)]
     use super::*;

@@ -1,5 +1,5 @@
 use std::{collections::HashSet, hash::Hash};
-use crate::{data::graph::{Graph, VertexId}, util::tag::Tag, scripting::regex::{VertexLabel, EdgeLabel}};
+use crate::{data::graph::{Graph, VertexId}, util::tag::Tag};
 
 pub struct GraphWalker<'a, V, E: Hash + Eq, T: Tag = ()> {
     graph: &'a Graph<V, E, T>,
@@ -144,8 +144,8 @@ mod tests {
 
     #[rstest]
     fn graphwalker_walk_with_epsilons() {
-        type V = VertexLabel<()>;
-        type E = EdgeLabel<char>;
+        type V = ();
+        type E = Option<char>;
 
         fn ps(walker: &GraphWalker<V, E>) -> Vec<VertexId> {
             walker.active_positions.iter().copied().collect()
@@ -153,19 +153,19 @@ mod tests {
 
         let mut graph: Graph<V, E, ()> = Graph::new();
 
-        let v1 = graph.create_vertex(VertexLabel::NonTerminal);
-        let v2 = graph.create_vertex(VertexLabel::NonTerminal);
-        let v3 = graph.create_vertex(VertexLabel::NonTerminal);
-        let v4 = graph.create_vertex(VertexLabel::NonTerminal);
-        let v5 = graph.create_vertex(VertexLabel::NonTerminal);
+        let v1 = graph.create_vertex(());
+        let v2 = graph.create_vertex(());
+        let v3 = graph.create_vertex(());
+        let v4 = graph.create_vertex(());
+        let v5 = graph.create_vertex(());
 
         for (s, e, c) in vec![
-            (v1, v2, EdgeLabel::Char('a')),
-            (v2, v3, EdgeLabel::Epsilon),
-            (v2, v5, EdgeLabel::Epsilon),
-            (v3, v3, EdgeLabel::Char('c')),
-            (v3, v4, EdgeLabel::Epsilon),
-            (v5, v1, EdgeLabel::Char('b')),
+            (v1, v2, Some('a')),
+            (v2, v3, None),
+            (v2, v5, None),
+            (v3, v3, Some('c')),
+            (v3, v4, None),
+            (v5, v1, Some('b')),
         ] {
             graph.create_edge(s, e, c).unwrap();
         }
@@ -173,20 +173,20 @@ mod tests {
         let mut walker = GraphWalker::new(&graph, v1);
         assert_same_elements!(vec![v1], ps(&walker));
 
-        walker.walk(&|lbl| *lbl == EdgeLabel::Char('a'));
-        walker.walk_transitively(&|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(&|lbl| *lbl == Some('a'));
+        walker.walk_transitively(&|lbl| *lbl == None);
         assert_same_elements!(vec![v2, v3, v4, v5], ps(&walker));
 
-        assert!(walker.walk(&|lbl| *lbl == EdgeLabel::Char('b')));
-        walker.walk_transitively(&|lbl| *lbl == EdgeLabel::Epsilon);
+        assert!(walker.walk(&|lbl| *lbl == Some('b')));
+        walker.walk_transitively(&|lbl| *lbl == None);
         assert_same_elements!(vec![v1], ps(&walker));
 
-        walker.walk(&|lbl| *lbl == EdgeLabel::Char('a'));
-        walker.walk_transitively(&|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(&|lbl| *lbl == Some('a'));
+        walker.walk_transitively(&|lbl| *lbl == None);
         assert_same_elements!(vec![v2, v3, v4, v5], ps(&walker));
 
-        walker.walk(&|lbl| *lbl == EdgeLabel::Char('c'));
-        walker.walk_transitively(&|lbl| *lbl == EdgeLabel::Epsilon);
+        walker.walk(&|lbl| *lbl == Some('c'));
+        walker.walk_transitively(&|lbl| *lbl == None);
         assert_same_elements!(vec![v3, v4], ps(&walker));
     }
 }

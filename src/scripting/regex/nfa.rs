@@ -1,6 +1,6 @@
 use std::{hash::Hash, collections::HashSet};
 
-use super::{Regex, VertexLabel, EdgeLabel};
+use super::{defs::{Regex, VertexLabel, EdgeLabel}};
 use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
 
 
