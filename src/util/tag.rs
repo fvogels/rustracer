@@ -8,7 +8,7 @@ impl Tag for () { }
 macro_rules! define_tag {
     ($id:ident) => {
         #[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
-        struct $id;
+        pub struct $id;
 
         impl $crate::util::tag::Tag for $id { }
     };

@@ -1,23 +1,18 @@
 use std::{collections::{HashSet, HashMap}, hash::Hash};
 
 use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
-use crate::{util::tag::define_tag};
 
-use super::{defs::{EdgeLabel, VertexLabel}, nfa::NFAWalker};
+use super::{defs::{EdgeLabel, VertexLabel, NFA, DFA}, nfa::NFAWalker};
 
-
-define_tag!(NFA);
-define_tag!(DFA);
-
-struct Converter<'a, V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
-    walker: NFAWalker<'a, V, E, NFA>,
+struct DFABuilder<V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
+    walker: NFAWalker<V, E, NFA>,
     dfa: Graph<VertexLabel<V>, E, DFA>,
     mapping: HashMap<Vec<VertexId<NFA>>, VertexId<DFA>>,
     start: VertexId<DFA>,
 }
 
-impl<'a, V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Converter<'a, V, E, NFA, DFA> {
-    fn new(nfa: &'a Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> Self {
+impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilder<V, E, NFA, DFA> {
+    fn new(nfa: Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> Self {
         let walker = NFAWalker::new(nfa, start_vertex);
         let mut dfa = Graph::new();
         let nfa_start = walker.active_positions();
@@ -25,7 +20,7 @@ impl<'a, V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Conve
         let mut mapping = HashMap::new();
         mapping.insert(Self::canonical_vertices(nfa_start), dfa_start);
 
-        Converter {
+        DFABuilder {
             walker,
             dfa,
             mapping,
@@ -99,25 +94,25 @@ impl<'a, V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> Conve
         }
     }
 
-    pub fn eject(&mut self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+    fn eject(&mut self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
         let dfa = std::mem::replace(&mut self.dfa, Graph::new());
 
         (dfa, self.start)
     }
 }
 
-fn nfa_to_dfa<V: Copy + Clone, E: Hash + Eq + Copy + Clone>(nfa: &Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
-    let mut converter = Converter::new(nfa, start_vertex);
+pub fn nfa_to_dfa<V: Copy + Clone, E: Hash + Eq + Copy + Clone>(nfa: Graph<VertexLabel<V>, EdgeLabel<E>, NFA>, start_vertex: VertexId<NFA>) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+    let mut converter = DFABuilder::new(nfa, start_vertex);
     converter.convert();
     converter.eject()
 }
 
-pub struct DFAWalker<'a, V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
-    walker: GraphWalker<'a, VertexLabel<V>, E, T>,
+pub struct DFAWalker<V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
+    walker: GraphWalker<VertexLabel<V>, E, T>,
 }
 
-impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
-    pub fn new(graph: &'a Graph<VertexLabel<V>, E, T>, start_vertex: VertexId<T>) -> Self {
+impl<V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<V, E, T> {
+    pub fn new(graph: Graph<VertexLabel<V>, E, T>, start_vertex: VertexId<T>) -> Self {
         DFAWalker { walker: GraphWalker::new(graph, start_vertex) }
     }
 
@@ -140,8 +135,8 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
         self.walker.set_active_positions(&HashSet::from([position]));
     }
 
-    pub fn active_positions(&self) -> &HashSet<VertexId<T>> {
-        &self.walker.active_positions
+    pub fn active_position(&self) -> VertexId<T> {
+        *self.walker.active_positions.iter().next().expect("Bug")
     }
 
     pub fn departing_arcs(&self) -> HashSet<E> {
@@ -152,53 +147,63 @@ impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<'a, V, E, T> {
 
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+
     use rstest::rstest;
 
-    use crate::{assert_same_elements, scripting::regex::{defs::Regex, nfa::NFABuilder}};
+    use crate::{assert_same_elements, scripting::regex::{defs::RegularExpression, nfa::NFABuilder}};
 
     #[cfg(test)]
     use super::*;
 
     #[rstest]
     fn literal() {
-        let mut nfa_builder = NFABuilder::new();
-        nfa_builder.add(&Regex::Literal('a'), 1);
-        nfa_builder.add(&Regex::Literal('b'), 2);
-        let (mut nfa, start_vertex) = nfa_builder.eject();
-        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+            let mut nfa_builder = NFABuilder::new();
+            nfa_builder.add(&RegularExpression::Literal('a'), 1);
+            nfa_builder.add(&RegularExpression::Literal('b'), 2);
+            let (mut nfa, start_vertex) = nfa_builder.eject();
+            nfa_to_dfa(nfa, start_vertex)
+        }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
             assert!(walker.walk('a'));
             assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
             assert!(walker.walk('b'));
             assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
             assert!(!walker.walk('c'));
         }
     }
 
     #[rstest]
     fn sequence() {
-        let mut nfa_builder = NFABuilder::new();
-        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')) ]);
-        nfa_builder.add(&regex, 1);
-        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('c')) ]);
-        nfa_builder.add(&regex, 2);
-        let regex = Regex::Sequence(vec![ Box::new(Regex::Literal('x')), Box::new(Regex::Literal('y')) ]);
-        nfa_builder.add(&regex, 3);
-        let (mut nfa, start_vertex) = nfa_builder.eject();
-        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+            let mut nfa_builder = NFABuilder::new();
+            let regex = RegularExpression::Sequence(vec![ Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('b')) ]);
+            nfa_builder.add(&regex, 1);
+            let regex = RegularExpression::Sequence(vec![ Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('c')) ]);
+            nfa_builder.add(&regex, 2);
+            let regex = RegularExpression::Sequence(vec![ Rc::new(RegularExpression::Literal('x')), Rc::new(RegularExpression::Literal('y')) ]);
+            nfa_builder.add(&regex, 3);
+            let (mut nfa, start_vertex) = nfa_builder.eject();
+            nfa_to_dfa(nfa, start_vertex)
+        }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('a'));
@@ -208,7 +213,8 @@ mod tests {
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('a'));
@@ -218,7 +224,8 @@ mod tests {
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('x'));
@@ -230,16 +237,19 @@ mod tests {
 
     #[rstest]
     fn alternatives() {
-        let mut nfa_builder = NFABuilder::new();
-        let regex = Regex::Alternatives(vec![ Box::new(Regex::Literal('a')), Box::new(Regex::Literal('b')) ]);
-        nfa_builder.add(&regex, 1);
-        let regex = Regex::Alternatives(vec![ Box::new(Regex::Literal('x')), Box::new(Regex::Literal('y')) ]);
-        nfa_builder.add(&regex, 2);
-        let (mut nfa, start_vertex) = nfa_builder.eject();
-        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+            let mut nfa_builder = NFABuilder::new();
+            let regex = RegularExpression::Alternatives(vec![ Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('b')) ]);
+            nfa_builder.add(&regex, 1);
+            let regex = RegularExpression::Alternatives(vec![ Rc::new(RegularExpression::Literal('x')), Rc::new(RegularExpression::Literal('y')) ]);
+            nfa_builder.add(&regex, 2);
+            let (mut nfa, start_vertex) = nfa_builder.eject();
+            nfa_to_dfa(nfa, start_vertex)
+        }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('a'));
@@ -247,7 +257,8 @@ mod tests {
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('b'));
@@ -255,7 +266,8 @@ mod tests {
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('x'));
@@ -263,7 +275,8 @@ mod tests {
         }
 
         {
-            let mut walker = DFAWalker::new(&dfa, start);
+            let (dfa, start) = create_dfa();
+            let mut walker = DFAWalker::new(dfa, start);
 
             assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
             assert!(walker.walk('y'));
@@ -274,12 +287,12 @@ mod tests {
     #[rstest]
     fn kleene() {
         let mut nfa_builder = NFABuilder::new();
-        let regex = Regex::Kleene(Box::new(Regex::Literal('a')));
+        let regex = RegularExpression::Kleene(Rc::new(RegularExpression::Literal('a')));
         nfa_builder.add(&regex, 1);
         let (mut nfa, start_vertex) = nfa_builder.eject();
-        let (dfa, start) = nfa_to_dfa(&nfa, start_vertex);
+        let (dfa, start) = nfa_to_dfa(nfa, start_vertex);
 
-        let mut walker = DFAWalker::new(&dfa, start);
+        let mut walker = DFAWalker::new(dfa, start);
 
         assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
         assert!(walker.walk('a'));

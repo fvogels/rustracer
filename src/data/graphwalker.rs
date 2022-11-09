@@ -1,13 +1,13 @@
 use std::{collections::HashSet, hash::Hash};
 use crate::{data::graph::{Graph, VertexId}, util::tag::Tag};
 
-pub struct GraphWalker<'a, V, E: Hash + Eq, T: Tag = ()> {
-    graph: &'a Graph<V, E, T>,
+pub struct GraphWalker<V, E: Hash + Eq, T: Tag = ()> {
+    graph: Graph<V, E, T>,
     pub active_positions: HashSet<VertexId<T>>,
 }
 
-impl<'a, V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<'a, V, E, T> {
-    pub fn new(graph: &'a Graph<V, E, T>, start_vertex: VertexId<T>) -> Self {
+impl<V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<V, E, T> {
+    pub fn new(graph: Graph<V, E, T>, start_vertex: VertexId<T>) -> Self {
         GraphWalker {
             graph,
             active_positions: HashSet::from([start_vertex]),
@@ -111,7 +111,7 @@ mod tests {
             graph.create_edge(s, e, c).expect("Bug");
         }
 
-        let mut walker = GraphWalker::new(&graph, v1);
+        let mut walker = GraphWalker::new(graph, v1);
         assert_same_elements!(vec![v1], ps(&walker));
 
         assert!(walker.walk(&|lbl| *lbl == 'a'));
@@ -170,7 +170,7 @@ mod tests {
             graph.create_edge(s, e, c).unwrap();
         }
 
-        let mut walker = GraphWalker::new(&graph, v1);
+        let mut walker = GraphWalker::new(graph, v1);
         assert_same_elements!(vec![v1], ps(&walker));
 
         walker.walk(&|lbl| *lbl == Some('a'));
