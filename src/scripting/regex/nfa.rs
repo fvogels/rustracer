@@ -1,20 +1,50 @@
-use std::{hash::Hash, collections::HashSet};
+use std::{hash::Hash, collections::HashSet, ops::Deref, cell::Cell, borrow::{Borrow, BorrowMut}};
 
 use super::{defs::{RegularExpression, VertexLabel, EdgeLabel}};
 use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
 
 
 pub struct NFABuilder<V, E: Copy + Clone, T: Tag> {
-    graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>,
-    start: VertexId<T>,
+    imp: NFABuilderImp<V, E, T>,
 }
 
 impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
     pub fn new() -> Self {
+        NFABuilder { imp: NFABuilderImp::new() }
+    }
+
+    pub fn eject<'a>(&'a mut self) -> (Graph<VertexLabel<V>, EdgeLabel<E>, T>, VertexId<T>) {
+        let ejected = std::mem::replace(&mut self.imp, NFABuilderImp::new());
+
+        (ejected.graph, ejected.start)
+    }
+}
+
+impl<V, E: Copy + Clone, T: Tag> Deref for NFABuilder<V, E, T> {
+    type Target = NFABuilderImp<V, E, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.imp
+    }
+}
+
+impl<V, E: Copy + Clone, T: Tag> std::ops::DerefMut for NFABuilder<V, E, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.imp
+    }
+}
+
+pub struct NFABuilderImp<V, E: Copy + Clone, T: Tag> {
+    graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>,
+    start: VertexId<T>,
+}
+
+impl<V, E: Copy + Clone, T: Tag> NFABuilderImp<V, E, T> {
+    pub fn new() -> Self {
         let mut graph = Graph::new();
         let start = graph.create_vertex(VertexLabel::NonTerminal);
 
-        NFABuilder { graph, start }
+        NFABuilderImp { graph, start }
     }
 
     pub fn add(&mut self, regex: &RegularExpression<E>, terminal_vertex_label: V) {
@@ -68,13 +98,6 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
                 finish
             },
         }
-    }
-
-    pub fn eject<'a>(&'a mut self) -> (Graph<VertexLabel<V>, EdgeLabel<E>, T>, VertexId<T>) {
-        let mut graph = Graph::new();
-        let start = graph.create_vertex(VertexLabel::NonTerminal);
-
-        (std::mem::replace(&mut self.graph, graph), std::mem::replace(&mut self.start, start))
     }
 }
 
