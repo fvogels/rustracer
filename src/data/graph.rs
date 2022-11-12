@@ -215,13 +215,13 @@ mod tests {
         let v3 = graph.create_vertex(3);
         let v4 = graph.create_vertex(4);
 
-        graph.create_edge(v1, v1, 'a');
-        graph.create_edge(v1, v2, 'a');
-        graph.create_edge(v1, v2, 'b');
-        graph.create_edge(v1, v3, 'b');
-        graph.create_edge(v1, v2, 'c');
-        graph.create_edge(v1, v3, 'c');
-        graph.create_edge(v1, v4, 'c');
+        graph.create_edge(v1, v1, 'a').expect("Bug");
+        graph.create_edge(v1, v2, 'a').expect("Bug");
+        graph.create_edge(v1, v2, 'b').expect("Bug");
+        graph.create_edge(v1, v3, 'b').expect("Bug");
+        graph.create_edge(v1, v2, 'c').expect("Bug");
+        graph.create_edge(v1, v3, 'c').expect("Bug");
+        graph.create_edge(v1, v4, 'c').expect("Bug");
 
         assert_same_elements!(vec![v1, v2], graph.reachable_through(v1, |lbl: &char| *lbl == 'a').unwrap());
         assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, |lbl: &char| *lbl == 'b').unwrap());
