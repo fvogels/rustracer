@@ -5,12 +5,10 @@ pub struct VecDiffResult {
 }
 
 pub fn vec_diff<T: PartialEq>(xs: &Vec<T>, ys: &Vec<T>) -> VecDiffResult {
-    let mut ys_used = Vec::new();
+    let mut ys_used = vec![false; ys.len()];
     let mut shared = Vec::new();
     let mut left_only = Vec::new();
     let mut right_only = Vec::new();
-
-    ys_used.resize(ys.len(), false);
 
     for (i, x) in xs.iter().enumerate() {
         match (0..ys.len()).find(|j| !ys_used[*j] && *x == ys[*j]) {
