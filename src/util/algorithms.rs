@@ -12,8 +12,8 @@ pub fn vec_diff<T: PartialEq>(xs: &Vec<T>, ys: &Vec<T>) -> VecDiffResult {
 
     ys_used.resize(ys.len(), false);
 
-    for i in 0..xs.len() {
-        match (0..ys.len()).find(|j| !ys_used[*j] && xs[i] == ys[*j]) {
+    for (i, x) in xs.iter().enumerate() {
+        match (0..ys.len()).find(|j| !ys_used[*j] && *x == ys[*j]) {
             None => {
                 left_only.push(i);
             }
