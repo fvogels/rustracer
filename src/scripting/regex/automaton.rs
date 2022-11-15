@@ -17,7 +17,7 @@ impl<T: Copy + Clone> AutomatonBuilder<T> {
         self.nfa_builder.add(regex.regex.as_ref(), terminal)
     }
 
-    pub fn eject(&mut self) -> Automaton<T> {
+    pub fn eject(self) -> Automaton<T> {
         let (nfa, nfa_start) = self.nfa_builder.eject();
         let (dfa, dfa_start) = nfa_to_dfa(nfa, nfa_start);
         let walker = DFAWalker::new(dfa, dfa_start);
