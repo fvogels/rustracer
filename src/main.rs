@@ -50,7 +50,7 @@ fn create_scene() -> Scene {
 
         let background = Rc::new(Transformer::new(
             Transformation3D::translate(&v3!(0, 0, -5)),
-            plane.clone(),
+            plane,
         ));
         let left_sphere = Rc::new(Transformer::new(
             Transformation3D::translate(&v3!(-2, 0, 0)),
@@ -58,7 +58,7 @@ fn create_scene() -> Scene {
         ));
         let right_sphere = Rc::new(Transformer::new(
             Transformation3D::translate(&v3!(1, 0, 0)),
-            sphere.clone(),
+            sphere,
         ));
 
         let red_material = Rc::new(UniformMaterial::new(MaterialProperties {
