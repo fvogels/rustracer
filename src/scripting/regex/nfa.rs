@@ -5,46 +5,16 @@ use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::ta
 
 
 pub struct NFABuilder<V, E: Copy + Clone, T: Tag> {
-    imp: NFABuilderImp<V, E, T>,
-}
-
-impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
-    pub fn new() -> Self {
-        NFABuilder { imp: NFABuilderImp::new() }
-    }
-
-    pub fn eject<'a>(&'a mut self) -> (Graph<VertexLabel<V>, EdgeLabel<E>, T>, VertexId<T>) {
-        let ejected = std::mem::replace(&mut self.imp, NFABuilderImp::new());
-
-        (ejected.graph, ejected.start)
-    }
-}
-
-impl<V, E: Copy + Clone, T: Tag> Deref for NFABuilder<V, E, T> {
-    type Target = NFABuilderImp<V, E, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.imp
-    }
-}
-
-impl<V, E: Copy + Clone, T: Tag> std::ops::DerefMut for NFABuilder<V, E, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.imp
-    }
-}
-
-pub struct NFABuilderImp<V, E: Copy + Clone, T: Tag> {
     graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>,
     start: VertexId<T>,
 }
 
-impl<V, E: Copy + Clone, T: Tag> NFABuilderImp<V, E, T> {
+impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
     pub fn new() -> Self {
         let mut graph = Graph::new();
         let start = graph.create_vertex(VertexLabel::NonTerminal);
 
-        NFABuilderImp { graph, start }
+        NFABuilder { graph, start }
     }
 
     pub fn add(&mut self, regex: &RegularExpression<E>, terminal_vertex_label: V) {
@@ -98,6 +68,10 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilderImp<V, E, T> {
                 finish
             },
         }
+    }
+
+    pub fn eject(self) -> (Graph<VertexLabel<V>, EdgeLabel<E>, T>, VertexId<T>) {
+        (self.graph, self.start)
     }
 }
 
