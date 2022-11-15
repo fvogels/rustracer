@@ -57,3 +57,23 @@ pub fn optional(child: Regex) -> Regex {
 pub fn integer() -> Regex {
     sequence([optional(literal('-')), positive_integer()].into_iter())
 }
+
+pub fn lowercase_letter() -> Regex {
+    character_class("abcdefghijklmnopqrstuvwxyz".chars())
+}
+
+pub fn uppercase_letter() -> Regex {
+    character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars())
+}
+
+pub fn letter() -> Regex {
+    alternatives([lowercase_letter(), uppercase_letter()].into_iter())
+}
+
+pub fn alphanumeric() -> Regex {
+    alternatives([letter(), digit()].into_iter())
+}
+
+pub fn whitespace() -> Regex {
+    character_class(" \n\r\t".chars())
+}
