@@ -2,7 +2,7 @@ use std::num::{ParseFloatError, ParseIntError};
 
 use crate::data::BufferedIterator;
 
-use super::regex::{literal, Automaton, AutomatonBuilder};
+use super::regex::{literal, Automaton, AutomatonBuilder, integer};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TokenType {
@@ -82,6 +82,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
 
         builder.add(literal('('), TokenType::LeftParenthesis);
         builder.add(literal(')'), TokenType::RightParenthesis);
+        builder.add(integer(), TokenType::Integer);
 
         builder.eject()
     }
@@ -203,6 +204,31 @@ mod tests {
         );
         assert_eq!(
             Some((Token::RightParenthesis, 3, 3)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[rstest]
+    fn integers() {
+        let string = "1 23 456 -10";
+        let input = add_locs(string);
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            Some((Token::Integer(1), 0, 0)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::Integer(23), 2, 3)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::Integer(456), 5, 7)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::Integer(-10), 9, 11)),
             tokenizer.next_token().unwrap()
         );
         assert_eq!(None, tokenizer.next_token().unwrap());
