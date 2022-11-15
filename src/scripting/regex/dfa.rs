@@ -4,6 +4,7 @@ use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::ta
 
 use super::{defs::{EdgeLabel, VertexLabel, NFA, DFA}, nfa::NFAWalker};
 
+
 struct DFABuilder<V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
     walker: NFAWalker<V, E, NFA>,
     dfa: Graph<VertexLabel<V>, E, DFA>,
@@ -94,10 +95,8 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
         }
     }
 
-    fn eject(&mut self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
-        let dfa = std::mem::replace(&mut self.dfa, Graph::new());
-
-        (dfa, self.start)
+    fn eject(self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+        (self.dfa, self.start)
     }
 }
 
