@@ -158,7 +158,6 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
 
 #[derive(Debug)]
 pub enum TokenizerError {
-    EndReached,
     IncompleteToken,
     ConversionError(TokenError),
 }
