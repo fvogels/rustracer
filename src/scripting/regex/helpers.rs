@@ -58,6 +58,15 @@ pub fn integer() -> Regex {
     sequence([optional(literal('-')), positive_integer()].into_iter())
 }
 
+pub fn floating_point() -> Regex {
+    sequence([
+        optional(literal('-')),
+        positive_integer(),
+        literal('.'),
+        positive_integer(),
+    ].into_iter())
+}
+
 pub fn lowercase_letter() -> Regex {
     character_class("abcdefghijklmnopqrstuvwxyz".chars())
 }

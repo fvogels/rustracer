@@ -2,7 +2,7 @@ use std::num::{ParseFloatError, ParseIntError};
 
 use crate::data::BufferedIterator;
 
-use super::regex::{literal, Automaton, AutomatonBuilder, integer};
+use super::regex::{literal, Automaton, AutomatonBuilder, integer, floating_point};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TokenType {
@@ -83,6 +83,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
         builder.add(literal('('), TokenType::LeftParenthesis);
         builder.add(literal(')'), TokenType::RightParenthesis);
         builder.add(integer(), TokenType::Integer);
+        builder.add(floating_point(), TokenType::FloatingPointNumber);
 
         builder.eject()
     }
@@ -228,6 +229,27 @@ mod tests {
         );
         assert_eq!(
             Some((Token::Integer(-10), 9, 11)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[rstest]
+    fn floating_points() {
+        let string = "1.0 12.3 999.7";
+        let input = add_locs(string);
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            Some((Token::FloatingPointNumber(1.0), 0, 2)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::FloatingPointNumber(12.3), 4, 7)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::FloatingPointNumber(999.7), 9, 13)),
             tokenizer.next_token().unwrap()
         );
         assert_eq!(None, tokenizer.next_token().unwrap());
