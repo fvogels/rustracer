@@ -1,8 +1,8 @@
-use std::{hash::Hash, fmt::Debug};
+use std::{fmt::Debug, hash::Hash};
 
-pub trait Tag : Debug + Hash + PartialEq + Eq + Copy + Clone { }
+pub trait Tag: Debug + Hash + PartialEq + Eq + Copy + Clone {}
 
-impl Tag for () { }
+impl Tag for () {}
 
 #[macro_export]
 macro_rules! define_tag {
@@ -10,7 +10,7 @@ macro_rules! define_tag {
         #[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
         pub struct $id;
 
-        impl $crate::util::tag::Tag for $id { }
+        impl $crate::util::tag::Tag for $id {}
     };
 }
 

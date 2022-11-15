@@ -1,9 +1,15 @@
-pub struct BufferedIterator<I: Iterator> where I::Item: Copy + Clone {
+pub struct BufferedIterator<I: Iterator>
+where
+    I::Item: Copy + Clone,
+{
     iterator: I,
-    last: Option<I::Item>
+    last: Option<I::Item>,
 }
 
-impl<I: Iterator> BufferedIterator<I> where I::Item: Copy + Clone {
+impl<I: Iterator> BufferedIterator<I>
+where
+    I::Item: Copy + Clone,
+{
     pub fn new(mut iterator: I) -> Self {
         let last = iterator.next();
 

@@ -1,6 +1,11 @@
 use crate::data::graph::{Graph, VertexId};
 
-use super::{nfa::NFABuilder, defs::{NFA, DFA, VertexLabel}, Regex, dfa::{nfa_to_dfa, DFAWalker}};
+use super::{
+    defs::{VertexLabel, DFA, NFA},
+    dfa::{nfa_to_dfa, DFAWalker},
+    nfa::NFABuilder,
+    Regex,
+};
 
 pub struct AutomatonBuilder<T: Copy + Clone> {
     nfa_builder: NFABuilder<T, char, NFA>,
@@ -9,7 +14,7 @@ pub struct AutomatonBuilder<T: Copy + Clone> {
 impl<T: Copy + Clone> AutomatonBuilder<T> {
     pub fn new() -> Self {
         AutomatonBuilder {
-            nfa_builder: NFABuilder::new()
+            nfa_builder: NFABuilder::new(),
         }
     }
 
@@ -59,7 +64,9 @@ impl<T> Automaton<T> {
 mod tests {
     use rstest::rstest;
 
-    use crate::scripting::regex::{literal_seq, digit, one_or_more, positive_integer, optional, literal, sequence, integer};
+    use crate::scripting::regex::{
+        digit, integer, literal, literal_seq, one_or_more, optional, positive_integer, sequence,
+    };
 
     #[cfg(test)]
     use super::*;
@@ -148,7 +155,9 @@ mod tests {
     }
 
     #[rstest]
-    fn match_integer(#[values("1", "2", "123", "9876543210", "-1", "-2", "-123", "-9876543210")] input: &str) {
+    fn match_integer(
+        #[values("1", "2", "123", "9876543210", "-1", "-2", "-123", "-9876543210")] input: &str,
+    ) {
         let mut builder = AutomatonBuilder::new();
         let regex = integer();
         builder.add(regex, 1);

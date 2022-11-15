@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
-mod nfa;
-mod dfa;
-mod defs;
-mod helpers;
 mod automaton;
+mod defs;
+mod dfa;
+mod helpers;
+mod nfa;
 
-pub use helpers::*;
 pub use automaton::*;
+pub use helpers::*;
 
 #[derive(Debug, Clone)]
 pub struct Regex {

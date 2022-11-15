@@ -1,4 +1,4 @@
-use std::{collections::HashMap, marker::PhantomData, hash::Hash};
+use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 
 use crate::util::tag::Tag;
 
@@ -52,7 +52,10 @@ impl<V, E, T: Tag> Graph<V, E, T> {
         };
         self.vertices.push(vertex);
 
-        VertexId { index, tag: PhantomData }
+        VertexId {
+            index,
+            tag: PhantomData,
+        }
     }
 
     pub fn vertex_label(&self, vertex: VertexId<T>) -> Result<&V, Error<T>> {
@@ -79,10 +82,7 @@ impl<V, E, T: Tag> Graph<V, E, T> {
             .ok_or(Error::InvalidVertexId(id))
     }
 
-    pub fn get_vertex_mut(
-        &mut self,
-        id: VertexId<T>,
-    ) -> Result<&mut Vertex<V, E, T>, Error<T>> {
+    pub fn get_vertex_mut(&mut self, id: VertexId<T>) -> Result<&mut Vertex<V, E, T>, Error<T>> {
         self.vertices
             .get_mut(id.index)
             .ok_or(Error::InvalidVertexId(id))
@@ -95,7 +95,11 @@ impl<V, E, T: Tag> Graph<V, E, T> {
     pub fn arcs_departing_from(&self, from: VertexId<T>) -> Result<Vec<&E>, Error<T>> {
         let vertex = self.get_vertex(from)?;
 
-        Ok(vertex.departing_edges.values().flatten().collect::<Vec<&E>>())
+        Ok(vertex
+            .departing_edges
+            .values()
+            .flatten()
+            .collect::<Vec<&E>>())
     }
 
     pub fn arcs_between(&self, from: VertexId<T>, to: VertexId<T>) -> Result<&Vec<E>, Error<T>> {
@@ -223,9 +227,29 @@ mod tests {
         graph.create_edge(v1, v3, 'c').expect("Bug");
         graph.create_edge(v1, v4, 'c').expect("Bug");
 
-        assert_same_elements!(vec![v1, v2], graph.reachable_through(v1, |lbl: &char| *lbl == 'a').unwrap());
-        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, |lbl: &char| *lbl == 'b').unwrap());
-        assert_same_elements!(vec![v2, v3], graph.reachable_through(v1, |lbl: &char| *lbl == 'b').unwrap());
-        assert_same_elements!(vec![v2, v3, v4], graph.reachable_through(v1, |lbl: &char| *lbl == 'c').unwrap());
+        assert_same_elements!(
+            vec![v1, v2],
+            graph
+                .reachable_through(v1, |lbl: &char| *lbl == 'a')
+                .unwrap()
+        );
+        assert_same_elements!(
+            vec![v2, v3],
+            graph
+                .reachable_through(v1, |lbl: &char| *lbl == 'b')
+                .unwrap()
+        );
+        assert_same_elements!(
+            vec![v2, v3],
+            graph
+                .reachable_through(v1, |lbl: &char| *lbl == 'b')
+                .unwrap()
+        );
+        assert_same_elements!(
+            vec![v2, v3, v4],
+            graph
+                .reachable_through(v1, |lbl: &char| *lbl == 'c')
+                .unwrap()
+        );
     }
 }

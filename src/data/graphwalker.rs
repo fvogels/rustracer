@@ -1,5 +1,8 @@
+use crate::{
+    data::graph::{Graph, VertexId},
+    util::tag::Tag,
+};
 use std::{collections::HashSet, hash::Hash};
-use crate::{data::graph::{Graph, VertexId}, util::tag::Tag};
 
 pub struct GraphWalker<V, E: Hash + Eq, T: Tag = ()> {
     graph: Graph<V, E, T>,
@@ -53,14 +56,22 @@ impl<V, E: Hash + Eq + Copy + Clone, T: Tag> GraphWalker<V, E, T> {
     }
 
     pub fn active_vertex_labels(&self) -> Vec<&V> {
-        self.active_positions.iter().copied().map(|v| self.graph.vertex_label(v).expect("Bug")).collect()
+        self.active_positions
+            .iter()
+            .copied()
+            .map(|v| self.graph.vertex_label(v).expect("Bug"))
+            .collect()
     }
 
     pub fn departing_arcs(&self) -> HashSet<E> {
         let mut result = HashSet::new();
 
         for active_position in self.active_positions.iter() {
-            for edge_label in self.graph.arcs_departing_from(*active_position).expect("Bug") {
+            for edge_label in self
+                .graph
+                .arcs_departing_from(*active_position)
+                .expect("Bug")
+            {
                 result.insert(*edge_label);
             }
         }

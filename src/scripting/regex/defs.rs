@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use crate::define_tag;
 
-
 #[derive(Debug)]
 pub enum RegularExpression<T> {
     Epsilon,

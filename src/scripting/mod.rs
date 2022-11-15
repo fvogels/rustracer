@@ -1,2 +1,2 @@
-pub mod tokenizing;
 pub mod regex;
+pub mod tokenizing;

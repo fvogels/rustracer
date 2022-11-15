@@ -1,8 +1,19 @@
-use std::{hash::Hash, collections::HashSet, ops::Deref, cell::Cell, borrow::{Borrow, BorrowMut}};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    cell::Cell,
+    collections::HashSet,
+    hash::Hash,
+    ops::Deref,
+};
 
-use super::{defs::{RegularExpression, VertexLabel, EdgeLabel}};
-use crate::{data::{graph::{Graph, VertexId}, graphwalker::GraphWalker}, util::tag::Tag};
-
+use super::defs::{EdgeLabel, RegularExpression, VertexLabel};
+use crate::{
+    data::{
+        graph::{Graph, VertexId},
+        graphwalker::GraphWalker,
+    },
+    util::tag::Tag,
+};
 
 pub struct NFABuilder<V, E: Copy + Clone, T: Tag> {
     graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>,
@@ -19,10 +30,15 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
 
     pub fn add(&mut self, regex: &RegularExpression<E>, terminal_vertex_label: V) {
         let terminal_vertex = self.add_helper(regex, self.start);
-        *self.graph.vertex_label_mut(terminal_vertex).expect("Bug") = VertexLabel::Terminal(terminal_vertex_label);
+        *self.graph.vertex_label_mut(terminal_vertex).expect("Bug") =
+            VertexLabel::Terminal(terminal_vertex_label);
     }
 
-    fn add_helper(&mut self, regex: &RegularExpression<E>, start_vertex: VertexId<T>) -> VertexId<T> {
+    fn add_helper(
+        &mut self,
+        regex: &RegularExpression<E>,
+        start_vertex: VertexId<T>,
+    ) -> VertexId<T> {
         match regex {
             RegularExpression::Epsilon => {
                 let vertex = self.graph.create_vertex(VertexLabel::NonTerminal);
@@ -37,7 +53,7 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
                     .create_edge(start_vertex, vertex, EdgeLabel::Char(*c))
                     .expect("Bug");
                 vertex
-            },
+            }
             RegularExpression::Sequence(ref children) => {
                 let mut finish = start_vertex;
 
@@ -46,27 +62,35 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
                 }
 
                 finish
-            },
+            }
             RegularExpression::Alternatives(ref children) => {
                 let finish = self.graph.create_vertex(VertexLabel::NonTerminal);
 
                 for child in children {
                     let vertex = self.add_helper(child, start_vertex);
-                    self.graph.create_edge(vertex, finish, EdgeLabel::Epsilon).expect("Bug");
+                    self.graph
+                        .create_edge(vertex, finish, EdgeLabel::Epsilon)
+                        .expect("Bug");
                 }
 
                 finish
-            },
+            }
             RegularExpression::Kleene(ref child) => {
                 let finish = self.graph.create_vertex(VertexLabel::NonTerminal);
                 let exit = self.add_helper(child, start_vertex);
 
-                self.graph.create_edge(start_vertex, finish, EdgeLabel::Epsilon).expect("Bug");
-                self.graph.create_edge(exit, finish, EdgeLabel::Epsilon).expect("Bug");
-                self.graph.create_edge(exit, start_vertex, EdgeLabel::Epsilon).expect("Bug");
+                self.graph
+                    .create_edge(start_vertex, finish, EdgeLabel::Epsilon)
+                    .expect("Bug");
+                self.graph
+                    .create_edge(exit, finish, EdgeLabel::Epsilon)
+                    .expect("Bug");
+                self.graph
+                    .create_edge(exit, start_vertex, EdgeLabel::Epsilon)
+                    .expect("Bug");
 
                 finish
-            },
+            }
         }
     }
 
@@ -75,14 +99,15 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
     }
 }
 
-
 pub struct NFAWalker<V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
     walker: GraphWalker<VertexLabel<V>, EdgeLabel<E>, T>,
 }
 
 impl<V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<V, E, T> {
     pub fn new(graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>, start_vertex: VertexId<T>) -> Self {
-        let mut result = NFAWalker { walker: GraphWalker::new(graph, start_vertex) };
+        let mut result = NFAWalker {
+            walker: GraphWalker::new(graph, start_vertex),
+        };
         result.walk_epsilon();
         result
     }
@@ -130,7 +155,10 @@ impl<V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<V, E, T> {
             }
         }
 
-        self.active_vertex_labels().iter().filter_map(|&lbl| aux(lbl)).collect()
+        self.active_vertex_labels()
+            .iter()
+            .filter_map(|&lbl| aux(lbl))
+            .collect()
     }
 
     pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
@@ -145,7 +173,6 @@ impl<V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<V, E, T> {
         self.walker.departing_arcs()
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -167,11 +194,17 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
         walker.walk('a');
-        assert_same_elements!(vec![&VertexLabel::Terminal(1)], walker.active_vertex_labels());
+        assert_same_elements!(
+            vec![&VertexLabel::Terminal(1)],
+            walker.active_vertex_labels()
+        );
 
         walker.set_active_positions(&HashSet::from([start]));
         walker.walk('b');
-        assert_same_elements!(vec![&VertexLabel::Terminal(2)], walker.active_vertex_labels());
+        assert_same_elements!(
+            vec![&VertexLabel::Terminal(2)],
+            walker.active_vertex_labels()
+        );
     }
 
     #[rstest]
@@ -181,7 +214,11 @@ mod tests {
         type T = ();
 
         let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
-        let regex = RegularExpression::Sequence(vec![Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('b')), Rc::new(RegularExpression::Literal('c'))]);
+        let regex = RegularExpression::Sequence(vec![
+            Rc::new(RegularExpression::Literal('a')),
+            Rc::new(RegularExpression::Literal('b')),
+            Rc::new(RegularExpression::Literal('c')),
+        ]);
         builder.add(&regex, 1);
         let (mut nfa, start) = builder.eject();
 
@@ -200,7 +237,11 @@ mod tests {
         type T = ();
 
         let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
-        let regex = RegularExpression::Alternatives(vec![Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('b')), Rc::new(RegularExpression::Literal('c'))]);
+        let regex = RegularExpression::Alternatives(vec![
+            Rc::new(RegularExpression::Literal('a')),
+            Rc::new(RegularExpression::Literal('b')),
+            Rc::new(RegularExpression::Literal('c')),
+        ]);
         builder.add(&regex, 1);
         let (mut nfa, start) = builder.eject();
 
@@ -219,8 +260,16 @@ mod tests {
 
         let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
         let regex = RegularExpression::Sequence(vec![
-            Rc::new(RegularExpression::Alternatives(vec![Rc::new(RegularExpression::Literal('a')), Rc::new(RegularExpression::Literal('b')), Rc::new(RegularExpression::Literal('c'))])),
-            Rc::new(RegularExpression::Alternatives(vec![Rc::new(RegularExpression::Literal('x')), Rc::new(RegularExpression::Literal('y')), Rc::new(RegularExpression::Literal('z'))])),
+            Rc::new(RegularExpression::Alternatives(vec![
+                Rc::new(RegularExpression::Literal('a')),
+                Rc::new(RegularExpression::Literal('b')),
+                Rc::new(RegularExpression::Literal('c')),
+            ])),
+            Rc::new(RegularExpression::Alternatives(vec![
+                Rc::new(RegularExpression::Literal('x')),
+                Rc::new(RegularExpression::Literal('y')),
+                Rc::new(RegularExpression::Literal('z')),
+            ])),
         ]);
         builder.add(&regex, 1);
         let (mut nfa, start) = builder.eject();
@@ -262,12 +311,10 @@ mod tests {
         type T = ();
 
         let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
-        let regex = RegularExpression::Kleene(Rc::new(
-            RegularExpression::Sequence(vec![
-                Rc::new(RegularExpression::Literal('a')),
-                Rc::new(RegularExpression::Literal('b')),
-            ]),
-        ));
+        let regex = RegularExpression::Kleene(Rc::new(RegularExpression::Sequence(vec![
+            Rc::new(RegularExpression::Literal('a')),
+            Rc::new(RegularExpression::Literal('b')),
+        ])));
         builder.add(&regex, 1);
         let (mut nfa, start) = builder.eject();
 

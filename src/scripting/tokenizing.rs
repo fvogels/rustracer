@@ -1,8 +1,8 @@
-use std::num::{ParseIntError, ParseFloatError};
+use std::num::{ParseFloatError, ParseIntError};
 
 use crate::data::BufferedIterator;
 
-use super::regex::{Automaton, AutomatonBuilder, literal};
+use super::regex::{literal, Automaton, AutomatonBuilder};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TokenType {
@@ -39,35 +39,37 @@ impl TokenType {
                 } else {
                     Ok(Token::LeftParenthesis)
                 }
-            },
+            }
             Self::RightParenthesis => {
                 if string != ")" {
                     Err(TokenError::RightParenthesisError)
                 } else {
                     Ok(Token::RightParenthesis)
                 }
-            },
-            Self::Identifier => {
-                Ok(Token::Identifier(string))
-            },
+            }
+            Self::Identifier => Ok(Token::Identifier(string)),
             Self::Integer => {
-                let n = string.parse::<i64>().map_err(|e| TokenError::IntegerError(e))?;
+                let n = string
+                    .parse::<i64>()
+                    .map_err(|e| TokenError::IntegerError(e))?;
                 Ok(Token::Integer(n))
-            },
+            }
             Self::FloatingPointNumber => {
-                let n = string.parse::<f64>().map_err(|e| TokenError::FloatingPointNumberError(e))?;
+                let n = string
+                    .parse::<f64>()
+                    .map_err(|e| TokenError::FloatingPointNumberError(e))?;
                 Ok(Token::FloatingPointNumber(n))
             }
         }
     }
 }
 
-pub struct Tokenizer<Loc: Copy + Clone, I: Iterator<Item=(char, Loc)>> {
+pub struct Tokenizer<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> {
     automaton: Automaton<TokenType>,
     input: BufferedIterator<I>,
 }
 
-impl<Loc: Copy + Clone, I: Iterator<Item=(char, Loc)>> Tokenizer<Loc, I> {
+impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
     pub fn new(input: I) -> Self {
         Tokenizer {
             automaton: Self::create_automaton(),
@@ -90,7 +92,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item=(char, Loc)>> Tokenizer<Loc, I> {
                 None => return,
                 Some((ch, loc)) => {
                     if !Self::is_whitespace(ch) {
-                        return
+                        return;
                     } else {
                         self.input.next()
                     }
@@ -119,21 +121,31 @@ impl<Loc: Copy + Clone, I: Iterator<Item=(char, Loc)>> Tokenizer<Loc, I> {
                 loop {
                     match self.input.current() {
                         None => {
-                            let token_type = self.automaton.finish().ok_or(TokenizerError::IncompleteToken)?;
-                            let token = token_type.to_token(acc_string).map_err(|e| TokenizerError::ConversionError(e))?;
+                            let token_type = self
+                                .automaton
+                                .finish()
+                                .ok_or(TokenizerError::IncompleteToken)?;
+                            let token = token_type
+                                .to_token(acc_string)
+                                .map_err(|e| TokenizerError::ConversionError(e))?;
                             let result = (token, start_location, last_location);
-                            return Ok(Some(result))
-                        },
+                            return Ok(Some(result));
+                        }
                         Some((ch, loc)) => {
                             if self.automaton.feed(ch) {
                                 acc_string.push(ch);
                                 last_location = loc;
                                 self.input.next();
                             } else {
-                                let token_type = self.automaton.finish().ok_or(TokenizerError::IncompleteToken)?;
-                                let token = token_type.to_token(acc_string).map_err(|e| TokenizerError::ConversionError(e))?;
+                                let token_type = self
+                                    .automaton
+                                    .finish()
+                                    .ok_or(TokenizerError::IncompleteToken)?;
+                                let token = token_type
+                                    .to_token(acc_string)
+                                    .map_err(|e| TokenizerError::ConversionError(e))?;
                                 let result = (token, start_location, last_location);
-                                return Ok(Some(result))
+                                return Ok(Some(result));
                             }
                         }
                     }
@@ -147,9 +159,8 @@ impl<Loc: Copy + Clone, I: Iterator<Item=(char, Loc)>> Tokenizer<Loc, I> {
 pub enum TokenizerError {
     EndReached,
     IncompleteToken,
-    ConversionError(TokenError)
+    ConversionError(TokenError),
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -159,7 +170,7 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    fn add_locs<'a>(string: &'a str) -> impl Iterator<Item=(char, usize)> + 'a {
+    fn add_locs<'a>(string: &'a str) -> impl Iterator<Item = (char, usize)> + 'a {
         string.chars().enumerate().map(|(i, ch)| (ch, i))
     }
 
@@ -169,8 +180,14 @@ mod tests {
         let input = add_locs(string);
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(Some((Token::LeftParenthesis, 0, 0)), tokenizer.next_token().unwrap());
-        assert_eq!(Some((Token::RightParenthesis, 1, 1)), tokenizer.next_token().unwrap());
+        assert_eq!(
+            Some((Token::LeftParenthesis, 0, 0)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::RightParenthesis, 1, 1)),
+            tokenizer.next_token().unwrap()
+        );
         assert_eq!(None, tokenizer.next_token().unwrap());
     }
 
@@ -180,8 +197,14 @@ mod tests {
         let input = add_locs(string);
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(Some((Token::LeftParenthesis, 1, 1)), tokenizer.next_token().unwrap());
-        assert_eq!(Some((Token::RightParenthesis, 3, 3)), tokenizer.next_token().unwrap());
+        assert_eq!(
+            Some((Token::LeftParenthesis, 1, 1)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::RightParenthesis, 3, 3)),
+            tokenizer.next_token().unwrap()
+        );
         assert_eq!(None, tokenizer.next_token().unwrap());
     }
 }
