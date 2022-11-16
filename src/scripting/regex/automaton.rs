@@ -50,8 +50,8 @@ impl<T> Automaton<T> {
 
     pub fn finish(&mut self) -> Option<&T> {
         match self.walker.active_vertex_label() {
-            VertexLabel::NonTerminal => None,
-            VertexLabel::Terminal(t) => Some(t),
+            None => None,
+            Some(t) => Some(t),
         }
     }
 

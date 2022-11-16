@@ -14,7 +14,7 @@ pub enum RegularExpression<T> {
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum VertexLabel<T> {
     NonTerminal,
-    Terminal(T),
+    Terminal(T, i32),
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]

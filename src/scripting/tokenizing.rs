@@ -2,7 +2,10 @@ use std::num::{ParseFloatError, ParseIntError};
 
 use crate::data::BufferedIterator;
 
-use super::regex::{literal, Automaton, AutomatonBuilder, integer, floating_point};
+use super::regex::{
+    alphanumeric, alternatives, character_class, floating_point, integer, kleene, letter, literal,
+    one_or_more, sequence, Automaton, AutomatonBuilder, Regex,
+};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TokenType {
@@ -84,8 +87,17 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
         builder.add(literal(')'), TokenType::RightParenthesis);
         builder.add(integer(), TokenType::Integer);
         builder.add(floating_point(), TokenType::FloatingPointNumber);
+        builder.add(Self::identifier_regex(), TokenType::Identifier);
 
         builder.eject()
+    }
+
+    fn identifier_regex() -> Regex {
+        let identifier_char = alternatives(
+            [character_class("+-*/%!@#$^&*|_<>=".chars()), alphanumeric()].into_iter(),
+        );
+
+        one_or_more(identifier_char)
     }
 
     fn skip_whitespace(&mut self) {
@@ -250,6 +262,27 @@ mod tests {
         );
         assert_eq!(
             Some((Token::FloatingPointNumber(999.7), 9, 13)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[rstest]
+    fn identifiers() {
+        let string = "+ abc HELLO-WORLD";
+        let input = add_locs(string);
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            Some((Token::Identifier("+".to_owned()), 0, 0)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::Identifier("abc".to_owned()), 2, 4)),
+            tokenizer.next_token().unwrap()
+        );
+        assert_eq!(
+            Some((Token::Identifier("HELLO-WORLD".to_owned()), 6, 16)),
             tokenizer.next_token().unwrap()
         );
         assert_eq!(None, tokenizer.next_token().unwrap());

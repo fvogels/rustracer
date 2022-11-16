@@ -18,6 +18,7 @@ use crate::{
 pub struct NFABuilder<V, E: Copy + Clone, T: Tag> {
     graph: Graph<VertexLabel<V>, EdgeLabel<E>, T>,
     start: VertexId<T>,
+    next_priority: i32,
 }
 
 impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
@@ -25,13 +26,15 @@ impl<V, E: Copy + Clone, T: Tag> NFABuilder<V, E, T> {
         let mut graph = Graph::new();
         let start = graph.create_vertex(VertexLabel::NonTerminal);
 
-        NFABuilder { graph, start }
+        NFABuilder { graph, start, next_priority: 0 }
     }
 
     pub fn add(&mut self, regex: &RegularExpression<E>, terminal_vertex_label: V) {
         let terminal_vertex = self.add_helper(regex, self.start);
-        *self.graph.vertex_label_mut(terminal_vertex).expect("Bug") =
-            VertexLabel::Terminal(terminal_vertex_label);
+        let label = VertexLabel::Terminal(terminal_vertex_label, self.next_priority);
+
+        *self.graph.vertex_label_mut(terminal_vertex).expect("Bug") = label;
+        self.next_priority += 1;
     }
 
     fn add_helper(
@@ -147,18 +150,21 @@ impl<V, E: Hash + Eq + Copy + Clone, T: Tag> NFAWalker<V, E, T> {
         self.walker.active_vertex_labels()
     }
 
-    pub fn active_terminal_labels(&self) -> Vec<&V> {
-        fn aux<'a, V>(lbl: &'a VertexLabel<V>) -> Option<&'a V> {
+    pub fn priority_terminal_label(&self) -> Option<&V> {
+        fn vertex_label_priority<V>(lbl: &VertexLabel<V>) -> Option<i32> {
             match lbl {
                 VertexLabel::NonTerminal => None,
-                VertexLabel::Terminal(lbl) => Some(lbl),
+                VertexLabel::Terminal(_, priority) => Some(*priority)
             }
         }
 
-        self.active_vertex_labels()
-            .iter()
-            .filter_map(|&lbl| aux(lbl))
-            .collect()
+        let active_vertex_labels = self.active_vertex_labels();
+        active_vertex_labels.iter().filter_map(|&lbl| {
+            match lbl  {
+                VertexLabel::NonTerminal => None,
+                VertexLabel::Terminal(v, p) => Some((v, *p))
+            }
+        }).min_by_key(|(_v, p)| *p).map(|(v, _p)| v)
     }
 
     pub fn set_active_positions(&mut self, positions: &HashSet<VertexId<T>>) {
@@ -180,7 +186,7 @@ mod tests {
 
     use rstest::rstest;
 
-    use crate::{assert_same_elements, data::graphwalker::GraphWalker};
+    use crate::{data::graphwalker::GraphWalker};
 
     #[cfg(test)]
     use super::*;
@@ -194,16 +200,16 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
         walker.walk('a');
-        assert_same_elements!(
-            vec![&VertexLabel::Terminal(1)],
-            walker.active_vertex_labels()
+        assert_eq!(
+            Some(&1),
+            walker.priority_terminal_label()
         );
 
         walker.set_active_positions(&HashSet::from([start]));
         walker.walk('b');
-        assert_same_elements!(
-            vec![&VertexLabel::Terminal(2)],
-            walker.active_vertex_labels()
+        assert_eq!(
+            Some(&2),
+            walker.priority_terminal_label()
         );
     }
 
@@ -227,7 +233,7 @@ mod tests {
         walker.walk('b');
         walker.walk('c');
 
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
     }
 
     #[rstest]
@@ -247,9 +253,9 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
 
-        assert_same_elements!(vec![], walker.active_terminal_labels());
+        assert_eq!(None, walker.priority_terminal_label());
         walker.walk(ch);
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
     }
 
     #[rstest]
@@ -276,11 +282,11 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
 
-        assert_same_elements!(vec![], walker.active_terminal_labels());
+        assert_eq!(None, walker.priority_terminal_label());
         walker.walk(first);
-        assert_same_elements!(vec![], walker.active_terminal_labels());
+        assert_eq!(None, walker.priority_terminal_label());
         walker.walk(second);
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
     }
 
     #[rstest]
@@ -296,11 +302,11 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
 
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
         walker.walk('a');
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
         walker.walk('a');
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
         walker.walk('a');
     }
 
@@ -320,14 +326,39 @@ mod tests {
 
         let mut walker = NFAWalker::new(nfa, start);
 
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
         walker.walk('a');
-        assert_same_elements!(vec![], walker.active_terminal_labels());
+        assert_eq!(None, walker.priority_terminal_label());
         walker.walk('b');
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
         walker.walk('a');
-        assert_same_elements!(vec![], walker.active_terminal_labels());
+        assert_eq!(None, walker.priority_terminal_label());
         walker.walk('b');
-        assert_same_elements!(vec![&1], walker.active_terminal_labels());
+        assert_eq!(Some(&1), walker.priority_terminal_label());
+    }
+
+    #[rstest]
+    fn priority() {
+        type V = i32;
+        type E = char;
+        type T = ();
+
+        let mut builder: NFABuilder<V, E, T> = NFABuilder::new();
+        let regex = RegularExpression::Sequence(vec![
+            Rc::new(RegularExpression::Literal('a')),
+            Rc::new(RegularExpression::Literal('b')),
+            Rc::new(RegularExpression::Literal('c')),
+        ]);
+        builder.add(&regex, 1);
+        builder.add(&regex, 2);
+
+        let (mut nfa, start) = builder.eject();
+        let mut walker = NFAWalker::new(nfa, start);
+
+        walker.walk('a');
+        walker.walk('b');
+        walker.walk('c');
+
+        assert_eq!(Some(&1), walker.priority_terminal_label());
     }
 }

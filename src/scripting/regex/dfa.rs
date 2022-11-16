@@ -18,7 +18,7 @@ use super::{
 
 struct DFABuilder<V, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> {
     walker: NFAWalker<V, E, NFA>,
-    dfa: Graph<VertexLabel<V>, E, DFA>,
+    dfa: Graph<Option<V>, E, DFA>,
     mapping: HashMap<Vec<VertexId<NFA>>, VertexId<DFA>>,
     start: VertexId<DFA>,
 }
@@ -28,7 +28,7 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
         let walker = NFAWalker::new(nfa, start_vertex);
         let mut dfa = Graph::new();
         let nfa_start = walker.active_positions();
-        let dfa_start = dfa.create_vertex(VertexLabel::NonTerminal);
+        let dfa_start = dfa.create_vertex(None);
         let mut mapping = HashMap::new();
         mapping.insert(Self::canonical_vertices(nfa_start), dfa_start);
 
@@ -56,7 +56,7 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
         if let Some(dfa_vertex) = self.mapping.get(&sorted_vertices) {
             (*dfa_vertex, false)
         } else {
-            let dfa_vertex = self.dfa.create_vertex(VertexLabel::NonTerminal);
+            let dfa_vertex = self.dfa.create_vertex(None);
             self.mapping.insert(sorted_vertices, dfa_vertex);
             (dfa_vertex, true)
         }
@@ -74,27 +74,14 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
 
             self.walker.set_active_positions(&nfa_departure_vertices);
 
-            let labels: Vec<_> = self
-                .walker
-                .active_vertex_labels()
-                .iter()
-                .filter_map(|&lbl| match lbl {
-                    VertexLabel::NonTerminal => None,
-                    VertexLabel::Terminal(_) => Some(lbl),
-                })
-                .collect();
-
-            if labels.len() != 0 {
-                assert_eq!(1, labels.len());
-                let label = labels[0];
-                let r = self
-                    .dfa
-                    .vertex_label_mut(dfa_departure_vertex)
-                    .expect("Bug");
-                *self
-                    .dfa
-                    .vertex_label_mut(dfa_departure_vertex)
-                    .expect("Bug") = label.clone();
+            match self.walker.priority_terminal_label() {
+                Some(label) => {
+                    *self
+                        .dfa
+                        .vertex_label_mut(dfa_departure_vertex)
+                        .expect("Bug") = Some(label.clone());
+                }
+                None => ()
             }
 
             for edge_label in self.walker.departing_arcs() {
@@ -121,7 +108,7 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
         }
     }
 
-    fn eject(self) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+    fn eject(self) -> (Graph<Option<V>, E, DFA>, VertexId<DFA>) {
         (self.dfa, self.start)
     }
 }
@@ -129,18 +116,18 @@ impl<V: Copy + Clone, E: Hash + Eq + Copy + Clone, NFA: Tag, DFA: Tag> DFABuilde
 pub fn nfa_to_dfa<V: Copy + Clone, E: Hash + Eq + Copy + Clone>(
     nfa: Graph<VertexLabel<V>, EdgeLabel<E>, NFA>,
     start_vertex: VertexId<NFA>,
-) -> (Graph<VertexLabel<V>, E, DFA>, VertexId<DFA>) {
+) -> (Graph<Option<V>, E, DFA>, VertexId<DFA>) {
     let mut converter = DFABuilder::new(nfa, start_vertex);
     converter.convert();
     converter.eject()
 }
 
 pub struct DFAWalker<V, E: Hash + Eq + Copy + Clone, T: Tag = ()> {
-    walker: GraphWalker<VertexLabel<V>, E, T>,
+    walker: GraphWalker<Option<V>, E, T>,
 }
 
 impl<V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<V, E, T> {
-    pub fn new(graph: Graph<VertexLabel<V>, E, T>, start_vertex: VertexId<T>) -> Self {
+    pub fn new(graph: Graph<Option<V>, E, T>, start_vertex: VertexId<T>) -> Self {
         DFAWalker {
             walker: GraphWalker::new(graph, start_vertex),
         }
@@ -155,10 +142,10 @@ impl<V, E: Hash + Eq + Copy + Clone, T: Tag> DFAWalker<V, E, T> {
         }
     }
 
-    pub fn active_vertex_label(&self) -> &VertexLabel<V> {
+    pub fn active_vertex_label(&self) -> Option<&V> {
         let labels = self.walker.active_vertex_labels();
         debug_assert_eq!(1, labels.len());
-        labels[0]
+        labels[0].as_ref()
     }
 
     pub fn set_active_position(&mut self, position: VertexId<T>) {
@@ -190,7 +177,7 @@ mod tests {
 
     #[rstest]
     fn literal() {
-        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+        fn create_dfa() -> (Graph<Option<i32>, char, DFA>, VertexId<DFA>) {
             let mut nfa_builder = NFABuilder::new();
             nfa_builder.add(&RegularExpression::Literal('a'), 1);
             nfa_builder.add(&RegularExpression::Literal('b'), 2);
@@ -202,14 +189,14 @@ mod tests {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
             assert!(walker.walk('a'));
-            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+            assert_eq!(Some(&1), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
             assert!(walker.walk('b'));
-            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+            assert_eq!(Some(&2), walker.active_vertex_label());
         }
 
         {
@@ -221,7 +208,7 @@ mod tests {
 
     #[rstest]
     fn sequence() {
-        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+        fn create_dfa() -> (Graph<Option<i32>, char, DFA>, VertexId<DFA>) {
             let mut nfa_builder = NFABuilder::new();
             let regex = RegularExpression::Sequence(vec![
                 Rc::new(RegularExpression::Literal('a')),
@@ -246,39 +233,39 @@ mod tests {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('a'));
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('b'));
-            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+            assert_eq!(Some(&1), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('a'));
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('c'));
-            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+            assert_eq!(Some(&2), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('x'));
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('y'));
-            assert_eq!(VertexLabel::Terminal(3), *walker.active_vertex_label());
+            assert_eq!(Some(&3), walker.active_vertex_label());
         }
     }
 
     #[rstest]
     fn alternatives() {
-        fn create_dfa() -> (Graph<VertexLabel<i32>, char, DFA>, VertexId<DFA>) {
+        fn create_dfa() -> (Graph<Option<i32>, char, DFA>, VertexId<DFA>) {
             let mut nfa_builder = NFABuilder::new();
             let regex = RegularExpression::Alternatives(vec![
                 Rc::new(RegularExpression::Literal('a')),
@@ -298,36 +285,36 @@ mod tests {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('a'));
-            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+            assert_eq!(Some(&1), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('b'));
-            assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+            assert_eq!(Some(&1), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('x'));
-            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+            assert_eq!(Some(&2), walker.active_vertex_label());
         }
 
         {
             let (dfa, start) = create_dfa();
             let mut walker = DFAWalker::new(dfa, start);
 
-            assert_eq!(VertexLabel::NonTerminal, *walker.active_vertex_label());
+            assert_eq!(None, walker.active_vertex_label());
             assert!(walker.walk('y'));
-            assert_eq!(VertexLabel::Terminal(2), *walker.active_vertex_label());
+            assert_eq!(Some(&2), walker.active_vertex_label());
         }
     }
 
@@ -341,13 +328,13 @@ mod tests {
 
         let mut walker = DFAWalker::new(dfa, start);
 
-        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert_eq!(Some(&1), walker.active_vertex_label());
         assert!(walker.walk('a'));
-        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert_eq!(Some(&1), walker.active_vertex_label());
         assert!(walker.walk('a'));
-        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert_eq!(Some(&1), walker.active_vertex_label());
         assert!(walker.walk('a'));
-        assert_eq!(VertexLabel::Terminal(1), *walker.active_vertex_label());
+        assert_eq!(Some(&1), walker.active_vertex_label());
         assert!(walker.walk('a'));
     }
 }
