@@ -187,104 +187,114 @@ mod tests {
         string.chars().enumerate().map(|(i, ch)| (ch, i))
     }
 
-    #[rstest]
-    fn parentheses() {
-        let string = "()";
+    #[cfg(test)]
+    fn check_with_locations(string: &str, expected_triples: &[(Token, usize, usize)]) {
         let input = add_locs(string);
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(
-            Some((Token::LeftParenthesis, 0, 0)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::RightParenthesis, 1, 1)),
-            tokenizer.next_token().unwrap()
-        );
+        for expected_triple in expected_triples {
+            let actual = tokenizer.next_token().unwrap();
+
+            match actual {
+                Some(actual_triple) => assert_eq!(*expected_triple, actual_triple),
+                None => panic!("Missing tokens")
+            }
+        }
+
         assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[cfg(test)]
+    fn check_without_locations(string: &str, expected_tokens: &[Token]) {
+        let input = add_locs(string);
+        let mut tokenizer = Tokenizer::new(input);
+
+        for expected_token in expected_tokens {
+            let actual = tokenizer.next_token().unwrap();
+
+            match actual {
+                Some((actual_token, _, _)) => assert_eq!(*expected_token, actual_token),
+                None => panic!("Missing tokens")
+            }
+        }
+
+        assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[rstest]
+    fn parentheses() {
+        let string = "()";
+        let expected_tokens = [
+            (Token::LeftParenthesis, 0, 0),
+            (Token::RightParenthesis, 1, 1),
+        ];
+
+        check_with_locations(string, &expected_tokens);
     }
 
     #[rstest]
     fn parentheses_with_whitespace() {
         let string = " ( ) ";
-        let input = add_locs(string);
-        let mut tokenizer = Tokenizer::new(input);
+        let expected_tokens = [
+            (Token::LeftParenthesis, 1, 1),
+            (Token::RightParenthesis, 3, 3),
+        ];
 
-        assert_eq!(
-            Some((Token::LeftParenthesis, 1, 1)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::RightParenthesis, 3, 3)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(None, tokenizer.next_token().unwrap());
+        check_with_locations(string, &expected_tokens);
     }
 
     #[rstest]
     fn integers() {
         let string = "1 23 456 -10";
-        let input = add_locs(string);
-        let mut tokenizer = Tokenizer::new(input);
+        let expected_tokens = [
+            (Token::Integer(1), 0, 0),
+            (Token::Integer(23), 2, 3),
+            (Token::Integer(456), 5, 7),
+            (Token::Integer(-10), 9, 11),
+        ];
 
-        assert_eq!(
-            Some((Token::Integer(1), 0, 0)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::Integer(23), 2, 3)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::Integer(456), 5, 7)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::Integer(-10), 9, 11)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(None, tokenizer.next_token().unwrap());
+        check_with_locations(string, &expected_tokens);
     }
 
     #[rstest]
     fn floating_points() {
         let string = "1.0 12.3 999.7";
-        let input = add_locs(string);
-        let mut tokenizer = Tokenizer::new(input);
+        let expected_tokens = [
+            (Token::FloatingPointNumber(1.0), 0, 2),
+            (Token::FloatingPointNumber(12.3), 4, 7),
+            (Token::FloatingPointNumber(999.7), 9, 13),
+        ];
 
-        assert_eq!(
-            Some((Token::FloatingPointNumber(1.0), 0, 2)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::FloatingPointNumber(12.3), 4, 7)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::FloatingPointNumber(999.7), 9, 13)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(None, tokenizer.next_token().unwrap());
+        check_with_locations(string, &expected_tokens);
     }
 
     #[rstest]
     fn identifiers() {
         let string = "+ abc HELLO-WORLD";
-        let input = add_locs(string);
-        let mut tokenizer = Tokenizer::new(input);
+        let expected_tokens = [
+            (Token::Identifier("+".to_owned()), 0, 0),
+            (Token::Identifier("abc".to_owned()), 2, 4),
+            (Token::Identifier("HELLO-WORLD".to_owned()), 6, 16),
+        ];
 
-        assert_eq!(
-            Some((Token::Identifier("+".to_owned()), 0, 0)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::Identifier("abc".to_owned()), 2, 4)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(
-            Some((Token::Identifier("HELLO-WORLD".to_owned()), 6, 16)),
-            tokenizer.next_token().unwrap()
-        );
-        assert_eq!(None, tokenizer.next_token().unwrap());
+        check_with_locations(string, &expected_tokens);
+    }
+
+    #[rstest]
+    fn mix() {
+        let string = "(foo (+ 1.0 20) 8)";
+        let expected_tokens = [
+            Token::LeftParenthesis,
+            Token::Identifier("foo".to_owned()),
+            Token::LeftParenthesis,
+            Token::Identifier("+".to_owned()),
+            Token::FloatingPointNumber(1.0),
+            Token::Integer(20),
+            Token::RightParenthesis,
+            Token::Integer(8),
+            Token::RightParenthesis,
+        ];
+
+        check_without_locations(string, &expected_tokens);
     }
 }
