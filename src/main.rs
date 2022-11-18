@@ -25,7 +25,7 @@ use math::{
 use primitives::decorator::Decorator;
 use primitives::sphere::Sphere;
 use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
-use samplers::{sampler::Sampler2D, stratified::StratifiedSampler2D};
+use samplers::{Sampler2D, StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
 
@@ -131,6 +131,6 @@ fn main() {
     }
 
     image
-        .write_to_file(std::path::Path::new(r"g:/temp/test.png"))
+        .write_to_file(std::path::Path::new(r"test.png"))
         .expect("Failed to write image to file");
 }
