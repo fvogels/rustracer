@@ -3,8 +3,8 @@ use std::num::{ParseFloatError, ParseIntError};
 use crate::data::BufferedIterator;
 
 use super::regex::{
-    alphanumeric, alternatives, character_class, floating_point, integer, kleene, letter, literal,
-    one_or_more, sequence, Automaton, AutomatonBuilder, Regex,
+    alphanumeric, alternatives, character_class, floating_point, integer, literal,
+    one_or_more, Automaton, AutomatonBuilder, Regex,
 };
 
 #[derive(Debug, PartialEq, Copy, Clone)]
