@@ -1,5 +1,4 @@
-use core::borrow;
-use std::{collections::HashMap, rc::Rc, cell::RefCell, borrow::Borrow};
+use std::{collections::HashMap, rc::Rc, cell::RefCell};
 
 use super::{values::Value, interpreter::InterpreterError};
 

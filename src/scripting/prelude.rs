@@ -1,11 +1,17 @@
 use std::rc::Rc;
 
-use crate::data::Either;
+use crate::{data::Either, scripting::values::NativeFunction};
 
-use super::{environment::Environment, values::Value, interpreter::InterpreterError};
+use super::{environment::Environment, values::Value, interpreter::{InterpreterError, Interpreter}};
 
 pub fn create_prelude() -> Environment {
+    fn native_function<F: Fn(&mut Interpreter, &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> + 'static>(id: &str, f: F) -> Rc<Value> {
+        Rc::new(Value::NativeFunction(String::from(id), Rc::new(f)))
+    }
+
     let mut environment = Environment::new();
+
+    environment.bind(String::from("+"), native_function("+", addition));
 
     environment
 }
@@ -22,9 +28,25 @@ pub fn create_prelude() -> Environment {
 //     }
 // }
 
-// fn addition(interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> {
+fn addition(interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> {
+    if arguments.is_empty() {
+        Err(InterpreterError::InvalidNumberOfArguments)
+    } else {
+        let mut result = arguments[0].as_ref().clone();
 
-// }
+        for argument in arguments[1..].iter() {
+            match (result, argument.as_ref()) {
+                (Value::Integer(a), Value::Integer(b)) => { result = Value::Integer(a + b) }
+                (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 + b) }
+                (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a + b) }
+                (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a+ (*b as f64)) }
+                _ => { return Err(InterpreterError::InvalidArgumentTypes) }
+            }
+        }
+
+        Ok(Rc::new(result))
+    }
+}
 
 fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>, InterpreterError> {
     let mut result: Either<Vec<i64>, Vec<f64>> = Either::Left(Vec::new());
@@ -48,10 +70,13 @@ fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>
 
 #[cfg(test)]
 mod test {
-    use rstest::rstest;
+    use rstest::{rstest, fixture};
 
     #[cfg(test)]
     use super::*;
+
+    #[cfg(test)]
+    use crate::scripting::values::creation::*;
 
     #[rstest]
     fn homogenize_single_i64() {
@@ -105,5 +130,19 @@ mod test {
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
+    }
+
+    #[fixture]
+    fn interpreter() -> Interpreter {
+        Interpreter::new()
+    }
+
+    #[rstest]
+    #[case(&[int(0)], int(0))]
+    fn test_addition(mut interpreter: Interpreter, #[case] arguments: &[Value], #[case] expected: Value) {
+        let wrapped_arguments: Vec<_> = arguments.into_iter().map(|v| Rc::new(v.clone())).collect();
+        let actual = addition(&mut interpreter, &wrapped_arguments).unwrap();
+
+        assert_eq!(&expected, actual.as_ref());
     }
 }
