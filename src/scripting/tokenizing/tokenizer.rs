@@ -67,12 +67,10 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
 
                 self.automaton.reset();
                 self.automaton.feed(ch);
-                println!("Fed {}", ch);
 
                 loop {
                     match self.input.current() {
                         None => {
-                            println!("End of input!");
                             let token_type = self
                                 .automaton
                                 .current()
@@ -83,7 +81,6 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
                             return Ok(Some(result));
                         }
                         Some((ch, loc)) => {
-                            println!("New char: {}", ch);
                             if self.automaton.feed(ch) {
                                 acc_string.push(ch);
                                 last_location = loc;
