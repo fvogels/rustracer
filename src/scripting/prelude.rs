@@ -2,10 +2,10 @@ use std::rc::Rc;
 
 use crate::{data::Either, scripting::values::NativeFunction};
 
-use super::{environment::Environment, values::Value, interpreter::{InterpreterError, Interpreter}};
+use super::{environment::Environment, values::Value, evaluating::{EvaluationError, Evaluator}};
 
 pub fn create_prelude() -> Environment {
-    fn native_function<F: Fn(&mut Interpreter, &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> + 'static>(id: &str, f: F) -> Rc<Value> {
+    fn native_function<F: Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> + 'static>(id: &str, f: F) -> Rc<Value> {
         Rc::new(Value::NativeFunction(String::from(id), Rc::new(f)))
     }
 
@@ -28,9 +28,9 @@ pub fn create_prelude() -> Environment {
 //     }
 // }
 
-fn addition(_interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> {
+fn addition(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> {
     if arguments.is_empty() {
-        Err(InterpreterError::InvalidNumberOfArguments)
+        Err(EvaluationError::InvalidNumberOfArguments)
     } else {
         let mut result = arguments[0].as_ref().clone();
 
@@ -40,7 +40,7 @@ fn addition(_interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<R
                 (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 + b) }
                 (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a + b) }
                 (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a+ (*b as f64)) }
-                _ => { return Err(InterpreterError::InvalidArgumentTypes) }
+                _ => { return Err(EvaluationError::InvalidArgumentTypes) }
             }
         }
 
@@ -48,7 +48,7 @@ fn addition(_interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<R
     }
 }
 
-fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>, InterpreterError> {
+fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>, EvaluationError> {
     let mut result: Either<Vec<i64>, Vec<f64>> = Either::Left(Vec::new());
 
     for value in values {
@@ -61,7 +61,7 @@ fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>
             },
             (Value::Integer(n), Either::Right(vec)) => vec.push(n.clone() as f64),
             (Value::FloatingPointNumber(n), Either::Right(vec)) => vec.push(*n),
-            _ => return Err(InterpreterError::NonNumberInArithmeticOperation),
+            _ => return Err(EvaluationError::NonNumberInArithmeticOperation),
         }
     }
 
@@ -133,16 +133,15 @@ mod test {
     }
 
     #[fixture]
-    fn interpreter() -> Interpreter {
-        Interpreter::new()
+    fn interpreter() -> Evaluator {
+        Evaluator::new()
     }
 
     #[rstest]
     #[case(&[int(0)], int(0))]
-    fn test_addition(mut interpreter: Interpreter, #[case] arguments: &[Value], #[case] expected: Value) {
-        let wrapped_arguments: Vec<_> = arguments.into_iter().map(|v| Rc::new(v.clone())).collect();
-        let actual = addition(&mut interpreter, &wrapped_arguments).unwrap();
+    fn test_addition(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
+        let actual = addition(&mut interpreter, &arguments).unwrap();
 
-        assert_eq!(&expected, actual.as_ref());
+        assert_eq!(expected, actual);
     }
 }

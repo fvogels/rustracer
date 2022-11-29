@@ -76,7 +76,7 @@ mod test {
     fn parse_single_symbol() {
         let id = String::from("abc");
         let mut parser = Parser::new();
-        parser.feed(&Token::Identifier(id.clone()));
+        parser.feed(&Token::Identifier(id.clone())).unwrap();
 
         let mut result = parser.eject().unwrap();
         assert_eq!(1, result.len());
@@ -87,11 +87,11 @@ mod test {
     #[rstest]
     fn parse_list() {
         let mut parser = Parser::new();
-        parser.feed(&Token::LeftParenthesis);
-        parser.feed(&Token::Integer(1));
-        parser.feed(&Token::Integer(2));
-        parser.feed(&Token::Integer(3));
-        parser.feed(&Token::RightParenthesis);
+        parser.feed(&Token::LeftParenthesis).unwrap();
+        parser.feed(&Token::Integer(1)).unwrap();
+        parser.feed(&Token::Integer(2)).unwrap();
+        parser.feed(&Token::Integer(3)).unwrap();
+        parser.feed(&Token::RightParenthesis).unwrap();
 
         let mut result = parser.eject().unwrap();
         assert_eq!(1, result.len());

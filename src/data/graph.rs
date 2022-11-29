@@ -197,12 +197,12 @@ mod tests {
         let v3 = graph.create_vertex(3);
         let v4 = graph.create_vertex(4);
 
-        graph.create_edge(v1, v2, ());
-        graph.create_edge(v1, v3, ());
-        graph.create_edge(v1, v4, ());
-        graph.create_edge(v3, v3, ());
-        graph.create_edge(v4, v1, ());
-        graph.create_edge(v4, v2, ());
+        graph.create_edge(v1, v2, ()).unwrap();
+        graph.create_edge(v1, v3, ()).unwrap();
+        graph.create_edge(v1, v4, ()).unwrap();
+        graph.create_edge(v3, v3, ()).unwrap();
+        graph.create_edge(v4, v1, ()).unwrap();
+        graph.create_edge(v4, v2, ()).unwrap();
 
         assert_same_elements!(vec![v2, v3, v4], graph.reachable_from(v1).unwrap());
         assert_same_elements!(vec![], graph.reachable_from(v2).unwrap());

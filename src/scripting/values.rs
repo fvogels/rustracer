@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use super::{interpreter::{Interpreter, InterpreterError}};
+use super::{evaluating::{Evaluator, EvaluationError}};
 
 #[derive(Clone)]
 pub enum Value {
@@ -13,7 +13,7 @@ pub enum Value {
     NativeFunction(String, Rc<NativeFunction>)
 }
 
-pub type NativeFunction = dyn Fn(&mut Interpreter, &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError>;
+pub type NativeFunction = dyn Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError>;
 
 impl Value {
     pub fn is_integer(&self) -> bool {
@@ -95,13 +95,23 @@ impl std::fmt::Debug for Value {
 }
 
 pub mod creation {
+    use std::rc::Rc;
+
     use super::Value;
 
-    pub fn int(n: i64) -> Value {
-        Value::Integer(n)
+    pub fn int(n: i64) -> Rc<Value> {
+        Rc::new(Value::Integer(n))
     }
 
-    pub fn float(n: f64) -> Value {
-        Value::FloatingPointNumber(n)
+    pub fn float(n: f64) -> Rc<Value> {
+        Rc::new(Value::FloatingPointNumber(n))
+    }
+
+    pub fn list(elts: Vec<Rc<Value>>) -> Rc<Value> {
+        Rc::new(Value::List(elts))
+    }
+
+    pub fn symbol(id: &str) -> Rc<Value> {
+        Rc::new(Value::Symbol(String::from(id)))
     }
 }
