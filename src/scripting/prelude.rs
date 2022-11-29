@@ -28,7 +28,7 @@ pub fn create_prelude() -> Environment {
 //     }
 // }
 
-fn addition(interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> {
+fn addition(_interpreter: &mut Interpreter, arguments: &[Rc<Value>]) -> Result<Rc<Value>, InterpreterError> {
     if arguments.is_empty() {
         Err(InterpreterError::InvalidNumberOfArguments)
     } else {

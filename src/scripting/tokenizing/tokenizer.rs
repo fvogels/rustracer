@@ -1,71 +1,6 @@
-use std::num::{ParseFloatError, ParseIntError};
+use crate::{data::BufferedIterator, regex::Regex};
 
-use crate::data::BufferedIterator;
-
-use super::regex::{
-    alphanumeric, alternatives, character_class, floating_point, integer, literal,
-    one_or_more, Automaton, AutomatonBuilder, Regex,
-};
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum TokenType {
-    LeftParenthesis,
-    RightParenthesis,
-    Identifier,
-    Integer,
-    FloatingPointNumber,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Token {
-    LeftParenthesis,
-    RightParenthesis,
-    Identifier(String),
-    Integer(i64),
-    FloatingPointNumber(f64),
-}
-
-#[derive(Debug)]
-pub enum TokenError {
-    LeftParenthesisError,
-    RightParenthesisError,
-    IntegerError(ParseIntError),
-    FloatingPointNumberError(ParseFloatError),
-}
-
-impl TokenType {
-    pub fn to_token(&self, string: String) -> Result<Token, TokenError> {
-        match self {
-            Self::LeftParenthesis => {
-                if string != "(" {
-                    Err(TokenError::LeftParenthesisError)
-                } else {
-                    Ok(Token::LeftParenthesis)
-                }
-            }
-            Self::RightParenthesis => {
-                if string != ")" {
-                    Err(TokenError::RightParenthesisError)
-                } else {
-                    Ok(Token::RightParenthesis)
-                }
-            }
-            Self::Identifier => Ok(Token::Identifier(string)),
-            Self::Integer => {
-                let n = string
-                    .parse::<i64>()
-                    .map_err(|e| TokenError::IntegerError(e))?;
-                Ok(Token::Integer(n))
-            }
-            Self::FloatingPointNumber => {
-                let n = string
-                    .parse::<f64>()
-                    .map_err(|e| TokenError::FloatingPointNumberError(e))?;
-                Ok(Token::FloatingPointNumber(n))
-            }
-        }
-    }
-}
+use super::{automaton::{Automaton, AutomatonBuilder}, TokenType, Token, TokenizingError};
 
 pub struct Tokenizer<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> {
     automaton: Automaton<TokenType>,
@@ -83,28 +18,29 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
     fn create_automaton() -> Automaton<TokenType> {
         let mut builder = AutomatonBuilder::new();
 
-        builder.add(literal('('), TokenType::LeftParenthesis);
-        builder.add(literal(')'), TokenType::RightParenthesis);
-        builder.add(integer(), TokenType::Integer);
-        builder.add(floating_point(), TokenType::FloatingPointNumber);
-        builder.add(Self::identifier_regex(), TokenType::Identifier);
+        builder.add_rule(Regex::literal('('), TokenType::LeftParenthesis);
+        builder.add_rule(Regex::literal(')'), TokenType::RightParenthesis);
+        builder.add_rule(Regex::integer(10), TokenType::Integer);
+        builder.add_rule(Regex::float(), TokenType::FloatingPointNumber);
+        builder.add_rule(Self::identifier_regex(), TokenType::Identifier);
 
         builder.eject()
     }
 
     fn identifier_regex() -> Regex {
-        let identifier_char = alternatives(
-            [character_class("+-*/%!@#$^&*|_<>=".chars()), alphanumeric()].into_iter(),
+        let identifier_char = Regex::alternatives([
+            Regex::character_class("+-*/%!@#$^&*|_<>=".chars()),
+            Regex::alphanumeric()].into_iter(),
         );
 
-        one_or_more(identifier_char)
+        Regex::one_or_more(identifier_char)
     }
 
     fn skip_whitespace(&mut self) {
         loop {
             match self.input.current() {
                 None => return,
-                Some((ch, loc)) => {
+                Some((ch, _loc)) => {
                     if !Self::is_whitespace(ch) {
                         return;
                     } else {
@@ -119,7 +55,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
         " \n\r".chars().any(|c| c == ch)
     }
 
-    pub fn next_token(&mut self) -> Result<Option<(Token, Loc, Loc)>, TokenizerError> {
+    pub fn next_token(&mut self) -> Result<Option<(Token, Loc, Loc)>, TokenizingError> {
         self.skip_whitespace();
 
         match self.input.current() {
@@ -131,21 +67,23 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
 
                 self.automaton.reset();
                 self.automaton.feed(ch);
+                println!("Fed {}", ch);
 
                 loop {
                     match self.input.current() {
                         None => {
+                            println!("End of input!");
                             let token_type = self
                                 .automaton
-                                .finish()
-                                .ok_or(TokenizerError::IncompleteToken)?;
+                                .current()
+                                .ok_or(TokenizingError::IncompleteToken)?;
                             let token = token_type
-                                .to_token(acc_string)
-                                .map_err(|e| TokenizerError::ConversionError(e))?;
+                                .to_token(acc_string)?;
                             let result = (token, start_location, last_location);
                             return Ok(Some(result));
                         }
                         Some((ch, loc)) => {
+                            println!("New char: {}", ch);
                             if self.automaton.feed(ch) {
                                 acc_string.push(ch);
                                 last_location = loc;
@@ -153,11 +91,10 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
                             } else {
                                 let token_type = self
                                     .automaton
-                                    .finish()
-                                    .ok_or(TokenizerError::IncompleteToken)?;
+                                    .current()
+                                    .ok_or(TokenizingError::IncompleteToken)?;
                                 let token = token_type
-                                    .to_token(acc_string)
-                                    .map_err(|e| TokenizerError::ConversionError(e))?;
+                                    .to_token(acc_string)?;
                                 let result = (token, start_location, last_location);
                                 return Ok(Some(result));
                             }
@@ -169,11 +106,6 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
     }
 }
 
-#[derive(Debug)]
-pub enum TokenizerError {
-    IncompleteToken,
-    ConversionError(TokenError),
-}
 
 #[cfg(test)]
 mod tests {
@@ -193,7 +125,7 @@ mod tests {
         let mut tokenizer = Tokenizer::new(input);
 
         for expected_triple in expected_triples {
-            let actual = tokenizer.next_token().unwrap();
+            let actual = tokenizer.next_token().expect("there should be a next token");
 
             match actual {
                 Some(actual_triple) => assert_eq!(*expected_triple, actual_triple),
@@ -219,6 +151,16 @@ mod tests {
         }
 
         assert_eq!(None, tokenizer.next_token().unwrap());
+    }
+
+    #[rstest]
+    fn parenthesis() {
+        let string = "(";
+        let expected_tokens = [
+            (Token::LeftParenthesis, 0, 0),
+        ];
+
+        check_with_locations(string, &expected_tokens);
     }
 
     #[rstest]
@@ -251,6 +193,16 @@ mod tests {
             (Token::Integer(23), 2, 3),
             (Token::Integer(456), 5, 7),
             (Token::Integer(-10), 9, 11),
+        ];
+
+        check_with_locations(string, &expected_tokens);
+    }
+
+    #[rstest]
+    fn floating_point() {
+        let string = "1.0";
+        let expected_tokens = [
+            (Token::FloatingPointNumber(1.0), 0, 2),
         ];
 
         check_with_locations(string, &expected_tokens);

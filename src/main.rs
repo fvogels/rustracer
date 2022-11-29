@@ -5,6 +5,7 @@ mod lights;
 mod materials;
 mod math;
 mod primitives;
+mod regex;
 mod samplers;
 mod scripting;
 mod tracing;

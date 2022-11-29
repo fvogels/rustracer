@@ -89,7 +89,7 @@ impl std::fmt::Debug for Value {
             Value::List(xs) => f.debug_list().entries(xs).finish(),
             Value::Nil => f.debug_tuple("Nil").finish(),
             Value::Symbol(x) => f.debug_tuple("Symbol").field(x).finish(),
-            Value::NativeFunction(id, func) => f.debug_struct("NativeFunction").field("name", id).finish(),
+            Value::NativeFunction(id, _func) => f.debug_struct("NativeFunction").field("name", id).finish(),
         }
     }
 }

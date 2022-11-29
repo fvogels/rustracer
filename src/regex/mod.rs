@@ -1,7 +1,5 @@
 use std::rc::Rc;
 
-use crate::scripting::regex::one_or_more;
-
 
 enum RegexImp {
     Empty,
@@ -222,8 +220,24 @@ impl Regex {
         self.imp.is_terminal()
     }
 
-    pub fn feed(&mut self, ch: char) {
+    pub fn feed_mut(&mut self, ch: char) {
         self.imp = self.imp.feed(ch)
+    }
+
+    pub fn feed(&self, ch: char) -> Self {
+        let imp = self.imp.feed(ch);
+
+        Regex { imp }
+    }
+
+    pub fn try_feed(&self, ch: char) -> Option<Self> {
+        let imp = self.imp.feed(ch);
+
+        if imp.is_empty() {
+            None
+        } else {
+            Some(Regex { imp })
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -240,16 +254,40 @@ impl Regex {
         Self::sequence([r.clone(), Self::kleene(r)].into_iter())
     }
 
+    pub fn lowercase_letter() -> Self {
+        Self::predicate(Rc::new(move |ch: char| ch.is_lowercase()))
+    }
+
+    pub fn uppercase_letter() -> Self {
+        Self::predicate(Rc::new(move |ch: char| ch.is_uppercase()))
+    }
+
+    pub fn letter() -> Self {
+        Self::predicate(Rc::new(move |ch: char| ch.is_alphabetic()))
+    }
+
     pub fn digit(radix: u32) -> Self {
         Self::predicate(Rc::new(move |ch: char| ch.is_digit(radix)))
+    }
+
+    pub fn alphanumeric() -> Self {
+        Self::predicate(Rc::new(move |ch: char| ch.is_alphanumeric()))
     }
 
     pub fn positive_integer(radix: u32) -> Self {
         Self::one_or_more(Self::digit(radix))
     }
 
-    pub fn negative_integer(radix: u32) -> Self {
-        Self::sequence([Self::literal('-'), Self::positive_integer(radix)].into_iter())
+    pub fn integer(radix: u32) -> Self {
+        Self::sequence([Self::optional(Self::literal('-')), Self::positive_integer(radix)].into_iter())
+    }
+
+    pub fn float() -> Self {
+        Self::sequence([
+            Self::integer(10),
+            Self::literal('.'),
+            Self::positive_integer(10),
+        ].into_iter())
     }
 }
 
@@ -266,20 +304,20 @@ mod test {
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
-        regex.feed('a');
+        regex.feed_mut('a');
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
-        regex.feed('b');
+        regex.feed_mut('b');
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
-        regex.feed('c');
+        regex.feed_mut('c');
 
         assert!(regex.is_terminal());
         assert!(!regex.is_empty());
 
-        regex.feed('a');
+        regex.feed_mut('a');
         assert!(regex.is_empty());
     }
 
@@ -289,7 +327,7 @@ mod test {
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
-        regex.feed('b');
+        regex.feed_mut('b');
         assert!(regex.is_empty());
     }
 
@@ -299,7 +337,7 @@ mod test {
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
-        regex.feed('b');
+        regex.feed_mut('b');
         assert!(regex.is_empty());
     }
 
@@ -308,7 +346,7 @@ mod test {
         let mut regex = Regex::alternatives([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
 
         assert!(!regex.is_terminal());
-        regex.feed(ch);
+        regex.feed_mut(ch);
         assert!(regex.is_terminal());
     }
 
@@ -317,7 +355,7 @@ mod test {
         let mut regex = Regex::alternatives([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
 
         assert!(!regex.is_terminal());
-        regex.feed(ch);
+        regex.feed_mut(ch);
         assert!(!regex.is_terminal());
         assert!(regex.is_empty());
     }
@@ -330,7 +368,7 @@ mod test {
         assert!(!regex.is_empty());
 
         for ch in string.chars() {
-            regex.feed(ch);
+            regex.feed_mut(ch);
             assert!(regex.is_terminal());
             assert!(!regex.is_empty());
         }
@@ -344,7 +382,7 @@ mod test {
         assert!(!regex.is_empty());
 
         for ch in string.chars() {
-            regex.feed(ch);
+            regex.feed_mut(ch);
             assert!(!regex.is_terminal());
             assert!(regex.is_empty());
         }
@@ -355,7 +393,7 @@ mod test {
         let mut regex = Regex::optional(Regex::literal('a'));
 
         for ch in string.chars() {
-            regex.feed(ch);
+            regex.feed_mut(ch);
         }
 
         assert!(regex.is_terminal());
@@ -367,10 +405,81 @@ mod test {
         let mut regex = Regex::optional(Regex::literal('b'));
 
         for ch in string.chars() {
-            regex.feed(ch);
+            regex.feed_mut(ch);
         }
 
         assert!(!regex.is_terminal());
         assert!(regex.is_empty());
+    }
+
+    #[rstest]
+    fn integer_positive(#[values("0", "1", "1234567890", "-546846")] string: &str) {
+        let mut regex = Regex::integer(10);
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(regex.is_terminal());
+        assert!(!regex.is_empty());
+    }
+
+    #[rstest]
+    fn integer_negative(#[values("a", "0a", "1x5")] string: &str) {
+        let mut regex = Regex::integer(10);
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(!regex.is_terminal());
+        assert!(regex.is_empty());
+    }
+
+    #[rstest]
+    fn digit_positive(#[values("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")] string: &str) {
+        let mut regex = Regex::digit(10);
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(regex.is_terminal());
+        assert!(!regex.is_empty());
+    }
+
+    #[rstest]
+    fn digit_negative(#[values("a", "-")] string: &str) {
+        let mut regex = Regex::digit(10);
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(!regex.is_terminal());
+        assert!(regex.is_empty());
+    }
+
+    #[rstest]
+    fn float_positive(#[values("0.0", "1.0", "1234.567890", "-546.846")] string: &str) {
+        let mut regex = Regex::float();
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(regex.is_terminal());
+        assert!(!regex.is_empty());
+    }
+
+    #[rstest]
+    fn float_negative(#[values("5", "-", "-2", "78x", "75.", ".92")] string: &str) {
+        let mut regex = Regex::float();
+
+        for ch in string.chars() {
+            regex.feed_mut(ch);
+        }
+
+        assert!(!regex.is_terminal());
     }
 }
