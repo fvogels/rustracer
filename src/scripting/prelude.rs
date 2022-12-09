@@ -13,6 +13,7 @@ pub fn create_prelude() -> Environment {
 
     environment.bind(String::from("+"), native_function("+", addition));
     environment.bind(String::from("-"), native_function("-", subtraction));
+    environment.bind(String::from("*"), native_function("*", multiplication));
 
     environment
 }
@@ -75,6 +76,26 @@ fn subtraction(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<
                 (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 - b) }
                 (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a - b) }
                 (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a - (*b as f64)) }
+                _ => { return Err(EvaluationError::InvalidArgumentTypes) }
+            }
+        }
+
+        Ok(Rc::new(result))
+    }
+}
+
+fn multiplication(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> {
+    if arguments.is_empty() {
+        Err(EvaluationError::InvalidNumberOfArguments)
+    } else {
+        let mut result = arguments[0].as_ref().clone();
+
+        for argument in arguments[1..].iter() {
+            match (result, argument.as_ref()) {
+                (Value::Integer(a), Value::Integer(b)) => { result = Value::Integer(a * b) }
+                (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 * b) }
+                (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a * b) }
+                (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a * (*b as f64)) }
                 _ => { return Err(EvaluationError::InvalidArgumentTypes) }
             }
         }
@@ -177,6 +198,7 @@ mod test {
     #[case(&[int(1)], int(1))]
     #[case(&[int(1), int(2)], int(3))]
     #[case(&[int(1), int(2), int(3)], int(6))]
+    #[case(&[int(1), int(2), int(4)], int(7))]
     #[case(&[float(1.0), float(2.0), float(3.0)], float(6.0))]
     #[case(&[int(1), float(2.0), float(3.0)], float(6.0))]
     fn test_addition(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
@@ -193,6 +215,19 @@ mod test {
     #[case(&[float(3.0), int(2), int(1)], float(0.0))]
     fn test_subtraction(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
         let actual = subtraction(&mut interpreter, &arguments).unwrap();
+
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(&[int(0)], int(0))]
+    #[case(&[int(1)], int(1))]
+    #[case(&[int(1), int(2)], int(2))]
+    #[case(&[int(1), int(2), int(4)], int(8))]
+    #[case(&[float(1.0), float(2.0), float(3.0)], float(6.0))]
+    #[case(&[int(1), float(2.0), float(3.0)], float(6.0))]
+    fn test_multiplication(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
+        let actual = multiplication(&mut interpreter, &arguments).unwrap();
 
         assert_eq!(expected, actual);
     }
