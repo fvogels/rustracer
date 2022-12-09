@@ -4,3 +4,4 @@ pub mod evaluating;
 pub mod parsing;
 pub mod environment;
 pub mod prelude;
+pub mod interpreting;
