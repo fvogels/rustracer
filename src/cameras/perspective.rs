@@ -1,5 +1,5 @@
 use crate::math::{
-    matrix4d::Matrix4D,
+    Matrix,
     Point,
     Vector,
     Ray,
@@ -10,7 +10,7 @@ use crate::math::{
 
 pub struct PerspectiveCamera {
     screen: Rectangle<3>,
-    transformation_matrix: Matrix4D,
+    transformation_matrix: Matrix<4, 4>,
 }
 
 pub struct PerspectiveCameraParameters {
@@ -54,10 +54,10 @@ fn create_coordinate_system(
     (origin, x_axis, y_axis, z_axis)
 }
 
-fn create_transformation_matrix(parameters: &PerspectiveCameraParameters) -> Matrix4D {
+fn create_transformation_matrix(parameters: &PerspectiveCameraParameters) -> Matrix<4, 4> {
     let (origin, x_axis, y_axis, z_axis) = create_coordinate_system(parameters);
 
-    Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
+    Matrix::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
 }
 
 fn create_canonical_screen(parameters: &PerspectiveCameraParameters) -> Rectangle<3> {

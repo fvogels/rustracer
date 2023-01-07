@@ -1,14 +1,14 @@
-use super::{angle::Angle, matrix4d::Matrix4D, Vector};
+use super::{angle::Angle, Matrix, Vector};
 
 pub struct Transformation3D {
-    pub matrix: Matrix4D,
-    pub inverse_matrix: Matrix4D,
+    pub matrix: Matrix<4, 4>,
+    pub inverse_matrix: Matrix<4, 4>,
 }
 
 impl Transformation3D {
     pub fn translate(displacement: &Vector<3>) -> Transformation3D {
-        let matrix = Matrix4D::translate(displacement);
-        let inverse_matrix = Matrix4D::translate(&-displacement);
+        let matrix = Matrix::translate(displacement);
+        let inverse_matrix = Matrix::translate(&-displacement);
 
         Transformation3D {
             matrix,
@@ -17,8 +17,8 @@ impl Transformation3D {
     }
 
     pub fn scale(sx: f64, sy: f64, sz: f64) -> Transformation3D {
-        let matrix = Matrix4D::scale(sx, sy, sz);
-        let inverse_matrix = Matrix4D::scale(sx.recip(), sy.recip(), sz.recip());
+        let matrix = Matrix::scale(sx, sy, sz);
+        let inverse_matrix = Matrix::scale(sx.recip(), sy.recip(), sz.recip());
 
         Transformation3D {
             matrix,
@@ -27,8 +27,8 @@ impl Transformation3D {
     }
 
     pub fn rotate_around_x(angle: Angle) -> Transformation3D {
-        let matrix = Matrix4D::rotate_around_x(angle);
-        let inverse_matrix = Matrix4D::rotate_around_x(-angle);
+        let matrix = Matrix::rotate_around_x(angle);
+        let inverse_matrix = Matrix::rotate_around_x(-angle);
 
         Transformation3D {
             matrix,
@@ -37,8 +37,8 @@ impl Transformation3D {
     }
 
     pub fn rotate_around_y(angle: Angle) -> Transformation3D {
-        let matrix = Matrix4D::rotate_around_y(angle);
-        let inverse_matrix = Matrix4D::rotate_around_y(-angle);
+        let matrix = Matrix::rotate_around_y(angle);
+        let inverse_matrix = Matrix::rotate_around_y(-angle);
 
         Transformation3D {
             matrix,
@@ -47,8 +47,8 @@ impl Transformation3D {
     }
 
     pub fn rotate_around_z(angle: Angle) -> Transformation3D {
-        let matrix = Matrix4D::rotate_around_z(angle);
-        let inverse_matrix = Matrix4D::rotate_around_z(-angle);
+        let matrix = Matrix::rotate_around_z(angle);
+        let inverse_matrix = Matrix::rotate_around_z(-angle);
 
         Transformation3D {
             matrix,
@@ -77,7 +77,7 @@ mod tests {
         let transformation = Transformation3D::translate(&displacement);
 
         assert_eq!(
-            approx(Matrix4D::identity()),
+            approx(Matrix::identity()),
             &transformation.matrix * &transformation.inverse_matrix
         );
     }
@@ -92,7 +92,7 @@ mod tests {
         let transformation = Transformation3D::scale(sx, sy, sz);
 
         assert_eq!(
-            approx(Matrix4D::identity()),
+            approx(Matrix::identity()),
             &transformation.matrix * &transformation.inverse_matrix
         );
     }
@@ -102,7 +102,7 @@ mod tests {
         let transformation = Transformation3D::rotate_around_x(Angle::degrees(degrees));
 
         assert_eq!(
-            approx(Matrix4D::identity()),
+            approx(Matrix::identity()),
             &transformation.matrix * &transformation.inverse_matrix
         );
     }
@@ -112,7 +112,7 @@ mod tests {
         let transformation = Transformation3D::rotate_around_y(Angle::degrees(degrees));
 
         assert_eq!(
-            approx(Matrix4D::identity()),
+            approx(Matrix::identity()),
             &transformation.matrix * &transformation.inverse_matrix
         );
     }
@@ -122,7 +122,7 @@ mod tests {
         let transformation = Transformation3D::rotate_around_z(Angle::degrees(degrees));
 
         assert_eq!(
-            approx(Matrix4D::identity()),
+            approx(Matrix::identity()),
             &transformation.matrix * &transformation.inverse_matrix
         );
     }
