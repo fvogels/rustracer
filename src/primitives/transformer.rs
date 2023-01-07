@@ -37,7 +37,7 @@ mod tests {
     use rstest::rstest;
 
     use crate::{
-        math::{approx::approx, pt, vc},
+        math::{approx, pt, vc},
         primitives::sphere::Sphere,
     };
 

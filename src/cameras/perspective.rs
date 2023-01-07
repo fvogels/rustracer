@@ -121,7 +121,7 @@ mod tests {
     use rstest::rstest;
 
     #[cfg(test)]
-    use crate::math::{approx::approx, pt, vc};
+    use crate::math::{approx, pt, vc};
 
     #[rstest]
     fn coordinate_system_1() {

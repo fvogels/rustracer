@@ -1,10 +1,11 @@
 use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
 use crate::math::{
-    angle::Angle,
-    approx::approx,
+    Angle,
+    approx,
     coords::Cartesian3D,
-    interval::{Interval, IntervalMapper},
-    quadratic::QuadraticEquation,
+    Interval,
+    IntervalMapper,
+    QuadraticEquation,
     Point,
     Ray,
     pt,
