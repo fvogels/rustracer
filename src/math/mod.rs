@@ -12,6 +12,7 @@ mod ray;
 mod rectangle;
 pub mod transformation3d;
 mod vector;
+mod coordsys;
 
 pub use angle::Angle;
 pub use approx::approx;
@@ -25,3 +26,4 @@ pub use ray::Ray;
 pub use rectangle::Rectangle;
 pub use vector::{vc, Vector};
 pub use rasterizer::Rasterizer;
+pub use coordsys::CoordinateSystem3D;
