@@ -20,7 +20,7 @@ use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
 use math::{
-    position2d::Position2D, rasterizer2d::Rasterizer2D, Rectangle,
+    Position, rasterizer2d::Rasterizer2D, Rectangle,
     transformation3d::Transformation3D,
 };
 use primitives::decorator::Decorator;
@@ -111,7 +111,7 @@ fn main() {
 
     for y in 0..height {
         for x in 0..width {
-            let position = Position2D::new(x as i32, y as i32);
+            let position = Position::<2>::cartesian(x as i32, y as i32);
             let pixel = rasterizer.at(position);
             let mut sample_count = 0;
             let mut accumulated_color = Color::black();

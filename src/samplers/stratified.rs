@@ -1,6 +1,6 @@
 use super::sampler::Sampler2D;
 use crate::math::{
-    Point, position2d::Position2D, rasterizer2d::Rasterizer2D, Rectangle,
+    Point, Position, rasterizer2d::Rasterizer2D, Rectangle,
 };
 
 pub struct StratifiedSampler2D {
@@ -50,7 +50,7 @@ impl<'a> Iterator for SampleIterator<'a> {
         if self.row == self.nrows {
             None
         } else {
-            let position = Position2D::new(self.col as i32, self.row as i32);
+            let position = Position::<2>::cartesian(self.col as i32, self.row as i32);
             let sample = self.rasterizer.at(position).center();
             self.col += 1;
 
