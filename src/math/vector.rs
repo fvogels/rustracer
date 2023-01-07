@@ -109,6 +109,17 @@ impl Vector<3> {
 
         vc!(x, y, z)
     }
+
+    pub fn orthogonal(&self) -> Self {
+        let x = self.z();
+        let y = self.z();
+        let z = -self.x()-self.y();
+        let result = vc!(x, y, z);
+
+        debug_assert!(self.is_orthogonal_to(&result));
+
+        result
+    }
 }
 
 impl<const N: usize> std::ops::Add for Vector<N> {
@@ -275,5 +286,25 @@ mod tests {
         let actual = u.distance(&v);
 
         assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    fn orthogonal() {
+        let values = [-5.0, -1.0, 0.0, 1.0, 2.0];
+
+        for x in values {
+            for y in values {
+                for z in values {
+                    let v = vc!(x, y, z);
+                    let ortho = v.orthogonal();
+
+                    assert!(v.is_orthogonal_to(&ortho));
+
+                    if !(x == 0.0 && y == 0.0 && z == 0.0) {
+                        assert!(approx(0.0) != v.norm());
+                    }
+                }
+            }
+        }
     }
 }
