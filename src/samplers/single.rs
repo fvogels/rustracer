@@ -1,10 +1,10 @@
 use super::sampler::Sampler2D;
-use crate::math::{point2d::Point2D, rectangle2d::Rectangle2D};
+use crate::math::{Point, Rectangle};
 
 pub struct SingleSampler2D {}
 
 struct SampleIterator {
-    data: Option<Point2D>,
+    data: Option<Point<2>>,
 }
 
 impl SingleSampler2D {
@@ -14,7 +14,7 @@ impl SingleSampler2D {
 }
 
 impl<'a> Sampler2D<'a> for SingleSampler2D {
-    fn sample(&self, rectangle: &Rectangle2D) -> Box<dyn Iterator<Item = Point2D>> {
+    fn sample(&self, rectangle: &Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>>> {
         let data = Some(rectangle.center());
 
         Box::new(SampleIterator { data })
@@ -22,7 +22,7 @@ impl<'a> Sampler2D<'a> for SingleSampler2D {
 }
 
 impl Iterator for SampleIterator {
-    type Item = Point2D;
+    type Item = Point<2>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.data.take()

@@ -1,9 +1,9 @@
 use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
 use crate::math::{
-    point2d::{p2, Point2D},
-    point3d::{p3, Point3D},
-    ray::Ray,
-    vector3d::v3,
+    pt,
+    Point,
+    Ray,
+    vc,
 };
 
 pub struct PlaneXY {}
@@ -14,8 +14,8 @@ impl PlaneXY {
     }
 }
 
-fn compute_uv_coordinates(p: &Point3D) -> Point2D {
-    p2!(p.x(), p.y())
+fn compute_uv_coordinates(p: &Point<3>) -> Point<2> {
+    pt!(p.x(), p.y())
 }
 
 impl Primitive for PlaneXY {
@@ -25,7 +25,7 @@ impl Primitive for PlaneXY {
         if d == 0.0 {
             None
         } else {
-            let t = (p3!(0, 0, 0) - ray.origin).z() / d;
+            let t = (pt!(0, 0, 0) - ray.origin).z() / d;
             let p = ray.at(t);
             let position = HitPosition {
                 global: p,
@@ -34,7 +34,7 @@ impl Primitive for PlaneXY {
                     uv: compute_uv_coordinates(&p),
                 },
             };
-            let normal = v3!(0, 0, 1);
+            let normal = vc!(0, 0, 1);
             let material_properties = None;
             let hit = Hit {
                 material_properties,

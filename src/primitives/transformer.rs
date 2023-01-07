@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use super::primitive::{Hit, Primitive};
-use crate::math::ray::Ray;
+use crate::math::Ray;
 use crate::math::transformation3d::Transformation3D;
 
 pub struct Transformer {
@@ -37,7 +37,7 @@ mod tests {
     use rstest::rstest;
 
     use crate::{
-        math::{approx::approx, point3d::p3, vector3d::v3},
+        math::{approx::approx, pt, vc},
         primitives::sphere::Sphere,
     };
 
@@ -52,13 +52,13 @@ mod tests {
         #[values(-1.0,-0.25,0.0,0.25,1.0)] dy: f64,
     ) {
         let original = Rc::new(Sphere::new());
-        let translation_vector = v3!(1, 0, 0);
+        let translation_vector = vc!(1, 0, 0);
         let transformation = Transformation3D::translate(&translation_vector);
         let transformed = Transformer::new(transformation, original.clone());
 
-        let origin1 = p3!(ox, oy, 5);
+        let origin1 = pt!(ox, oy, 5);
         let origin2 = &origin1 + &translation_vector;
-        let direction = v3!(dx, dy, 1);
+        let direction = vc!(dx, dy, 1);
         let ray1 = Ray::new(origin1, direction);
         let ray2 = Ray::new(origin2, direction);
 

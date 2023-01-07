@@ -1,6 +1,6 @@
 use super::sampler::Sampler2D;
 use crate::math::{
-    point2d::Point2D, position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D,
+    Point, position2d::Position2D, rasterizer2d::Rasterizer2D, Rectangle,
 };
 
 pub struct StratifiedSampler2D {
@@ -26,7 +26,7 @@ impl StratifiedSampler2D {
 }
 
 impl<'a> Sampler2D<'a> for StratifiedSampler2D {
-    fn sample(&self, rectangle: &'a Rectangle2D) -> Box<dyn Iterator<Item = Point2D> + 'a> {
+    fn sample(&self, rectangle: &'a Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>> + 'a> {
         let rasterizer = Rasterizer2D::new(rectangle, self.horizontal, self.vertical);
         let row = 0;
         let col = 0;
@@ -44,7 +44,7 @@ impl<'a> Sampler2D<'a> for StratifiedSampler2D {
 }
 
 impl<'a> Iterator for SampleIterator<'a> {
-    type Item = Point2D;
+    type Item = Point<2>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.row == self.nrows {
@@ -72,16 +72,16 @@ mod tests {
 
     #[cfg(test)]
     use crate::{
-        math::{point2d::p2, vector2d::v2},
+        math::{pt, vc},
         util::algorithms::assert_same_elements,
     };
 
     #[cfg(test)]
-    fn rectangle(origin: Point2D, width: u32, height: u32) -> Rectangle2D {
-        let x_axis = v2!(width, 0);
-        let y_axis = v2!(0, height);
+    fn rectangle(origin: Point<2>, width: u32, height: u32) -> Rectangle<2> {
+        let x_axis = vc!(width, 0);
+        let y_axis = vc!(0, height);
 
-        Rectangle2D {
+        Rectangle {
             origin,
             x_axis,
             y_axis,
@@ -91,9 +91,9 @@ mod tests {
     #[rstest]
     fn sampling1() {
         let sampler = StratifiedSampler2D::new(1, 1);
-        let rectangle = rectangle(p2!(0, 0), 2, 2);
-        let expected = vec![p2!(1, 1)];
-        let actual: Vec<Point2D> = sampler.sample(&rectangle).collect();
+        let rectangle = rectangle(pt!(0, 0), 2, 2);
+        let expected = vec![pt!(1, 1)];
+        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
 
         assert_same_elements!(expected, actual);
     }
@@ -101,9 +101,9 @@ mod tests {
     #[rstest]
     fn sampling2() {
         let sampler = StratifiedSampler2D::new(1, 1);
-        let rectangle = rectangle(p2!(0, 0), 4, 6);
-        let expected = vec![p2!(2, 3)];
-        let actual: Vec<Point2D> = sampler.sample(&rectangle).collect();
+        let rectangle = rectangle(pt!(0, 0), 4, 6);
+        let expected = vec![pt!(2, 3)];
+        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
 
         assert_same_elements!(expected, actual);
     }
@@ -111,9 +111,9 @@ mod tests {
     #[rstest]
     fn sampling3() {
         let sampler = StratifiedSampler2D::new(2, 1);
-        let rectangle = rectangle(p2!(0, 0), 4, 2);
-        let expected = vec![p2!(1, 1), p2!(3, 1)];
-        let actual: Vec<Point2D> = sampler.sample(&rectangle).collect();
+        let rectangle = rectangle(pt!(0, 0), 4, 2);
+        let expected = vec![pt!(1, 1), pt!(3, 1)];
+        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
 
         assert_same_elements!(expected, actual);
     }
@@ -121,9 +121,9 @@ mod tests {
     #[rstest]
     fn sampling4() {
         let sampler = StratifiedSampler2D::new(2, 1);
-        let rectangle = rectangle(p2!(1, 0), 4, 2);
-        let expected = vec![p2!(2, 1), p2!(4, 1)];
-        let actual: Vec<Point2D> = sampler.sample(&rectangle).collect();
+        let rectangle = rectangle(pt!(1, 0), 4, 2);
+        let expected = vec![pt!(2, 1), pt!(4, 1)];
+        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
 
         assert_same_elements!(expected, actual);
     }
@@ -131,16 +131,16 @@ mod tests {
     #[rstest]
     fn sampling5() {
         let sampler = StratifiedSampler2D::new(2, 3);
-        let rectangle = rectangle(p2!(1, 0), 4, 6);
+        let rectangle = rectangle(pt!(1, 0), 4, 6);
         let expected = vec![
-            p2!(2, 1),
-            p2!(4, 1),
-            p2!(2, 3),
-            p2!(4, 3),
-            p2!(2, 5),
-            p2!(4, 5),
+            pt!(2, 1),
+            pt!(4, 1),
+            pt!(2, 3),
+            pt!(4, 3),
+            pt!(2, 5),
+            pt!(4, 5),
         ];
-        let actual: Vec<Point2D> = sampler.sample(&rectangle).collect();
+        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
 
         assert_same_elements!(expected, actual);
     }

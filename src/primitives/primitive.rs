@@ -1,25 +1,25 @@
 use crate::{
     materials::material::MaterialProperties,
-    math::{point2d::Point2D, point3d::Point3D, ray::Ray, vector3d::Vector3D},
+    math::{Point, Vector, Ray},
 };
 
 pub struct Hit {
     pub t: f64,
     pub position: HitPosition,
-    pub normal: Vector3D,
+    pub normal: Vector<3>,
     pub material_properties: Option<MaterialProperties>,
 }
 
 #[derive(Copy, Clone)]
 pub struct HitPosition {
-    pub global: Point3D,
+    pub global: Point<3>,
     pub local: LocalPosition,
 }
 
 #[derive(Copy, Clone)]
 pub struct LocalPosition {
-    pub xyz: Point3D,
-    pub uv: Point2D,
+    pub xyz: Point<3>,
+    pub uv: Point<2>,
 }
 
 pub trait Primitive {

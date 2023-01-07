@@ -3,9 +3,9 @@ use std::ops::Mul;
 use super::{
     angle::Angle,
     approx::Approx,
-    point3d::{p3, Point3D},
+    point::{pt, Point},
     ray::Ray,
-    vector3d::{v3, Vector3D},
+    vector::{vc, Vector},
 };
 
 #[derive(Debug)]
@@ -37,10 +37,10 @@ impl Matrix4D {
     }
 
     pub fn from_coordinate_system(
-        origin: &Point3D,
-        x_axis: &Vector3D,
-        y_axis: &Vector3D,
-        z_axis: &Vector3D,
+        origin: &Point<3>,
+        x_axis: &Vector<3>,
+        y_axis: &Vector<3>,
+        z_axis: &Vector<3>,
     ) -> Matrix4D {
         let m = [
             [x_axis.x(), y_axis.x(), z_axis.x(), origin.x()],
@@ -52,19 +52,19 @@ impl Matrix4D {
         Matrix4D { m }
     }
 
-    pub fn translate(v: &Vector3D) -> Matrix4D {
-        let origin = p3!(v.x(), v.y(), v.z());
-        let x_axis = Vector3D::x_axis();
-        let y_axis = Vector3D::y_axis();
-        let z_axis = Vector3D::z_axis();
+    pub fn translate(v: &Vector<3>) -> Matrix4D {
+        let origin = pt!(v.x(), v.y(), v.z());
+        let x_axis = Vector::<3>::x_axis();
+        let y_axis = Vector::<3>::y_axis();
+        let z_axis = Vector::<3>::z_axis();
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
     pub fn scale(sx: f64, sy: f64, sz: f64) -> Matrix4D {
-        let origin = p3!(0, 0, 0);
-        let x_axis = Vector3D::x_axis() * sx;
-        let y_axis = Vector3D::y_axis() * sy;
-        let z_axis = Vector3D::z_axis() * sz;
+        let origin = pt!(0, 0, 0);
+        let x_axis = Vector::<3>::x_axis() * sx;
+        let y_axis = Vector::<3>::y_axis() * sy;
+        let z_axis = Vector::<3>::z_axis() * sz;
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
@@ -72,10 +72,10 @@ impl Matrix4D {
         let s = angle.sin();
         let c = angle.cos();
 
-        let origin = p3!(0, 0, 0);
-        let x_axis = v3!(1, 0, 0);
-        let y_axis = v3!(0, c, s);
-        let z_axis = v3!(0, -s, c);
+        let origin = pt!(0, 0, 0);
+        let x_axis = vc!(1, 0, 0);
+        let y_axis = vc!(0, c, s);
+        let z_axis = vc!(0, -s, c);
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
@@ -83,10 +83,10 @@ impl Matrix4D {
         let s = angle.sin();
         let c = angle.cos();
 
-        let origin = p3!(0, 0, 0);
-        let x_axis = v3!(c, 0, -s);
-        let y_axis = v3!(0, 1, 0);
-        let z_axis = v3!(s, 0, c);
+        let origin = pt!(0, 0, 0);
+        let x_axis = vc!(c, 0, -s);
+        let y_axis = vc!(0, 1, 0);
+        let z_axis = vc!(s, 0, c);
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 
@@ -94,10 +94,10 @@ impl Matrix4D {
         let s = angle.sin();
         let c = angle.cos();
 
-        let origin = p3!(0, 0, 0);
-        let x_axis = v3!(c, s, 0);
-        let y_axis = v3!(-s, c, 0);
-        let z_axis = v3!(0, 0, 1);
+        let origin = pt!(0, 0, 0);
+        let x_axis = vc!(c, s, 0);
+        let y_axis = vc!(-s, c, 0);
+        let z_axis = vc!(0, 0, 1);
         Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
     }
 }
@@ -121,29 +121,29 @@ impl Mul<&Matrix4D> for &Matrix4D {
     }
 }
 
-impl Mul<&Vector3D> for &Matrix4D {
-    type Output = Vector3D;
+impl Mul<&Vector<3>> for &Matrix4D {
+    type Output = Vector<3>;
 
-    fn mul(self, v: &Vector3D) -> Self::Output {
+    fn mul(self, v: &Vector<3>) -> Self::Output {
         let m = &self.m;
         let x = m[0][0] * v.x() + m[0][1] * v.y() + m[0][2] * v.z();
         let y = m[1][0] * v.x() + m[1][1] * v.y() + m[1][2] * v.z();
         let z = m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z();
 
-        Vector3D::new(x, y, z)
+        vc!(x, y, z)
     }
 }
 
-impl Mul<&Point3D> for &Matrix4D {
-    type Output = Point3D;
+impl Mul<&Point<3>> for &Matrix4D {
+    type Output = Point<3>;
 
-    fn mul(self, v: &Point3D) -> Self::Output {
+    fn mul(self, v: &Point<3>) -> Self::Output {
         let m = &self.m;
         let x = m[0][0] * v.x() + m[0][1] * v.y() + m[0][2] * v.z() + m[0][3];
         let y = m[1][0] * v.x() + m[1][1] * v.y() + m[1][2] * v.z() + m[1][3];
         let z = m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z() + m[2][3];
 
-        Point3D::new(x, y, z)
+        pt!(x, y, z)
     }
 }
 
@@ -177,21 +177,21 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::{approx::approx, point3d::p3, vector3d::v3};
+    use crate::math::approx::approx;
 
     #[rstest]
-    #[case(v3!(0, 0, 0), v3!(0, 0, 0), v3!(0, 0, 0))]
-    #[case(v3!(0, 0, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
-    #[case(v3!(1, 0, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
-    #[case(v3!(1, 0, 0), v3!(0, 1, 0), v3!(0, 1, 0))]
-    #[case(v3!(1, 0, 0), v3!(0, 0, 1), v3!(0, 0, 1))]
-    #[case(v3!(1, 2, 0), v3!(1, 0, 0), v3!(1, 0, 0))]
-    #[case(v3!(1, 2, 3), v3!(1, 0, 0), v3!(1, 0, 0))]
-    #[case(v3!(1, 4, 2), v3!(1, 2, 3), v3!(1, 2, 3))]
+    #[case(vc!(0, 0, 0), vc!(0, 0, 0), vc!(0, 0, 0))]
+    #[case(vc!(0, 0, 0), vc!(1, 0, 0), vc!(1, 0, 0))]
+    #[case(vc!(1, 0, 0), vc!(1, 0, 0), vc!(1, 0, 0))]
+    #[case(vc!(1, 0, 0), vc!(0, 1, 0), vc!(0, 1, 0))]
+    #[case(vc!(1, 0, 0), vc!(0, 0, 1), vc!(0, 0, 1))]
+    #[case(vc!(1, 2, 0), vc!(1, 0, 0), vc!(1, 0, 0))]
+    #[case(vc!(1, 2, 3), vc!(1, 0, 0), vc!(1, 0, 0))]
+    #[case(vc!(1, 4, 2), vc!(1, 2, 3), vc!(1, 2, 3))]
     fn translate_vector(
-        #[case] displacement: Vector3D,
-        #[case] v: Vector3D,
-        #[case] expected: Vector3D,
+        #[case] displacement: Vector<3>,
+        #[case] v: Vector<3>,
+        #[case] expected: Vector<3>,
     ) {
         let matrix = Matrix4D::translate(&displacement);
         let actual = &matrix * &v;
@@ -200,19 +200,19 @@ mod tests {
     }
 
     #[rstest]
-    #[case(v3!(0, 0, 0), p3!(0, 0, 0), p3!(0, 0, 0))]
-    #[case(v3!(0, 0, 0), p3!(1, 0, 0), p3!(1, 0, 0))]
-    #[case(v3!(1, 0, 0), p3!(0, 0, 0), p3!(1, 0, 0))]
-    #[case(v3!(1, 0, 0), p3!(1, 0, 0), p3!(2, 0, 0))]
-    #[case(v3!(1, 0, 0), p3!(0, 1, 0), p3!(1, 1, 0))]
-    #[case(v3!(1, 0, 0), p3!(0, 0, 1), p3!(1, 0, 1))]
-    #[case(v3!(1, 2, 0), p3!(1, 0, 0), p3!(2, 2, 0))]
-    #[case(v3!(1, 2, 3), p3!(1, 0, 0), p3!(2, 2, 3))]
-    #[case(v3!(1, 4, 2), p3!(5, 1, 7), p3!(6, 5, 9))]
+    #[case(vc!(0, 0, 0), pt!(0, 0, 0), pt!(0, 0, 0))]
+    #[case(vc!(0, 0, 0), pt!(1, 0, 0), pt!(1, 0, 0))]
+    #[case(vc!(1, 0, 0), pt!(0, 0, 0), pt!(1, 0, 0))]
+    #[case(vc!(1, 0, 0), pt!(1, 0, 0), pt!(2, 0, 0))]
+    #[case(vc!(1, 0, 0), pt!(0, 1, 0), pt!(1, 1, 0))]
+    #[case(vc!(1, 0, 0), pt!(0, 0, 1), pt!(1, 0, 1))]
+    #[case(vc!(1, 2, 0), pt!(1, 0, 0), pt!(2, 2, 0))]
+    #[case(vc!(1, 2, 3), pt!(1, 0, 0), pt!(2, 2, 3))]
+    #[case(vc!(1, 4, 2), pt!(5, 1, 7), pt!(6, 5, 9))]
     fn translate_point(
-        #[case] displacement: Vector3D,
-        #[case] p: Point3D,
-        #[case] expected: Point3D,
+        #[case] displacement: Vector<3>,
+        #[case] p: Point<3>,
+        #[case] expected: Point<3>,
     ) {
         let matrix = Matrix4D::translate(&displacement);
         let actual = &matrix * &p;
@@ -221,18 +221,18 @@ mod tests {
     }
 
     #[rstest]
-    #[case(0.0, 0.0, 0.0, v3!(1, 1, 1), v3!(0, 0, 0))]
-    #[case(1.0, 1.0, 1.0, v3!(1, 1, 1), v3!(1, 1, 1))]
-    #[case(2.0, 1.0, 1.0, v3!(1, 1, 1), v3!(2, 1, 1))]
-    #[case(1.0, 2.0, 1.0, v3!(1, 1, 1), v3!(1, 2, 1))]
-    #[case(1.0, 1.0, 2.0, v3!(1, 1, 1), v3!(1, 1, 2))]
-    #[case(2.0, 3.0, 2.0, v3!(2, 3, 4), v3!(4, 9, 8))]
+    #[case(0.0, 0.0, 0.0, vc!(1, 1, 1), vc!(0, 0, 0))]
+    #[case(1.0, 1.0, 1.0, vc!(1, 1, 1), vc!(1, 1, 1))]
+    #[case(2.0, 1.0, 1.0, vc!(1, 1, 1), vc!(2, 1, 1))]
+    #[case(1.0, 2.0, 1.0, vc!(1, 1, 1), vc!(1, 2, 1))]
+    #[case(1.0, 1.0, 2.0, vc!(1, 1, 1), vc!(1, 1, 2))]
+    #[case(2.0, 3.0, 2.0, vc!(2, 3, 4), vc!(4, 9, 8))]
     fn scale_vector(
         #[case] sx: f64,
         #[case] sy: f64,
         #[case] sz: f64,
-        #[case] v: Vector3D,
-        #[case] expected: Vector3D,
+        #[case] v: Vector<3>,
+        #[case] expected: Vector<3>,
     ) {
         let matrix = Matrix4D::scale(sx, sy, sz);
         let actual = &matrix * &v;
@@ -241,24 +241,24 @@ mod tests {
     }
 
     #[rstest]
-    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
-    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
-    #[case(p3!(1, 0, 0), 90.0, p3!(1, 0, 0))]
-    #[case(p3!(0, 1, 0), 90.0, p3!(0, 0, 1))]
-    #[case(p3!(0, 0, 1), 90.0, p3!(0, -1, 0))]
-    #[case(p3!(0, -1, 0), 90.0, p3!(0, 0, -1))]
-    #[case(p3!(0, 0, -1), 90.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 0, -1), 180.0, p3!(0, 0, 1))]
-    #[case(p3!(0, 0, 1), 180.0, p3!(0, 0, -1))]
+    #[case(pt!(1, 0, 0), 0.0, pt!(1, 0, 0))]
+    #[case(pt!(0, 1, 0), 0.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 0, 1), 0.0, pt!(0, 0, 1))]
+    #[case(pt!(1, 0, 0), 90.0, pt!(1, 0, 0))]
+    #[case(pt!(0, 1, 0), 90.0, pt!(0, 0, 1))]
+    #[case(pt!(0, 0, 1), 90.0, pt!(0, -1, 0))]
+    #[case(pt!(0, -1, 0), 90.0, pt!(0, 0, -1))]
+    #[case(pt!(0, 0, -1), 90.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 0, -1), 180.0, pt!(0, 0, 1))]
+    #[case(pt!(0, 0, 1), 180.0, pt!(0, 0, -1))]
     fn rotate_point_around_x(
-        #[case] p: Point3D,
+        #[case] p: Point<3>,
         #[case] degrees: f64,
-        #[case] expected: Point3D,
+        #[case] expected: Point<3>,
         #[values(1.0, 2.0, 5.0, -1.0)] factor: f64,
     ) {
-        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
-        let scaled_expected = p3!(
+        let scaled_p = pt!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = pt!(
             expected.x() * factor,
             expected.y() * factor,
             expected.z() * factor
@@ -270,22 +270,22 @@ mod tests {
     }
 
     #[rstest]
-    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
-    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
-    #[case(p3!(1, 0, 0), 90.0, p3!(0, 0, -1))]
-    #[case(p3!(0, 1, 0), 90.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 0, 1), 90.0, p3!(1, 0, 0))]
-    #[case(p3!(0, 0, -1), 90.0, p3!(-1, 0, 0))]
-    #[case(p3!(-1, 0, 0), 90.0, p3!(0, 0, 1))]
+    #[case(pt!(1, 0, 0), 0.0, pt!(1, 0, 0))]
+    #[case(pt!(0, 1, 0), 0.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 0, 1), 0.0, pt!(0, 0, 1))]
+    #[case(pt!(1, 0, 0), 90.0, pt!(0, 0, -1))]
+    #[case(pt!(0, 1, 0), 90.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 0, 1), 90.0, pt!(1, 0, 0))]
+    #[case(pt!(0, 0, -1), 90.0, pt!(-1, 0, 0))]
+    #[case(pt!(-1, 0, 0), 90.0, pt!(0, 0, 1))]
     fn rotate_point_around_y(
-        #[case] p: Point3D,
+        #[case] p: Point<3>,
         #[case] degrees: f64,
-        #[case] expected: Point3D,
+        #[case] expected: Point<3>,
         #[values(1.0, 2.0, 5.0, -1.0)] factor: f64,
     ) {
-        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
-        let scaled_expected = p3!(
+        let scaled_p = pt!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = pt!(
             expected.x() * factor,
             expected.y() * factor,
             expected.z() * factor
@@ -297,22 +297,22 @@ mod tests {
     }
 
     #[rstest]
-    #[case(p3!(1, 0, 0), 0.0, p3!(1, 0, 0))]
-    #[case(p3!(0, 1, 0), 0.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 0, 1), 0.0, p3!(0, 0, 1))]
-    #[case(p3!(1, 0, 0), 90.0, p3!(0, 1, 0))]
-    #[case(p3!(0, 1, 0), 90.0, p3!(-1, 0, 0))]
-    #[case(p3!(0, 0, 1), 90.0, p3!(0, 0, 1))]
-    #[case(p3!(-1, 0, 0), 90.0, p3!(0, -1, 0))]
-    #[case(p3!(0, -1, 0), 90.0, p3!(1, 0, 0))]
+    #[case(pt!(1, 0, 0), 0.0, pt!(1, 0, 0))]
+    #[case(pt!(0, 1, 0), 0.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 0, 1), 0.0, pt!(0, 0, 1))]
+    #[case(pt!(1, 0, 0), 90.0, pt!(0, 1, 0))]
+    #[case(pt!(0, 1, 0), 90.0, pt!(-1, 0, 0))]
+    #[case(pt!(0, 0, 1), 90.0, pt!(0, 0, 1))]
+    #[case(pt!(-1, 0, 0), 90.0, pt!(0, -1, 0))]
+    #[case(pt!(0, -1, 0), 90.0, pt!(1, 0, 0))]
     fn rotate_point_around_z(
-        #[case] p: Point3D,
+        #[case] p: Point<3>,
         #[case] degrees: f64,
-        #[case] expected: Point3D,
+        #[case] expected: Point<3>,
         #[values(1.0, 2.0, 5.0, -1.0)] factor: f64,
     ) {
-        let scaled_p = p3!(p.x() * factor, p.y() * factor, p.z() * factor);
-        let scaled_expected = p3!(
+        let scaled_p = pt!(p.x() * factor, p.y() * factor, p.z() * factor);
+        let scaled_expected = pt!(
             expected.x() * factor,
             expected.y() * factor,
             expected.z() * factor

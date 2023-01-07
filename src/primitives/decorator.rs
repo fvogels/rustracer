@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{materials::material::Material, math::ray::Ray};
+use crate::{materials::material::Material, math::Ray};
 
 use super::primitive::{Hit, Primitive};
 

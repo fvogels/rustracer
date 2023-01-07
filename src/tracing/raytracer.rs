@@ -2,7 +2,7 @@ use crate::{
     imaging::color::Color,
     lights::light::{LightRay, LightSource},
     materials::material::MaterialProperties,
-    math::ray::Ray,
+    math::Ray,
     primitives::primitive::Hit,
 };
 

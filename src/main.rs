@@ -20,7 +20,7 @@ use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
 use math::{
-    position2d::Position2D, rasterizer2d::Rasterizer2D, rectangle2d::Rectangle2D,
+    position2d::Position2D, rasterizer2d::Rasterizer2D, Rectangle,
     transformation3d::Transformation3D,
 };
 use primitives::decorator::Decorator;
@@ -37,9 +37,9 @@ fn create_scene() -> Scene {
         let camera_parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: p3!(0, 5, 5),
-            look_at: p3!(0, 0, 0),
-            up: v3!(0, 1, 0),
+            eye: pt!(0, 5, 5),
+            look_at: pt!(0, 0, 0),
+            up: vc!(0, 1, 0),
         };
 
         PerspectiveCamera::new(&camera_parameters)
@@ -50,15 +50,15 @@ fn create_scene() -> Scene {
         let sphere = Rc::new(Sphere::new());
 
         let background = Rc::new(Transformer::new(
-            Transformation3D::translate(&v3!(0, 0, -5)),
+            Transformation3D::translate(&vc!(0, 0, -5)),
             plane,
         ));
         let left_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&v3!(-2, 0, 0)),
+            Transformation3D::translate(&vc!(-2, 0, 0)),
             sphere.clone(),
         ));
         let right_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&v3!(1, 0, 0)),
+            Transformation3D::translate(&vc!(1, 0, 0)),
             sphere,
         ));
 
@@ -82,7 +82,7 @@ fn create_scene() -> Scene {
     }
 
     fn create_light_sources() -> Vec<Rc<dyn LightSource>> {
-        let light = Rc::new(PointLight::new(Color::white(), p3!(0, 5, 3)));
+        let light = Rc::new(PointLight::new(Color::white(), pt!(0, 5, 3)));
 
         vec![light]
     }
@@ -103,7 +103,7 @@ fn main() {
     let height: u32 = 500;
     let mut image = Image::new(width, height);
 
-    let rectangle = Rectangle2D::new(p2!(0, 0), v2!(1, 0), v2!(0, 1));
+    let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
     let rasterizer = Rasterizer2D::new(&rectangle, width, height);
     let sampler = StratifiedSampler2D::new(2, 2);
     let scene = create_scene();

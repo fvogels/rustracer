@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use super::primitive::{Hit, Primitive};
-use crate::math::ray::Ray;
+use crate::math::Ray;
 
 pub struct Union {
     children: Vec<Rc<dyn Primitive>>,

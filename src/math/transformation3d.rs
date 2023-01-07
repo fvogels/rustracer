@@ -1,4 +1,4 @@
-use super::{angle::Angle, matrix4d::Matrix4D, vector3d::Vector3D};
+use super::{angle::Angle, matrix4d::Matrix4D, Vector};
 
 pub struct Transformation3D {
     pub matrix: Matrix4D,
@@ -6,7 +6,7 @@ pub struct Transformation3D {
 }
 
 impl Transformation3D {
-    pub fn translate(displacement: &Vector3D) -> Transformation3D {
+    pub fn translate(displacement: &Vector<3>) -> Transformation3D {
         let matrix = Matrix4D::translate(displacement);
         let inverse_matrix = Matrix4D::translate(&-displacement);
 
@@ -65,15 +65,15 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    use crate::math::{approx::approx, vector3d::v3};
+    use crate::math::{approx::approx, vc};
 
     #[rstest]
-    #[case(v3!(0, 0, 0))]
-    #[case(v3!(1, 0, 0))]
-    #[case(v3!(0, 1, 0))]
-    #[case(v3!(0, 0, 1))]
-    #[case(v3!(5, 4, 3))]
-    fn translate_inverse_matrix(#[case] displacement: Vector3D) {
+    #[case(vc!(0, 0, 0))]
+    #[case(vc!(1, 0, 0))]
+    #[case(vc!(0, 1, 0))]
+    #[case(vc!(0, 0, 1))]
+    #[case(vc!(5, 4, 3))]
+    fn translate_inverse_matrix(#[case] displacement: Vector<3>) {
         let transformation = Transformation3D::translate(&displacement);
 
         assert_eq!(

@@ -1,34 +1,35 @@
 use crate::math::{
     matrix4d::Matrix4D,
-    point2d::Point2D,
-    point3d::{p3, Point3D},
-    ray::Ray,
-    rectangle3d::Rectangle3D,
-    vector3d::{v3, Vector3D},
+    Point,
+    Vector,
+    Ray,
+    Rectangle,
+    vc,
+    pt,
 };
 
 pub struct PerspectiveCamera {
-    screen: Rectangle3D,
+    screen: Rectangle<3>,
     transformation_matrix: Matrix4D,
 }
 
 pub struct PerspectiveCameraParameters {
-    pub eye: Point3D,
-    pub look_at: Point3D,
-    pub up: Vector3D,
+    pub eye: Point<3>,
+    pub look_at: Point<3>,
+    pub up: Vector<3>,
     pub distance_to_screen: f64,
     pub aspect_ratio: f64,
 }
 
 pub struct Rays<'a> {
     parent: &'a PerspectiveCamera,
-    point: Point2D,
+    point: Point<2>,
     consumed: bool,
 }
 
 fn create_coordinate_system(
     parameters: &PerspectiveCameraParameters,
-) -> (Point3D, Vector3D, Vector3D, Vector3D) {
+) -> (Point<3>, Vector<3>, Vector<3>, Vector<3>) {
     let look_direction = (parameters.look_at - parameters.eye).normalized();
     let right = look_direction.cross(&parameters.up).normalized();
     let up = right.cross(&look_direction);
@@ -59,18 +60,18 @@ fn create_transformation_matrix(parameters: &PerspectiveCameraParameters) -> Mat
     Matrix4D::from_coordinate_system(&origin, &x_axis, &y_axis, &z_axis)
 }
 
-fn create_canonical_screen(parameters: &PerspectiveCameraParameters) -> Rectangle3D {
+fn create_canonical_screen(parameters: &PerspectiveCameraParameters) -> Rectangle<3> {
     let screen_width = parameters.aspect_ratio;
     let screen_height = 1.0;
-    let origin = p3![
+    let origin = pt![
         -screen_width / 2.0,
         screen_height / 2.0,
         -parameters.distance_to_screen
     ];
-    let x_axis = v3![screen_width, 0, 0];
-    let y_axis = v3![0, -screen_height, 0];
+    let x_axis = vc![screen_width, 0, 0];
+    let y_axis = vc![0, -screen_height, 0];
 
-    Rectangle3D::new(origin, x_axis, y_axis)
+    Rectangle::<3>::new(origin, x_axis, y_axis)
 }
 
 impl PerspectiveCamera {
@@ -84,7 +85,7 @@ impl PerspectiveCamera {
         }
     }
 
-    pub fn enumerate_rays(&self, point: Point2D) -> Rays {
+    pub fn enumerate_rays(&self, point: Point<2>) -> Rays {
         Rays {
             parent: self,
             point,
@@ -102,7 +103,7 @@ impl<'a> Iterator for Rays<'a> {
         } else {
             self.consumed = true;
 
-            let origin = p3!(0, 0, 0);
+            let origin = pt!(0, 0, 0);
             let to = self.parent.screen.from_relative(&self.point);
             let direction = to - origin;
             let ray = Ray::new(origin, direction);
@@ -120,17 +121,17 @@ mod tests {
     use rstest::rstest;
 
     #[cfg(test)]
-    use crate::math::{approx::approx, point2d::p2};
+    use crate::math::{approx::approx, pt, vc};
 
     #[rstest]
     fn coordinate_system_1() {
-        let eye = p3!(0, 0, 0);
-        let look_at = p3!(0, 0, 1);
-        let up = v3!(0, 1, 0);
-        let expected_origin = p3!(0, 0, 0);
-        let expected_x_axis = v3!(-1, 0, 0);
-        let expected_y_axis = v3!(0, 1, 0);
-        let expected_z_axis = v3!(0, 0, -1);
+        let eye = pt!(0, 0, 0);
+        let look_at = pt!(0, 0, 1);
+        let up = vc!(0, 1, 0);
+        let expected_origin = pt!(0, 0, 0);
+        let expected_x_axis = vc!(-1, 0, 0);
+        let expected_y_axis = vc!(0, 1, 0);
+        let expected_z_axis = vc!(0, 0, -1);
 
         let parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
@@ -151,13 +152,13 @@ mod tests {
 
     #[rstest]
     fn coordinate_system_2() {
-        let eye = p3!(0, 0, 1);
-        let look_at = p3!(0, 0, 0);
-        let up = v3!(0, 1, 0);
-        let expected_origin = p3!(0, 0, 1);
-        let expected_x_axis = v3!(1, 0, 0);
-        let expected_y_axis = v3!(0, 1, 0);
-        let expected_z_axis = v3!(0, 0, 1);
+        let eye = pt!(0, 0, 1);
+        let look_at = pt!(0, 0, 0);
+        let up = vc!(0, 1, 0);
+        let expected_origin = pt!(0, 0, 1);
+        let expected_x_axis = vc!(1, 0, 0);
+        let expected_y_axis = vc!(0, 1, 0);
+        let expected_z_axis = vc!(0, 0, 1);
 
         let parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
@@ -178,13 +179,13 @@ mod tests {
 
     #[rstest]
     fn coordinate_system_3() {
-        let eye = p3!(0, 0, -1);
-        let look_at = p3!(0, 0, 0);
-        let up = v3!(0, 1, 0);
-        let expected_origin = p3!(0, 0, -1);
-        let expected_x_axis = v3!(-1, 0, 0);
-        let expected_y_axis = v3!(0, 1, 0);
-        let expected_z_axis = v3!(0, 0, -1);
+        let eye = pt!(0, 0, -1);
+        let look_at = pt!(0, 0, 0);
+        let up = vc!(0, 1, 0);
+        let expected_origin = pt!(0, 0, -1);
+        let expected_x_axis = vc!(-1, 0, 0);
+        let expected_y_axis = vc!(0, 1, 0);
+        let expected_z_axis = vc!(0, 0, -1);
 
         let parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
@@ -204,18 +205,18 @@ mod tests {
     }
 
     #[rstest]
-    #[case(p2!(0.5, 0.5), p3!(0, 0, 0))]
-    #[case(p2!(0, 0), p3!(0.5, 0.5, 0))]
-    #[case(p2!(1, 0), p3!(-0.5, 0.5, 0))]
-    #[case(p2!(0, 1), p3!(0.5, -0.5, 0))]
-    #[case(p2!(1, 1), p3!(-0.5, -0.5, 0))]
-    fn enumerate_rays_1(#[case] p: Point2D, #[case] expected: Point3D) {
+    #[case(pt!(0.5, 0.5), pt!(0, 0, 0))]
+    #[case(pt!(0, 0), pt!(0.5, 0.5, 0))]
+    #[case(pt!(1, 0), pt!(-0.5, 0.5, 0))]
+    #[case(pt!(0, 1), pt!(0.5, -0.5, 0))]
+    #[case(pt!(1, 1), pt!(-0.5, -0.5, 0))]
+    fn enumerate_rays_1(#[case] p: Point<2>, #[case] expected: Point<3>) {
         let parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: p3!(0, 0, -1),
-            look_at: p3!(0, 0, 0),
-            up: v3!(0, 1, 0),
+            eye: pt!(0, 0, -1),
+            look_at: pt!(0, 0, 0),
+            up: vc!(0, 1, 0),
         };
         let camera = PerspectiveCamera::new(&parameters);
         let rays: Vec<Ray> = camera.enumerate_rays(p).collect();
@@ -223,23 +224,23 @@ mod tests {
         assert_eq!(1, rays.len());
 
         let ray = &rays[0];
-        assert_eq!(approx(p3!(0, 0, -1)), ray.origin);
+        assert_eq!(approx(pt!(0, 0, -1)), ray.origin);
         assert_eq!(approx(expected), ray.at(1.0));
     }
 
     #[rstest]
-    #[case(p2!(0.5, 0.5), p3!(0, 0, 1))]
-    #[case(p2!(0, 0), p3!(-0.5, 0.5, 1))]
-    #[case(p2!(1, 0), p3!(0.5, 0.5, 1))]
-    #[case(p2!(0, 1), p3!(-0.5, -0.5, 1))]
-    #[case(p2!(1, 1), p3!(0.5, -0.5, 1))]
-    fn enumerate_rays_2(#[case] p: Point2D, #[case] expected: Point3D) {
+    #[case(pt!(0.5, 0.5), pt!(0, 0, 1))]
+    #[case(pt!(0, 0), pt!(-0.5, 0.5, 1))]
+    #[case(pt!(1, 0), pt!(0.5, 0.5, 1))]
+    #[case(pt!(0, 1), pt!(-0.5, -0.5, 1))]
+    #[case(pt!(1, 1), pt!(0.5, -0.5, 1))]
+    fn enumerate_rays_2(#[case] p: Point<2>, #[case] expected: Point<3>) {
         let parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: p3!(0, 0, 2),
-            look_at: p3!(0, 0, 0),
-            up: v3!(0, 1, 0),
+            eye: pt!(0, 0, 2),
+            look_at: pt!(0, 0, 0),
+            up: vc!(0, 1, 0),
         };
         let camera = PerspectiveCamera::new(&parameters);
         let rays: Vec<Ray> = camera.enumerate_rays(p).collect();
@@ -247,7 +248,7 @@ mod tests {
         assert_eq!(1, rays.len());
 
         let ray = &rays[0];
-        assert_eq!(approx(p3!(0, 0, 2)), ray.origin);
+        assert_eq!(approx(pt!(0, 0, 2)), ray.origin);
         assert_eq!(approx(expected), ray.at(1.0));
     }
 }

@@ -4,11 +4,10 @@ use crate::math::{
     approx::approx,
     coords::Cartesian3D,
     interval::{Interval, IntervalMapper},
-    point2d::{p2, Point2D},
-    point3d::{p3, Point3D},
     quadratic::QuadraticEquation,
-    ray::Ray,
-    vector3d::Vector3D,
+    Point,
+    Ray,
+    pt,
 };
 
 pub struct Sphere {}
@@ -19,7 +18,7 @@ impl Sphere {
     }
 }
 
-fn compute_uv_coordinates(p: &Point3D) -> Point2D {
+fn compute_uv_coordinates(p: &Point<3>) -> Point<2> {
     let cartesian = Cartesian3D {
         x: p.x(),
         y: p.y(),
@@ -41,12 +40,12 @@ fn compute_uv_coordinates(p: &Point3D) -> Point2D {
     let u = azimuth_mapper.map(spherical.azimuth);
     let v = elevation_mapper.map(spherical.elevation);
 
-    p2!(u, v)
+    pt!(u, v)
 }
 
 impl Primitive for Sphere {
     fn find_first_positive_hit(&self, ray: &Ray) -> Option<Hit> {
-        let delta: Vector3D = ray.origin - p3!(0, 0, 0);
+        let delta = ray.origin - pt!(0, 0, 0);
         let radius: f64 = 1.0;
         let a = ray.direction.dot(&ray.direction);
         let b = 2.0 * delta.dot(&ray.direction);
@@ -68,7 +67,7 @@ impl Primitive for Sphere {
                             uv: compute_uv_coordinates(&p),
                         },
                     };
-                    let normal = p - p3!(0, 0, 0);
+                    let normal = p - pt!(0, 0, 0);
                     let hit = Hit {
                         t,
                         position,
@@ -86,23 +85,26 @@ impl Primitive for Sphere {
 #[cfg(test)]
 mod tests {
     #[cfg(test)]
-    use super::{p3, Point3D, Primitive, Ray, Sphere, Vector3D};
-    use crate::math::vector3d::v3;
+    use super::{Point, Primitive, Ray, Sphere};
+
+    #[cfg(test)]
+    use crate::math::{vc, pt, Vector};
+
     use rstest::rstest;
 
     #[rstest]
-    #[case(p3!(5, 0, 0), v3!(-1, 0, 0), Some((4.0, v3!(1, 0, 0))))]
-    #[case(p3!(3, 0, 0), v3!(-1, 0, 0), Some((2.0, v3!(1, 0, 0))))]
-    #[case(p3!(-10, 0, 0), v3!(-1, 0, 0), None)]
-    #[case(p3!(10, 5, 0), v3!(-1, 0, 0), None)]
-    #[case(p3!(0, 5, 0), v3!(0, -1, 0), Some((4.0, v3!(0, 1, 0))))]
-    #[case(p3!(0, -8, 0), v3!(0, 1, 0), Some((7.0, v3!(0, -1, 0))))]
-    #[case(p3!(0, -9, 0), v3!(0, 1, 0), Some((8.0, v3!(0, -1, 0))))]
-    #[case(p3!(0, -9, 0), v3!(0, 2, 0), Some((4.0, v3!(0, -1, 0))))]
+    #[case(pt!(5, 0, 0), vc!(-1, 0, 0), Some((4.0, vc!(1, 0, 0))))]
+    #[case(pt!(3, 0, 0), vc!(-1, 0, 0), Some((2.0, vc!(1, 0, 0))))]
+    #[case(pt!(-10, 0, 0), vc!(-1, 0, 0), None)]
+    #[case(pt!(10, 5, 0), vc!(-1, 0, 0), None)]
+    #[case(pt!(0, 5, 0), vc!(0, -1, 0), Some((4.0, vc!(0, 1, 0))))]
+    #[case(pt!(0, -8, 0), vc!(0, 1, 0), Some((7.0, vc!(0, -1, 0))))]
+    #[case(pt!(0, -9, 0), vc!(0, 1, 0), Some((8.0, vc!(0, -1, 0))))]
+    #[case(pt!(0, -9, 0), vc!(0, 2, 0), Some((4.0, vc!(0, -1, 0))))]
     fn first_positive_hit(
-        #[case] ray_origin: Point3D,
-        #[case] ray_direction: Vector3D,
-        #[case] expected_hit: Option<(f64, Vector3D)>,
+        #[case] ray_origin: Point<3>,
+        #[case] ray_direction: Vector<3>,
+        #[case] expected_hit: Option<(f64, Vector<3>)>,
     ) {
         let ray = Ray::new(ray_origin, ray_direction);
         let sphere = Sphere::new();
