@@ -105,16 +105,16 @@ impl Matrix<4, 4> {
     }
 }
 
-impl Mul<&Matrix<4, 4>> for &Matrix<4, 4> {
-    type Output = Matrix<4, 4>;
+impl<const A: usize, const B: usize, const C: usize> Mul<&Matrix<B, C>> for &Matrix<A, B> {
+    type Output = Matrix<A, C>;
 
-    fn mul(self, rhs: &Matrix<4, 4>) -> Self::Output {
+    fn mul(self, rhs: &Matrix<B, C>) -> Self::Output {
         let lhs = self;
-        let mut result = Matrix::<4, 4>::zero();
+        let mut result = Matrix::<A, C>::zero();
 
-        for row in 0..4 {
-            for col in 0..4 {
-                for i in 0..4 {
+        for row in 0..A {
+            for col in 0..C {
+                for i in 0..B {
                     result.m[row][col] += lhs.m[row][i] * rhs.m[i][col];
                 }
             }
@@ -161,10 +161,10 @@ impl Mul<&Ray> for &Matrix<4, 4> {
     }
 }
 
-impl Approx for Matrix<4, 4> {
+impl<const R: usize, const C: usize> Approx for Matrix<R, C> {
     fn approx_eps(&self, rhs: &Self, epsilon: f64) -> bool {
-        (0..4).all(|row| {
-            (0..4).all(|col| {
+        (0..R).all(|row| {
+            (0..C).all(|col| {
                 let left = self.m[row][col];
                 let right = rhs.m[row][col];
                 left.approx_eps(&right, epsilon)
