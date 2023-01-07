@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use super::{values::Value, tokenizing::Token};
+use super::{tokenizing::Token, values::Value};
 
 pub struct Parser {
-    stack: Vec<Vec<Rc<Value>>>
+    stack: Vec<Vec<Rc<Value>>>,
 }
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub enum ParsingError {
 impl Parser {
     pub fn new() -> Self {
         Parser {
-            stack: vec![ Vec::new() ]
+            stack: vec![Vec::new()],
         }
     }
 

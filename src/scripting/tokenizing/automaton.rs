@@ -2,7 +2,7 @@ use crate::regex::Regex;
 
 pub struct Automaton<T: Copy + Clone> {
     rules: Vec<(Regex, T)>,
-    state: Vec<(Regex, T)>
+    state: Vec<(Regex, T)>,
 }
 
 pub struct AutomatonBuilder<T: Copy + Clone> {
@@ -19,9 +19,11 @@ impl<T: Copy + Clone> Automaton<T> {
     }
 
     pub fn feed(&mut self, ch: char) -> bool {
-        let mut next_generation: Vec<(Regex, T)> = self.state.iter().filter_map(|(regex, t)| {
-            regex.try_feed(ch).map(|r| (r, *t))
-        }).collect();
+        let mut next_generation: Vec<(Regex, T)> = self
+            .state
+            .iter()
+            .filter_map(|(regex, t)| regex.try_feed(ch).map(|r| (r, *t)))
+            .collect();
 
         if next_generation.is_empty() {
             false
@@ -32,7 +34,10 @@ impl<T: Copy + Clone> Automaton<T> {
     }
 
     pub fn current(&self) -> Option<T> {
-        self.state.iter().find(|(regex, _t)| regex.is_terminal()).map(|(_regex, t)| t.clone())
+        self.state
+            .iter()
+            .find(|(regex, _t)| regex.is_terminal())
+            .map(|(_regex, t)| t.clone())
     }
 }
 

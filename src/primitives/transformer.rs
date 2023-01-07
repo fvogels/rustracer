@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use super::primitive::{Hit, Primitive};
-use crate::math::Ray;
 use crate::math::transformation3d::Transformation3D;
+use crate::math::Ray;
 
 pub struct Transformer {
     transformation: Transformation3D,

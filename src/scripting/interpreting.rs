@@ -1,6 +1,11 @@
 use std::rc::Rc;
 
-use super::{evaluating::{Evaluator, EvaluationError}, values::Value, tokenizing::{Tokenizer, TokenizingError}, parsing::{Parser, ParsingError}};
+use super::{
+    evaluating::{EvaluationError, Evaluator},
+    parsing::{Parser, ParsingError},
+    tokenizing::{Tokenizer, TokenizingError},
+    values::Value,
+};
 
 pub struct Interpreter {
     evaluator: Evaluator,
@@ -16,7 +21,7 @@ pub enum InterpretingError {
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
-            evaluator: Evaluator::new()
+            evaluator: Evaluator::new(),
         }
     }
 
@@ -25,15 +30,23 @@ impl Interpreter {
         let mut tokenizer = Tokenizer::new(input_iterator);
         let mut parser = Parser::new();
 
-        while let Some((token, i, j)) = tokenizer.next_token().map_err(InterpretingError::TokenizingError)? {
-            parser.feed(&token).map_err(InterpretingError::ParsingError)?;
+        while let Some((token, i, j)) = tokenizer
+            .next_token()
+            .map_err(InterpretingError::TokenizingError)?
+        {
+            parser
+                .feed(&token)
+                .map_err(InterpretingError::ParsingError)?;
         }
 
         let asts = parser.eject().map_err(InterpretingError::ParsingError)?;
         let mut last_result = Rc::new(Value::Nil);
 
         for ast in asts.into_iter() {
-            last_result = self.evaluator.evaluate(ast).map_err(InterpretingError::EvaluationError)?;
+            last_result = self
+                .evaluator
+                .evaluate(ast)
+                .map_err(InterpretingError::EvaluationError)?;
         }
 
         Ok(last_result)
@@ -46,7 +59,7 @@ impl Interpreter {
 
 #[cfg(test)]
 mod test {
-    use rstest::{rstest, fixture};
+    use rstest::{fixture, rstest};
 
     #[cfg(test)]
     use super::*;

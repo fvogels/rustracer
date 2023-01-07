@@ -2,10 +2,19 @@ use std::rc::Rc;
 
 use crate::{data::Either, scripting::values::NativeFunction};
 
-use super::{environment::Environment, values::Value, evaluating::{EvaluationError, Evaluator}};
+use super::{
+    environment::Environment,
+    evaluating::{EvaluationError, Evaluator},
+    values::Value,
+};
 
 pub fn create_prelude() -> Environment {
-    fn native_function<F: Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> + 'static>(id: &str, f: F) -> Rc<Value> {
+    fn native_function<
+        F: Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> + 'static,
+    >(
+        id: &str,
+        f: F,
+    ) -> Rc<Value> {
         Rc::new(Value::NativeFunction(String::from(id), Rc::new(f)))
     }
 
@@ -33,7 +42,10 @@ pub fn create_prelude() -> Environment {
 mod lib {
     use super::*;
 
-    pub fn addition(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> {
+    pub fn addition(
+        _interpreter: &mut Evaluator,
+        arguments: &[Rc<Value>],
+    ) -> Result<Rc<Value>, EvaluationError> {
         if arguments.is_empty() {
             Err(EvaluationError::InvalidNumberOfArguments)
         } else {
@@ -41,11 +53,17 @@ mod lib {
 
             for argument in arguments[1..].iter() {
                 match (result, argument.as_ref()) {
-                    (Value::Integer(a), Value::Integer(b)) => { result = Value::Integer(a + b) }
-                    (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 + b) }
-                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a + b) }
-                    (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a + (*b as f64)) }
-                    _ => { return Err(EvaluationError::InvalidArgumentTypes) }
+                    (Value::Integer(a), Value::Integer(b)) => result = Value::Integer(a + b),
+                    (Value::Integer(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a as f64 + b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a + b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::Integer(b)) => {
+                        result = Value::FloatingPointNumber(a + (*b as f64))
+                    }
+                    _ => return Err(EvaluationError::InvalidArgumentTypes),
                 }
             }
 
@@ -53,7 +71,10 @@ mod lib {
         }
     }
 
-    pub fn subtraction(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> {
+    pub fn subtraction(
+        _interpreter: &mut Evaluator,
+        arguments: &[Rc<Value>],
+    ) -> Result<Rc<Value>, EvaluationError> {
         if arguments.is_empty() {
             Err(EvaluationError::InvalidNumberOfArguments)
         } else if arguments.len() == 1 {
@@ -66,20 +87,24 @@ mod lib {
                     let result = Value::FloatingPointNumber(-a);
                     Ok(Rc::new(result))
                 }
-                _ => {
-                    Err(EvaluationError::InvalidArgumentTypes)
-                }
+                _ => Err(EvaluationError::InvalidArgumentTypes),
             }
         } else {
             let mut result = arguments[0].as_ref().clone();
 
             for argument in arguments[1..].iter() {
                 match (result, argument.as_ref()) {
-                    (Value::Integer(a), Value::Integer(b)) => { result = Value::Integer(a - b) }
-                    (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 - b) }
-                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a - b) }
-                    (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a - (*b as f64)) }
-                    _ => { return Err(EvaluationError::InvalidArgumentTypes) }
+                    (Value::Integer(a), Value::Integer(b)) => result = Value::Integer(a - b),
+                    (Value::Integer(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a as f64 - b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a - b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::Integer(b)) => {
+                        result = Value::FloatingPointNumber(a - (*b as f64))
+                    }
+                    _ => return Err(EvaluationError::InvalidArgumentTypes),
                 }
             }
 
@@ -87,7 +112,10 @@ mod lib {
         }
     }
 
-    pub fn multiplication(_interpreter: &mut Evaluator, arguments: &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError> {
+    pub fn multiplication(
+        _interpreter: &mut Evaluator,
+        arguments: &[Rc<Value>],
+    ) -> Result<Rc<Value>, EvaluationError> {
         if arguments.is_empty() {
             Err(EvaluationError::InvalidNumberOfArguments)
         } else {
@@ -95,11 +123,17 @@ mod lib {
 
             for argument in arguments[1..].iter() {
                 match (result, argument.as_ref()) {
-                    (Value::Integer(a), Value::Integer(b)) => { result = Value::Integer(a * b) }
-                    (Value::Integer(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a as f64 * b) }
-                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => { result = Value::FloatingPointNumber(a * b) }
-                    (Value::FloatingPointNumber(a), Value::Integer(b)) => { result = Value::FloatingPointNumber(a * (*b as f64)) }
-                    _ => { return Err(EvaluationError::InvalidArgumentTypes) }
+                    (Value::Integer(a), Value::Integer(b)) => result = Value::Integer(a * b),
+                    (Value::Integer(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a as f64 * b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::FloatingPointNumber(b)) => {
+                        result = Value::FloatingPointNumber(a * b)
+                    }
+                    (Value::FloatingPointNumber(a), Value::Integer(b)) => {
+                        result = Value::FloatingPointNumber(a * (*b as f64))
+                    }
+                    _ => return Err(EvaluationError::InvalidArgumentTypes),
                 }
             }
 
@@ -118,7 +152,7 @@ fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>
                 let mut converted: Vec<f64> = vec.iter().map(|&k| k as f64).collect();
                 converted.push(*n);
                 result = Either::Right(converted)
-            },
+            }
             (Value::Integer(n), Either::Right(vec)) => vec.push(n.clone() as f64),
             (Value::FloatingPointNumber(n), Either::Right(vec)) => vec.push(*n),
             _ => return Err(EvaluationError::NonNumberInArithmeticOperation),
@@ -130,7 +164,7 @@ fn homogenize_numbers(values: &[Rc<Value>]) -> Result<Either<Vec<i64>, Vec<f64>>
 
 #[cfg(test)]
 mod test {
-    use rstest::{rstest, fixture};
+    use rstest::{fixture, rstest};
 
     #[cfg(test)]
     use super::*;
@@ -140,8 +174,8 @@ mod test {
 
     #[rstest]
     fn homogenize_single_i64() {
-        let values = [ Value::Integer(5) ].map(|v| Rc::new(v));
-        let expected = Either::Left(vec![ 5 ]);
+        let values = [Value::Integer(5)].map(|v| Rc::new(v));
+        let expected = Either::Left(vec![5]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -149,8 +183,8 @@ mod test {
 
     #[rstest]
     fn homogenize_single_f64() {
-        let values = [ Value::FloatingPointNumber(7.8) ].map(|v| Rc::new(v));
-        let expected = Either::Right(vec![ 7.8 ]);
+        let values = [Value::FloatingPointNumber(7.8)].map(|v| Rc::new(v));
+        let expected = Either::Right(vec![7.8]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -158,8 +192,8 @@ mod test {
 
     #[rstest]
     fn homogenize_multiple_i64() {
-        let values = [ Value::Integer(5), Value::Integer(10) ].map(|v| Rc::new(v));
-        let expected = Either::Left(vec![ 5, 10 ]);
+        let values = [Value::Integer(5), Value::Integer(10)].map(|v| Rc::new(v));
+        let expected = Either::Left(vec![5, 10]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -167,8 +201,12 @@ mod test {
 
     #[rstest]
     fn homogenize_multiple_f64() {
-        let values = [ Value::FloatingPointNumber(7.8), Value::FloatingPointNumber(9.1) ].map(|v| Rc::new(v));
-        let expected = Either::Right(vec![ 7.8, 9.1 ]);
+        let values = [
+            Value::FloatingPointNumber(7.8),
+            Value::FloatingPointNumber(9.1),
+        ]
+        .map(|v| Rc::new(v));
+        let expected = Either::Right(vec![7.8, 9.1]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -176,8 +214,13 @@ mod test {
 
     #[rstest]
     fn homogenize_mix1() {
-        let values = [ Value::FloatingPointNumber(7.8), Value::FloatingPointNumber(9.1), Value::Integer(5) ].map(|v| Rc::new(v));
-        let expected = Either::Right(vec![ 7.8, 9.1, 5.0 ]);
+        let values = [
+            Value::FloatingPointNumber(7.8),
+            Value::FloatingPointNumber(9.1),
+            Value::Integer(5),
+        ]
+        .map(|v| Rc::new(v));
+        let expected = Either::Right(vec![7.8, 9.1, 5.0]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -185,8 +228,13 @@ mod test {
 
     #[rstest]
     fn homogenize_mix2() {
-        let values = [ Value::Integer(5), Value::FloatingPointNumber(7.8), Value::FloatingPointNumber(9.1) ].map(|v| Rc::new(v));
-        let expected = Either::Right(vec![ 5.0, 7.8, 9.1 ]);
+        let values = [
+            Value::Integer(5),
+            Value::FloatingPointNumber(7.8),
+            Value::FloatingPointNumber(9.1),
+        ]
+        .map(|v| Rc::new(v));
+        let expected = Either::Right(vec![5.0, 7.8, 9.1]);
         let actual = homogenize_numbers(&values).unwrap();
 
         assert_eq!(expected, actual)
@@ -205,7 +253,11 @@ mod test {
     #[case(&[int(1), int(2), int(4)], int(7))]
     #[case(&[float(1.0), float(2.0), float(3.0)], float(6.0))]
     #[case(&[int(1), float(2.0), float(3.0)], float(6.0))]
-    fn addition(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
+    fn addition(
+        mut interpreter: Evaluator,
+        #[case] arguments: &[Rc<Value>],
+        #[case] expected: Rc<Value>,
+    ) {
         let actual = lib::addition(&mut interpreter, &arguments).unwrap();
 
         assert_eq!(expected, actual);
@@ -217,7 +269,11 @@ mod test {
     #[case(&[int(2), int(1)], int(1))]
     #[case(&[int(3), int(2), int(1)], int(0))]
     #[case(&[float(3.0), int(2), int(1)], float(0.0))]
-    fn subtraction(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
+    fn subtraction(
+        mut interpreter: Evaluator,
+        #[case] arguments: &[Rc<Value>],
+        #[case] expected: Rc<Value>,
+    ) {
         let actual = lib::subtraction(&mut interpreter, &arguments).unwrap();
 
         assert_eq!(expected, actual);
@@ -230,7 +286,11 @@ mod test {
     #[case(&[int(1), int(2), int(4)], int(8))]
     #[case(&[float(1.0), float(2.0), float(3.0)], float(6.0))]
     #[case(&[int(1), float(2.0), float(3.0)], float(6.0))]
-    fn multiplication(mut interpreter: Evaluator, #[case] arguments: &[Rc<Value>], #[case] expected: Rc<Value>) {
+    fn multiplication(
+        mut interpreter: Evaluator,
+        #[case] arguments: &[Rc<Value>],
+        #[case] expected: Rc<Value>,
+    ) {
         let actual = lib::multiplication(&mut interpreter, &arguments).unwrap();
 
         assert_eq!(expected, actual);

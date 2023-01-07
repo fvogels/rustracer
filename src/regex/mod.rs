@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-
 enum RegexImp {
     Empty,
     Epsilon,
@@ -12,7 +11,7 @@ enum RegexImp {
 
 #[derive(Clone, Debug)]
 pub struct Regex {
-    imp: Rc<RegexImp>
+    imp: Rc<RegexImp>,
 }
 
 impl std::fmt::Debug for RegexImp {
@@ -64,7 +63,7 @@ impl RegexImp {
                 } else {
                     Self::empty()
                 }
-            },
+            }
             Self::Sequence(x, y) => {
                 let mut result = Vec::new();
 
@@ -75,18 +74,15 @@ impl RegexImp {
                 }
 
                 Self::alternatives(result.into_iter())
-            },
+            }
             Self::Alternatives(x, y) => {
-                let mut result = vec![
-                    x.feed(ch),
-                    y.feed(ch),
-                ];
+                let mut result = vec![x.feed(ch), y.feed(ch)];
 
                 Self::alternatives(result.into_iter())
-            },
+            }
             Self::Kleene(x) => {
                 Self::sequence(vec![x.feed(ch), Self::kleene(x.clone())].into_iter())
-            },
+            }
         }
     }
 
@@ -98,7 +94,7 @@ impl RegexImp {
         Rc::new(RegexImp::Epsilon)
     }
 
-    fn sequence(children: impl Iterator<Item=Rc<Self>>) -> Rc<Self> {
+    fn sequence(children: impl Iterator<Item = Rc<Self>>) -> Rc<Self> {
         let mut result = Rc::new(RegexImp::Epsilon);
 
         for child in children.into_iter() {
@@ -114,7 +110,7 @@ impl RegexImp {
         result
     }
 
-    fn alternatives(children: impl Iterator<Item=Rc<Self>>) -> Rc<Self> {
+    fn alternatives(children: impl Iterator<Item = Rc<Self>>) -> Rc<Self> {
         let mut result = Rc::new(RegexImp::Empty);
         let mut contains_epsilon = false;
 
@@ -150,8 +146,12 @@ impl RegexImp {
                 RegexImp::Empty => false,
                 RegexImp::Epsilon => true,
                 RegexImp::Literal(_) => true,
-                RegexImp::Alternatives(a, b) => does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone()),
-                RegexImp::Sequence(a, b) => does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone()),
+                RegexImp::Alternatives(a, b) => {
+                    does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone())
+                }
+                RegexImp::Sequence(a, b) => {
+                    does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone())
+                }
                 RegexImp::Kleene(a) => does_not_contain_empty(a.clone()),
             }
         }
@@ -160,8 +160,12 @@ impl RegexImp {
             Self::Empty => true,
             Self::Epsilon => true,
             Self::Literal(_) => true,
-            Self::Alternatives(a, b) => does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone()),
-            Self::Sequence(a, b) => does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone()),
+            Self::Alternatives(a, b) => {
+                does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone())
+            }
+            Self::Sequence(a, b) => {
+                does_not_contain_empty(a.clone()) && does_not_contain_empty(b.clone())
+            }
             Self::Kleene(a) => does_not_contain_empty(a.clone()),
         }
     }
@@ -182,15 +186,15 @@ impl Regex {
         Regex::new(Rc::new(RegexImp::Epsilon))
     }
 
-    pub fn sequence(children: impl Iterator<Item=Self>) -> Self {
+    pub fn sequence(children: impl Iterator<Item = Self>) -> Self {
         Regex::new(RegexImp::sequence(Self::unwrap(children)))
     }
 
-    pub fn alternatives(children: impl Iterator<Item=Self>) -> Self {
+    pub fn alternatives(children: impl Iterator<Item = Self>) -> Self {
         Regex::new(RegexImp::alternatives(Self::unwrap(children)))
     }
 
-    fn unwrap(children: impl Iterator<Item=Self>) -> impl Iterator<Item=Rc<RegexImp>> {
+    fn unwrap(children: impl Iterator<Item = Self>) -> impl Iterator<Item = Rc<RegexImp>> {
         children.map(|c| c.imp.clone())
     }
 
@@ -244,7 +248,7 @@ impl Regex {
         self.imp.is_empty()
     }
 
-    pub fn character_class(chars: impl Iterator<Item=char>) -> Self {
+    pub fn character_class(chars: impl Iterator<Item = char>) -> Self {
         let regexes = chars.map(|c| Self::literal(c));
 
         Self::alternatives(regexes)
@@ -279,15 +283,24 @@ impl Regex {
     }
 
     pub fn integer(radix: u32) -> Self {
-        Self::sequence([Self::optional(Self::literal('-')), Self::positive_integer(radix)].into_iter())
+        Self::sequence(
+            [
+                Self::optional(Self::literal('-')),
+                Self::positive_integer(radix),
+            ]
+            .into_iter(),
+        )
     }
 
     pub fn float() -> Self {
-        Self::sequence([
-            Self::integer(10),
-            Self::literal('.'),
-            Self::positive_integer(10),
-        ].into_iter())
+        Self::sequence(
+            [
+                Self::integer(10),
+                Self::literal('.'),
+                Self::positive_integer(10),
+            ]
+            .into_iter(),
+        )
     }
 }
 
@@ -300,7 +313,14 @@ mod test {
 
     #[rstest]
     fn sequence_positive() {
-        let mut regex = Regex::sequence([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
+        let mut regex = Regex::sequence(
+            [
+                Regex::literal('a'),
+                Regex::literal('b'),
+                Regex::literal('c'),
+            ]
+            .into_iter(),
+        );
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
@@ -333,7 +353,14 @@ mod test {
 
     #[rstest]
     fn sequence_3_negative() {
-        let mut regex = Regex::sequence([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
+        let mut regex = Regex::sequence(
+            [
+                Regex::literal('a'),
+                Regex::literal('b'),
+                Regex::literal('c'),
+            ]
+            .into_iter(),
+        );
 
         assert!(!regex.is_terminal());
         assert!(!regex.is_empty());
@@ -343,7 +370,14 @@ mod test {
 
     #[rstest]
     fn alternatives_positive(#[values('a', 'b', 'c')] ch: char) {
-        let mut regex = Regex::alternatives([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
+        let mut regex = Regex::alternatives(
+            [
+                Regex::literal('a'),
+                Regex::literal('b'),
+                Regex::literal('c'),
+            ]
+            .into_iter(),
+        );
 
         assert!(!regex.is_terminal());
         regex.feed_mut(ch);
@@ -352,7 +386,14 @@ mod test {
 
     #[rstest]
     fn alternatives_negative(#[values('x', 'y', 'z')] ch: char) {
-        let mut regex = Regex::alternatives([Regex::literal('a'), Regex::literal('b'), Regex::literal('c')].into_iter());
+        let mut regex = Regex::alternatives(
+            [
+                Regex::literal('a'),
+                Regex::literal('b'),
+                Regex::literal('c'),
+            ]
+            .into_iter(),
+        );
 
         assert!(!regex.is_terminal());
         regex.feed_mut(ch);

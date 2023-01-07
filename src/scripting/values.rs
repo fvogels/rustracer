@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use super::{evaluating::{Evaluator, EvaluationError}};
+use super::evaluating::{EvaluationError, Evaluator};
 
 #[derive(Clone)]
 pub enum Value {
@@ -10,58 +10,59 @@ pub enum Value {
     List(Vec<Rc<Value>>),
     Symbol(String),
     Nil,
-    NativeFunction(String, Rc<NativeFunction>)
+    NativeFunction(String, Rc<NativeFunction>),
 }
 
-pub type NativeFunction = dyn Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError>;
+pub type NativeFunction =
+    dyn Fn(&mut Evaluator, &[Rc<Value>]) -> Result<Rc<Value>, EvaluationError>;
 
 impl Value {
     pub fn is_integer(&self) -> bool {
         match self {
             Value::Integer(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_float(&self) -> bool {
         match self {
             Value::FloatingPointNumber(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_bool(&self) -> bool {
         match self {
             Value::Boolean(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_list(&self) -> bool {
         match self {
             Value::List(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_symbol(&self) -> bool {
         match self {
             Value::Symbol(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_nil(&self) -> bool {
         match self {
             Value::Nil => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_native_function(&self) -> bool {
         match self {
             Value::NativeFunction(_, _) => true,
-            _ => false
+            _ => false,
         }
     }
 }
@@ -73,9 +74,11 @@ impl PartialEq for Value {
             (Value::Integer(x), Value::Integer(y)) => x == y,
             (Value::FloatingPointNumber(x), Value::FloatingPointNumber(y)) => x == y,
             (Value::Symbol(x), Value::Symbol(y)) => x == y,
-            (Value::List(xs), Value::List(ys)) => xs.len() == ys.len() && xs.iter().zip(ys).all(|(x, y)| x == y),
+            (Value::List(xs), Value::List(ys)) => {
+                xs.len() == ys.len() && xs.iter().zip(ys).all(|(x, y)| x == y)
+            }
             (Value::Nil, Value::Nil) => true,
-            _ => false
+            _ => false,
         }
     }
 }
@@ -89,7 +92,9 @@ impl std::fmt::Debug for Value {
             Value::List(xs) => f.debug_list().entries(xs).finish(),
             Value::Nil => f.debug_tuple("Nil").finish(),
             Value::Symbol(x) => f.debug_tuple("Symbol").field(x).finish(),
-            Value::NativeFunction(id, _func) => f.debug_struct("NativeFunction").field("name", id).finish(),
+            Value::NativeFunction(id, _func) => {
+                f.debug_struct("NativeFunction").field("name", id).finish()
+            }
         }
     }
 }

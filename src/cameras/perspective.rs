@@ -1,12 +1,4 @@
-use crate::math::{
-    Matrix,
-    Point,
-    Vector,
-    Ray,
-    Rectangle,
-    vc,
-    pt,
-};
+use crate::math::{pt, vc, Matrix, Point, Ray, Rectangle, Vector};
 
 pub struct PerspectiveCamera {
     screen: Rectangle<3>,

@@ -1,14 +1,6 @@
 use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
 use crate::math::{
-    Angle,
-    approx,
-    coords::Cartesian3D,
-    Interval,
-    IntervalMapper,
-    QuadraticEquation,
-    Point,
-    Ray,
-    pt,
+    approx, coords::Cartesian3D, pt, Angle, Interval, IntervalMapper, Point, QuadraticEquation, Ray,
 };
 
 pub struct Sphere {}
@@ -89,7 +81,7 @@ mod tests {
     use super::{Point, Primitive, Ray, Sphere};
 
     #[cfg(test)]
-    use crate::math::{vc, pt, Vector};
+    use crate::math::{pt, vc, Vector};
 
     use rstest::rstest;
 

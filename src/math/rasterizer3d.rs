@@ -25,6 +25,6 @@ impl Rasterizer3D {
         let origin =
             self.rectangle.origin + x_axis * (position.x() as f64) + y_axis * (position.y() as f64);
 
-        Rectangle::new(origin, x_axis,y_axis)
+        Rectangle::new(origin, x_axis, y_axis)
     }
 }

@@ -1,6 +1,6 @@
-use std::{collections::HashMap, rc::Rc, cell::RefCell};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use super::{values::Value, evaluating::EvaluationError};
+use super::{evaluating::EvaluationError, values::Value};
 
 type Bindings = HashMap<String, Rc<Value>>;
 
@@ -16,7 +16,9 @@ struct Frame {
 
 impl Environment {
     pub fn new() -> Self {
-        Environment { top_frame: Rc::new(RefCell::new(Frame::new(None))) }
+        Environment {
+            top_frame: Rc::new(RefCell::new(Frame::new(None))),
+        }
     }
 
     pub fn lookup(&self, id: &String) -> Result<Rc<Value>, EvaluationError> {
@@ -37,8 +39,12 @@ impl Frame {
 
     pub fn lookup(&self, id: &String) -> Result<Rc<Value>, EvaluationError> {
         match self.bindings.get(id) {
-            None => self.parent.as_ref().ok_or_else(|| EvaluationError::Unbound(id.clone())).and_then(|p| p.as_ref().borrow().lookup(id) ),
-            Some(value) => Ok(value.clone())
+            None => self
+                .parent
+                .as_ref()
+                .ok_or_else(|| EvaluationError::Unbound(id.clone()))
+                .and_then(|p| p.as_ref().borrow().lookup(id)),
+            Some(value) => Ok(value.clone()),
         }
     }
 

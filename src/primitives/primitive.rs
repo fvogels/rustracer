@@ -1,6 +1,6 @@
 use crate::{
     materials::material::MaterialProperties,
-    math::{Point, Vector, Ray},
+    math::{Point, Ray, Vector},
 };
 
 pub struct Hit {

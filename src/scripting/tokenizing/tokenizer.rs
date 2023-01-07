@@ -1,6 +1,9 @@
 use crate::{data::BufferedIterator, regex::Regex};
 
-use super::{automaton::{Automaton, AutomatonBuilder}, TokenType, Token, TokenizingError};
+use super::{
+    automaton::{Automaton, AutomatonBuilder},
+    Token, TokenType, TokenizingError,
+};
 
 pub struct Tokenizer<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> {
     automaton: Automaton<TokenType>,
@@ -28,9 +31,12 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
     }
 
     fn identifier_regex() -> Regex {
-        let identifier_char = Regex::alternatives([
-            Regex::character_class("+-*/%!@#$^&*|_<>=".chars()),
-            Regex::alphanumeric()].into_iter(),
+        let identifier_char = Regex::alternatives(
+            [
+                Regex::character_class("+-*/%!@#$^&*|_<>=".chars()),
+                Regex::alphanumeric(),
+            ]
+            .into_iter(),
         );
 
         Regex::one_or_more(identifier_char)
@@ -75,8 +81,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
                                 .automaton
                                 .current()
                                 .ok_or(TokenizingError::IncompleteToken)?;
-                            let token = token_type
-                                .to_token(acc_string)?;
+                            let token = token_type.to_token(acc_string)?;
                             let result = (token, start_location, last_location);
                             return Ok(Some(result));
                         }
@@ -90,8 +95,7 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
                                     .automaton
                                     .current()
                                     .ok_or(TokenizingError::IncompleteToken)?;
-                                let token = token_type
-                                    .to_token(acc_string)?;
+                                let token = token_type.to_token(acc_string)?;
                                 let result = (token, start_location, last_location);
                                 return Ok(Some(result));
                             }
@@ -102,7 +106,6 @@ impl<Loc: Copy + Clone, I: Iterator<Item = (char, Loc)>> Tokenizer<Loc, I> {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -122,11 +125,13 @@ mod tests {
         let mut tokenizer = Tokenizer::new(input);
 
         for expected_triple in expected_triples {
-            let actual = tokenizer.next_token().expect("there should be a next token");
+            let actual = tokenizer
+                .next_token()
+                .expect("there should be a next token");
 
             match actual {
                 Some(actual_triple) => assert_eq!(*expected_triple, actual_triple),
-                None => panic!("Missing tokens")
+                None => panic!("Missing tokens"),
             }
         }
 
@@ -143,7 +148,7 @@ mod tests {
 
             match actual {
                 Some((actual_token, _, _)) => assert_eq!(*expected_token, actual_token),
-                None => panic!("Missing tokens")
+                None => panic!("Missing tokens"),
             }
         }
 
@@ -153,9 +158,7 @@ mod tests {
     #[rstest]
     fn parenthesis() {
         let string = "(";
-        let expected_tokens = [
-            (Token::LeftParenthesis, 0, 0),
-        ];
+        let expected_tokens = [(Token::LeftParenthesis, 0, 0)];
 
         check_with_locations(string, &expected_tokens);
     }
@@ -198,9 +201,7 @@ mod tests {
     #[rstest]
     fn floating_point() {
         let string = "1.0";
-        let expected_tokens = [
-            (Token::FloatingPointNumber(1.0), 0, 2),
-        ];
+        let expected_tokens = [(Token::FloatingPointNumber(1.0), 0, 2)];
 
         check_with_locations(string, &expected_tokens);
     }

@@ -1,10 +1,5 @@
 use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
-use crate::math::{
-    pt,
-    Point,
-    Ray,
-    vc,
-};
+use crate::math::{pt, vc, Point, Ray};
 
 pub struct PlaneXY {}
 

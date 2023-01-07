@@ -26,8 +26,8 @@ impl Ray {
 mod tests {
     #[cfg(test)]
     use super::Ray;
-    use crate::math::{Point, pt};
-    use crate::math::{Vector, vc};
+    use crate::math::{pt, Point};
+    use crate::math::{vc, Vector};
     use rstest::rstest;
 
     #[rstest]

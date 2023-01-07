@@ -1,6 +1,5 @@
 use crate::math::{approx::approx, metric::Metric};
 
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector<const N: usize> {
     pub coords: [f64; N],
