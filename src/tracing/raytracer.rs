@@ -57,7 +57,7 @@ impl RayTracer {
         let mut result = Color::black();
         let mut n_lightrays = 0;
 
-        for light_ray in light_source.lightrays_to(hit.position.global) {
+        for light_ray in light_source.lightrays_to(hit.global_position()) {
             result += self.process_light_ray(hit, material_properties, &light_ray);
 
             n_lightrays += 1;
@@ -81,7 +81,7 @@ impl RayTracer {
         if is_shadowed {
             Color::black()
         } else {
-            let cos_angle = -hit.normal.cos_angle_between(&light_ray.ray.direction);
+            let cos_angle = -hit.normal().cos_angle_between(&light_ray.ray.direction);
 
             if cos_angle > 0.0 {
                 light_ray.color * cos_angle * material_properties.diffuse

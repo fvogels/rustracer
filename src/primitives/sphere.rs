@@ -1,6 +1,6 @@
-use super::primitive::{Hit, HitPosition, LocalPosition, Primitive};
+use super::primitive::{Hit, LocalPosition, Primitive};
 use crate::math::{
-    approx, coords::Cartesian3D, pt, Angle, Interval, IntervalMapper, Point, QuadraticEquation, Ray,
+    approx, coords::Cartesian3D, pt, vc, Angle, Interval, IntervalMapper, Point, QuadraticEquation, Ray, CoordinateSystem3D,
 };
 
 pub struct Sphere {}
@@ -36,6 +36,14 @@ fn compute_uv_coordinates(p: &Point<3>) -> Point<2> {
     pt!(u, v)
 }
 
+fn compute_coordinate_system(origin: Point<3>) -> CoordinateSystem3D {
+    let z_axis = origin - pt![0, 0, 0];
+    let x_axis = z_axis.orthogonal().normalized();
+    let y_axis = x_axis.cross(&z_axis);
+
+    CoordinateSystem3D { origin, x_axis, y_axis, z_axis }
+}
+
 impl Primitive for Sphere {
     fn find_first_positive_hit(&self, ray: &Ray) -> Option<Hit> {
         let delta = ray.origin - pt!(0, 0, 0);
@@ -53,18 +61,15 @@ impl Primitive for Sphere {
                 } else {
                     let t = if t1 > 0.0 { t1 } else { t2 };
                     let p = ray.at(t);
-                    let position = HitPosition {
-                        global: p,
-                        local: LocalPosition {
-                            xyz: p,
-                            uv: compute_uv_coordinates(&p),
-                        },
+                    let local_position = LocalPosition {
+                        xyz: p,
+                        uv: compute_uv_coordinates(&p),
                     };
-                    let normal = p - pt!(0, 0, 0);
+                    let coordinate_system = compute_coordinate_system(p);
                     let hit = Hit {
                         t,
-                        position,
-                        normal,
+                        local_position,
+                        coordinate_system,
                         material_properties: None,
                     };
 

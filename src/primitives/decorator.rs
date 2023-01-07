@@ -20,7 +20,7 @@ impl Primitive for Decorator {
         let mut hit = self.child.find_first_positive_hit(ray)?;
         hit.material_properties = hit
             .material_properties
-            .or_else(|| Some(self.material.at(hit.position.local)));
+            .or_else(|| Some(self.material.at(hit.local_position)));
         Some(hit)
     }
 }

@@ -1,19 +1,13 @@
 use crate::{
     materials::material::MaterialProperties,
-    math::{Point, Ray, Vector},
+    math::{Point, Ray, CoordinateSystem3D, Vector},
 };
 
 pub struct Hit {
     pub t: f64,
-    pub position: HitPosition,
-    pub normal: Vector<3>,
+    pub local_position: LocalPosition,
+    pub coordinate_system: CoordinateSystem3D,
     pub material_properties: Option<MaterialProperties>,
-}
-
-#[derive(Copy, Clone)]
-pub struct HitPosition {
-    pub global: Point<3>,
-    pub local: LocalPosition,
 }
 
 #[derive(Copy, Clone)]
@@ -47,5 +41,13 @@ impl Hit {
                 Some(hit2)
             }
         }
+    }
+
+    pub fn normal(&self) -> Vector<3> {
+        self.coordinate_system.z_axis
+    }
+
+    pub fn global_position(&self) -> Point<3> {
+        self.coordinate_system.origin
     }
 }
