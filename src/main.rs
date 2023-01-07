@@ -19,7 +19,7 @@ use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
-use math::{rasterizer2d::Rasterizer2D, transformation3d::Transformation3D, Position, Rectangle};
+use math::{Rasterizer, transformation3d::Transformation3D, Position, Rectangle};
 use primitives::decorator::Decorator;
 use primitives::sphere::Sphere;
 use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
@@ -101,7 +101,7 @@ fn main() {
     let mut image = Image::new(width, height);
 
     let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
-    let rasterizer = Rasterizer2D::new(&rectangle, width, height);
+    let rasterizer = Rasterizer::new(&rectangle, width, height);
     let sampler = StratifiedSampler2D::new(2, 2);
     let scene = create_scene();
     let ray_tracer = RayTracer::new(scene);

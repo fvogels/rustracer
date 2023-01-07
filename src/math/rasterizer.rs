@@ -1,25 +1,22 @@
 use super::Position;
 use super::Rectangle;
 
-pub struct Rasterizer3D {
-    rectangle: Rectangle<3>,
+pub struct Rasterizer<'a, const N: usize> {
+    rectangle: &'a Rectangle<N>,
     width: u32,
     height: u32,
 }
 
-impl Rasterizer3D {
-    pub fn new(rectangle: Rectangle<3>, width: u32, height: u32) -> Self {
-        Rasterizer3D {
+impl<'a, const N: usize> Rasterizer<'a, N> {
+    pub fn new(rectangle: &'a Rectangle<N>, width: u32, height: u32) -> Self {
+        Rasterizer {
             rectangle,
             width,
             height,
         }
     }
 
-    pub fn at(&self, position: Position<3>) -> Rectangle<3> {
-        assert!(0 <= position.x() && position.x() < self.width as i32);
-        assert!(0 <= position.y() && position.y() < self.height as i32);
-
+    pub fn at(&self, position: Position<2>) -> Rectangle<N> {
         let x_axis = self.rectangle.x_axis * (1.0 / (self.width as f64));
         let y_axis = self.rectangle.y_axis * (1.0 / (self.height as f64));
         let origin =

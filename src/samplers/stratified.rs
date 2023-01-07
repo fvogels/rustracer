@@ -1,5 +1,5 @@
 use super::sampler::Sampler2D;
-use crate::math::{rasterizer2d::Rasterizer2D, Point, Position, Rectangle};
+use crate::math::{Rasterizer, Point, Position, Rectangle};
 
 pub struct StratifiedSampler2D {
     horizontal: u32,
@@ -7,7 +7,7 @@ pub struct StratifiedSampler2D {
 }
 
 struct SampleIterator<'a> {
-    rasterizer: Rasterizer2D<'a>,
+    rasterizer: Rasterizer<'a, 2>,
     row: u32,
     col: u32,
     nrows: u32,
@@ -25,7 +25,7 @@ impl StratifiedSampler2D {
 
 impl<'a> Sampler2D<'a> for StratifiedSampler2D {
     fn sample(&self, rectangle: &'a Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>> + 'a> {
-        let rasterizer = Rasterizer2D::new(rectangle, self.horizontal, self.vertical);
+        let rasterizer = Rasterizer::<2>::new(rectangle, self.horizontal, self.vertical);
         let row = 0;
         let col = 0;
         let nrows = self.vertical;
