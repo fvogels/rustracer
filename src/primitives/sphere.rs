@@ -1,6 +1,11 @@
 use super::primitive::{Hit, LocalPosition, Primitive};
-use crate::math::{
-    approx, coords::Cartesian3D, pt, vc, Angle, Interval, IntervalMapper, Point, QuadraticEquation, Ray, CoordinateSystem3D,
+use crate::{
+    imaging::color::Color,
+    lights::light::LightRay,
+    math::{
+        approx, coords::Cartesian3D, pt, vc, Angle, CoordinateSystem3D, Interval, IntervalMapper,
+        Point, QuadraticEquation, Ray,
+    },
 };
 
 pub struct Sphere {}
@@ -41,7 +46,12 @@ fn compute_coordinate_system(origin: Point<3>) -> CoordinateSystem3D {
     let x_axis = z_axis.orthogonal().normalized();
     let y_axis = x_axis.cross(&z_axis);
 
-    CoordinateSystem3D { origin, x_axis, y_axis, z_axis }
+    CoordinateSystem3D {
+        origin,
+        x_axis,
+        y_axis,
+        z_axis,
+    }
 }
 
 impl Primitive for Sphere {

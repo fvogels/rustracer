@@ -113,7 +113,7 @@ impl Vector<3> {
     pub fn orthogonal(&self) -> Self {
         let x = self.z();
         let y = self.z();
-        let z = -self.x()-self.y();
+        let z = -self.x() - self.y();
         let result = vc!(x, y, z);
 
         debug_assert!(self.is_orthogonal_to(&result));

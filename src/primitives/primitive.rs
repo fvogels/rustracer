@@ -1,6 +1,7 @@
 use crate::{
+    lights::light::LightRay,
     materials::material::MaterialProperties,
-    math::{Point, Ray, CoordinateSystem3D, Vector},
+    math::{CoordinateSystem3D, Point, Ray, Vector},
 };
 
 pub struct Hit {

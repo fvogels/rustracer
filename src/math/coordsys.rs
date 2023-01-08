@@ -1,4 +1,4 @@
-use super::{Vector, Point, Matrix};
+use super::{Matrix, Point, Vector};
 
 pub struct CoordinateSystem3D {
     pub origin: Point<3>,

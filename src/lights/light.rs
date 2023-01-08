@@ -1,6 +1,6 @@
 use crate::{
     imaging::color::Color,
-    math::{Point, Ray},
+    math::{Matrix, Point, Ray},
 };
 
 pub trait LightSource {
@@ -15,5 +15,9 @@ pub struct LightRay {
 impl LightRay {
     pub fn new(color: Color, ray: Ray) -> Self {
         LightRay { color, ray }
+    }
+
+    pub fn transform(&mut self, matrix: &Matrix<4, 4>) {
+        self.ray = matrix * &self.ray;
     }
 }

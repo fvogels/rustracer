@@ -1,5 +1,5 @@
 use super::primitive::{Hit, LocalPosition, Primitive};
-use crate::math::{pt, vc, Point, Ray, CoordinateSystem3D};
+use crate::math::{pt, vc, CoordinateSystem3D, Point, Ray};
 
 pub struct PlaneXY {}
 
@@ -18,7 +18,12 @@ fn compute_coordinate_system(origin: Point<3>) -> CoordinateSystem3D {
     let y_axis = vc!(0, 1, 0);
     let z_axis = vc!(0, 0, 1);
 
-    CoordinateSystem3D { origin, x_axis, y_axis, z_axis }
+    CoordinateSystem3D {
+        origin,
+        x_axis,
+        y_axis,
+        z_axis,
+    }
 }
 
 impl Primitive for PlaneXY {

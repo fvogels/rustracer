@@ -19,7 +19,7 @@ use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
 use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
-use math::{Rasterizer, transformation3d::Transformation3D, Position, Rectangle};
+use math::{transformation3d::Transformation3D, Position, Rasterizer, Rectangle};
 use primitives::decorator::Decorator;
 use primitives::sphere::Sphere;
 use primitives::{primitive::Primitive, transformer::Transformer, union::Union};

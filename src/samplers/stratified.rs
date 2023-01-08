@@ -1,5 +1,5 @@
 use super::sampler::Sampler2D;
-use crate::math::{Rasterizer, Point, Position, Rectangle};
+use crate::math::{Point, Position, Rasterizer, Rectangle};
 
 pub struct StratifiedSampler2D {
     horizontal: u32,

@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use super::primitive::{Hit, Primitive};
+use crate::lights::light::LightRay;
 use crate::math::transformation3d::Transformation3D;
 use crate::math::Ray;
 
