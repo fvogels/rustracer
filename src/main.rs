@@ -101,8 +101,8 @@ fn main() {
     let mut image = Image::new(width, height);
 
     let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
-    let rasterizer = Rasterizer::new(&rectangle, width, height);
-    let sampler = StratifiedSampler2D::new(2, 2);
+    let rasterizer = Rasterizer::new(rectangle, width, height);
+    let sampler = StratifiedSampler2D::new();
     let scene = create_scene();
     let ray_tracer = RayTracer::new(scene);
 
@@ -113,7 +113,7 @@ fn main() {
             let mut sample_count = 0;
             let mut accumulated_color = Color::black();
 
-            for sample in sampler.sample(&pixel) {
+            for sample in sampler.sample(pixel).take(5) {
                 let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
 
                 for ray in camera_rays {

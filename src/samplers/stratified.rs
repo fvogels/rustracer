@@ -1,64 +1,51 @@
 use super::sampler::Sampler2D;
 use crate::math::{Point, Position, Rasterizer, Rectangle};
 
-pub struct StratifiedSampler2D {
-    horizontal: u32,
-    vertical: u32,
-}
+pub struct StratifiedSampler2D { }
 
-struct SampleIterator<'a> {
-    rasterizer: Rasterizer<'a, 2>,
-    row: u32,
-    col: u32,
-    nrows: u32,
-    ncols: u32,
+struct SampleIterator {
+    rasterizer: Rasterizer<2>,
+    x: i32,
+    y: i32,
 }
 
 impl StratifiedSampler2D {
-    pub fn new(horizontal: u32, vertical: u32) -> Self {
-        StratifiedSampler2D {
-            horizontal,
-            vertical,
-        }
+    pub fn new() -> Self {
+        StratifiedSampler2D { }
     }
 }
 
-impl<'a> Sampler2D<'a> for StratifiedSampler2D {
-    fn sample(&self, rectangle: &'a Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>> + 'a> {
-        let rasterizer = Rasterizer::<2>::new(rectangle, self.horizontal, self.vertical);
-        let row = 0;
-        let col = 0;
-        let nrows = self.vertical;
-        let ncols = self.horizontal;
+impl Sampler2D for StratifiedSampler2D {
+    fn sample(&self, rectangle: Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>>> {
+        let rasterizer = Rasterizer::<2>::new(rectangle, 1, 1);
 
         Box::new(SampleIterator {
             rasterizer,
-            row,
-            col,
-            nrows,
-            ncols,
+            x: 0,
+            y: 0,
         })
     }
 }
 
-impl<'a> Iterator for SampleIterator<'a> {
+impl Iterator for SampleIterator {
     type Item = Point<2>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.row == self.nrows {
-            None
-        } else {
-            let position = Position::<2>::cartesian(self.col as i32, self.row as i32);
-            let sample = self.rasterizer.at(position).center();
-            self.col += 1;
+        let rectangle = self.rasterizer.at(Position::<2>::cartesian(self.x, self.y));
 
-            if self.col == self.ncols {
-                self.col = 0;
-                self.row += 1;
+        self.x += 1;
+        if self.x == self.rasterizer.width as i32 {
+            self.x = 0;
+            self.y += 1;
+
+            if self.y == self.rasterizer.height as i32 {
+                self.y = 0;
+                self.rasterizer.width *= 2;
+                self.rasterizer.height *= 2;
             }
-
-            Some(sample)
         }
+
+        Some(rectangle.center())
     }
 }
 
@@ -68,10 +55,10 @@ mod tests {
     #[cfg(test)]
     use super::*;
 
+    use crate::math::approx;
     #[cfg(test)]
     use crate::{
         math::{pt, vc},
-        util::algorithms::assert_same_elements,
     };
 
     #[cfg(test)]
@@ -88,58 +75,30 @@ mod tests {
 
     #[rstest]
     fn sampling1() {
-        let sampler = StratifiedSampler2D::new(1, 1);
-        let rectangle = rectangle(pt!(0, 0), 2, 2);
-        let expected = vec![pt!(1, 1)];
-        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
+        let sampler = StratifiedSampler2D::new();
+        let rectangle = rectangle(pt!(0, 0), 16, 16);
+        let mut iterator = sampler.sample(rectangle);
 
-        assert_same_elements!(expected, actual);
-    }
-
-    #[rstest]
-    fn sampling2() {
-        let sampler = StratifiedSampler2D::new(1, 1);
-        let rectangle = rectangle(pt!(0, 0), 4, 6);
-        let expected = vec![pt!(2, 3)];
-        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
-
-        assert_same_elements!(expected, actual);
-    }
-
-    #[rstest]
-    fn sampling3() {
-        let sampler = StratifiedSampler2D::new(2, 1);
-        let rectangle = rectangle(pt!(0, 0), 4, 2);
-        let expected = vec![pt!(1, 1), pt!(3, 1)];
-        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
-
-        assert_same_elements!(expected, actual);
-    }
-
-    #[rstest]
-    fn sampling4() {
-        let sampler = StratifiedSampler2D::new(2, 1);
-        let rectangle = rectangle(pt!(1, 0), 4, 2);
-        let expected = vec![pt!(2, 1), pt!(4, 1)];
-        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
-
-        assert_same_elements!(expected, actual);
-    }
-
-    #[rstest]
-    fn sampling5() {
-        let sampler = StratifiedSampler2D::new(2, 3);
-        let rectangle = rectangle(pt!(1, 0), 4, 6);
-        let expected = vec![
-            pt!(2, 1),
-            pt!(4, 1),
-            pt!(2, 3),
-            pt!(4, 3),
-            pt!(2, 5),
-            pt!(4, 5),
-        ];
-        let actual: Vec<Point<2>> = sampler.sample(&rectangle).collect();
-
-        assert_same_elements!(expected, actual);
+        assert_eq!(approx(pt!(8, 8)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(4, 4)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(12, 4)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(4, 12)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(12, 12)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(2, 2)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(6, 2)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(10, 2)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(14, 2)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(2, 6)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(6, 6)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(10, 6)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(14, 6)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(2, 10)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(6, 10)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(10, 10)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(14, 10)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(2, 14)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(6, 14)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(10, 14)), iterator.next().unwrap());
+        assert_eq!(approx(pt!(14, 14)), iterator.next().unwrap());
     }
 }

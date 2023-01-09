@@ -122,7 +122,7 @@ mod tests {
             (None, None) => (),
             (Some(ref expected), Some(ref actual)) => {
                 assert_eq!(expected.0, actual.t);
-                assert_eq!(expected.1, actual.normal);
+                assert_eq!(expected.1, actual.normal());
             }
             _ => panic!(),
         }

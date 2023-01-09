@@ -69,8 +69,8 @@ mod tests {
             (Some(hit1), Some(hit2)) => {
                 assert_eq!(approx(hit1.t), hit2.t);
                 assert_eq!(
-                    approx(hit1.position.global),
-                    &hit1.position.global + &translation_vector
+                    approx(hit1.global_position()),
+                    &hit1.global_position() + &translation_vector
                 );
             }
             _ => {

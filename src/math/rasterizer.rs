@@ -1,14 +1,14 @@
 use super::Position;
 use super::Rectangle;
 
-pub struct Rasterizer<'a, const N: usize> {
-    rectangle: &'a Rectangle<N>,
-    width: u32,
-    height: u32,
+pub struct Rasterizer<const N: usize> {
+    pub rectangle: Rectangle<N>,
+    pub width: u32,
+    pub height: u32,
 }
 
-impl<'a, const N: usize> Rasterizer<'a, N> {
-    pub fn new(rectangle: &'a Rectangle<N>, width: u32, height: u32) -> Self {
+impl<const N: usize> Rasterizer<N> {
+    pub fn new(rectangle: Rectangle<N>, width: u32, height: u32) -> Self {
         Rasterizer {
             rectangle,
             width,
