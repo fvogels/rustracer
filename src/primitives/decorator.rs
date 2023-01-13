@@ -18,9 +18,7 @@ impl Decorator {
 impl Primitive for Decorator {
     fn find_first_positive_hit(&self, ray: &Ray) -> Option<Hit> {
         let mut hit = self.child.find_first_positive_hit(ray)?;
-        hit.material_properties = hit
-            .material_properties
-            .or_else(|| Some(self.material.at(hit.local_position)));
+        hit.material = self.material.clone();
         Some(hit)
     }
 }

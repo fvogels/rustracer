@@ -1,10 +1,7 @@
-use crate::{imaging::color::Color, primitives::primitive::LocalPosition};
+use crate::{imaging::color::Color, math::Ray, util::Refine};
+
+pub type MaterialResult = Box<dyn Refine<Color>>;
 
 pub trait Material {
-    fn at(&self, position: LocalPosition) -> MaterialProperties;
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct MaterialProperties {
-    pub diffuse: Color,
+    fn at(&self, ray: Ray, trace: Box<dyn Fn(Ray) -> Color>) -> MaterialResult;
 }

@@ -1,5 +1,7 @@
+use std::rc::Rc;
+
 use super::primitive::{Hit, LocalPosition, Primitive};
-use crate::math::{pt, vc, CoordinateSystem3D, Point, Ray};
+use crate::{math::{pt, vc, CoordinateSystem3D, Point, Ray}, materials::uniform::UniformMaterial, imaging::color::Color};
 
 pub struct PlaneXY {}
 
@@ -39,10 +41,10 @@ impl Primitive for PlaneXY {
                 xyz: p,
                 uv: compute_uv_coordinates(p),
             };
-            let material_properties = None;
             let coordinate_system = compute_coordinate_system(p);
+            let material = Rc::new(UniformMaterial::new(Color::black()));
             let hit = Hit {
-                material_properties,
+                material,
                 t,
                 local_position,
                 coordinate_system,

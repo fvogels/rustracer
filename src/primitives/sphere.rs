@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use super::primitive::{Hit, LocalPosition, Primitive};
 use crate::{
     imaging::color::Color,
@@ -5,7 +7,7 @@ use crate::{
     math::{
         approx, coords::Cartesian3D, pt, vc, Angle, CoordinateSystem3D, Interval, IntervalMapper,
         Point, QuadraticEquation, Ray,
-    },
+    }, materials::uniform::UniformMaterial,
 };
 
 pub struct Sphere {}
@@ -76,11 +78,12 @@ impl Primitive for Sphere {
                         uv: compute_uv_coordinates(&p),
                     };
                     let coordinate_system = compute_coordinate_system(p);
+                    let material = Rc::new(UniformMaterial::new(Color::black()));
                     let hit = Hit {
                         t,
                         local_position,
                         coordinate_system,
-                        material_properties: None,
+                        material,
                     };
 
                     Some(hit)

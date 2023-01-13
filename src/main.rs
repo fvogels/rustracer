@@ -17,7 +17,6 @@ use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
-use materials::material::MaterialProperties;
 use materials::uniform::UniformMaterial;
 use math::{transformation3d::Transformation3D, Position, Rasterizer, Rectangle};
 use primitives::decorator::Decorator;
@@ -59,15 +58,9 @@ fn create_scene() -> Scene {
             sphere,
         ));
 
-        let red_material = Rc::new(UniformMaterial::new(MaterialProperties {
-            diffuse: Color::red(),
-        }));
-        let green_material = Rc::new(UniformMaterial::new(MaterialProperties {
-            diffuse: Color::green(),
-        }));
-        let blue_material = Rc::new(UniformMaterial::new(MaterialProperties {
-            diffuse: Color::blue(),
-        }));
+        let red_material = Rc::new(UniformMaterial::new(Color::red()));
+        let green_material = Rc::new(UniformMaterial::new(Color::green()));
+        let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
 
         let background = Rc::new(Decorator::new(green_material, background));
         let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));

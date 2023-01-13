@@ -1,14 +1,14 @@
+use std::rc::Rc;
+
 use crate::{
-    lights::light::LightRay,
-    materials::material::MaterialProperties,
-    math::{CoordinateSystem3D, Point, Ray, Vector},
+    math::{CoordinateSystem3D, Point, Ray, Vector}, materials::material::Material,
 };
 
 pub struct Hit {
     pub t: f64,
     pub local_position: LocalPosition,
     pub coordinate_system: CoordinateSystem3D,
-    pub material_properties: Option<MaterialProperties>,
+    pub material: Rc<dyn Material>,
 }
 
 #[derive(Copy, Clone)]
