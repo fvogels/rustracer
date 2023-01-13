@@ -55,6 +55,12 @@ impl<const N: usize> Vector<N> {
     pub fn cos_angle_between(&self, v: &Self) -> f64 {
         self.normalized().dot(&v.normalized())
     }
+
+    pub fn reflect(&self, normal: &Vector<N>) -> Self {
+        debug_assert!(normal.is_unit());
+
+        self - &(normal * 2.0 * self.dot(normal))
+    }
 }
 
 impl Vector<2> {
@@ -178,8 +184,36 @@ impl<const N: usize> std::ops::Sub for Vector<N> {
     }
 }
 
+impl<const N: usize> std::ops::Sub for &Vector<N> {
+    type Output = Vector<N>;
+
+    fn sub(self, v: Self) -> Self::Output {
+        let mut result = [0f64; N];
+
+        for i in 0..N {
+            result[i] = self.coords[i] - v.coords[i];
+        }
+
+        Vector::new(result)
+    }
+}
+
 impl<const N: usize> std::ops::Mul<f64> for Vector<N> {
     type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        let mut result = [0f64; N];
+
+        for i in 0..N {
+            result[i] = self.coords[i] * rhs;
+        }
+
+        Vector::new(result)
+    }
+}
+
+impl<const N: usize> std::ops::Mul<f64> for &Vector<N> {
+    type Output = Vector<N>;
 
     fn mul(self, rhs: f64) -> Self::Output {
         let mut result = [0f64; N];
@@ -306,5 +340,20 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[rstest]
+    #[case(vc!(1, -1), vc!(0, 1), vc!(1, 1))]
+    #[case(vc!(2, -1), vc!(0, 1), vc!(2, 1))]
+    #[case(vc!(0, -1), vc!(0, 1), vc!(0, 1))]
+    #[case(vc!(-1, -1), vc!(0, 1), vc!(-1, 1))]
+    #[case(vc!(-1, 1), vc!(0, -1), vc!(-1, -1))]
+    #[case(vc!(-2, 1), vc!(0, -1), vc!(-2, -1))]
+    #[case(vc!(3, 1), vc!(0, -1), vc!(3, -1))]
+    #[case(vc!(3, 1), vc!(-1, 0), vc!(-3, 1))]
+    fn reflect(#[case] incoming: Vector<2>, #[case] normal: Vector<2>, #[case] expected_reflected: Vector<2>) {
+        let actual_reflected = incoming.reflect(&normal);
+
+        assert_eq!(approx(expected_reflected), actual_reflected);
     }
 }
