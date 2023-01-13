@@ -19,6 +19,18 @@ impl<const R: usize, const C: usize> Matrix<R, C> {
 
         Matrix { m }
     }
+
+    pub fn transpose(&self) -> Matrix<C, R> {
+        let mut result = Matrix::<C, R>::zero();
+
+        for r in 0..R {
+            for c in 0..C {
+                result.m[c][r] = self.m[r][c];
+            }
+        }
+
+        result
+    }
 }
 
 impl<const N: usize> Matrix<N, N> {

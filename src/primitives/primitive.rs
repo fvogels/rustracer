@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
 use crate::{
-    math::{CoordinateSystem3D, Point, Ray, Vector}, materials::material::Material,
+    math::{CoordinateSystem3D, Point, Ray, Vector, transformation3d::Transformation3D}, materials::material::Material,
 };
 
 pub struct Hit {
     pub t: f64,
     pub local_position: LocalPosition,
-    pub coordinate_system: CoordinateSystem3D,
+    pub transformation: Transformation3D,
     pub material: Rc<dyn Material>,
 }
 
@@ -45,10 +45,10 @@ impl Hit {
     }
 
     pub fn normal(&self) -> Vector<3> {
-        self.coordinate_system.z_axis
+        &self.transformation.matrix * &Vector::<3>::z_axis()
     }
 
     pub fn global_position(&self) -> Point<3> {
-        self.coordinate_system.origin
+        &self.transformation.matrix * &Point::<3>::zero()
     }
 }

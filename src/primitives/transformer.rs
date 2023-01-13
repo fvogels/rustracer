@@ -25,7 +25,7 @@ impl Primitive for Transformer {
         let inverse_matrix = &self.transformation.inverse_matrix;
         let transformed_ray = inverse_matrix * ray;
         let mut hit = self.child.find_first_positive_hit(&transformed_ray)?;
-        hit.coordinate_system.transform(matrix);
+        hit.transformation = hit.transformation.compose(&self.transformation);
 
         Some(hit)
     }

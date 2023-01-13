@@ -82,7 +82,7 @@ impl Primitive for Sphere {
                     let hit = Hit {
                         t,
                         local_position,
-                        coordinate_system,
+                        transformation: coordinate_system.as_transformation(),
                         material,
                     };
 

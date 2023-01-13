@@ -55,6 +55,13 @@ impl Transformation3D {
             inverse_matrix,
         }
     }
+
+    pub fn compose(&self, other: &Transformation3D) -> Transformation3D {
+        let matrix = &self.matrix * &other.matrix;
+        let inverse_matrix = &other.inverse_matrix * &self.inverse_matrix;
+
+        Transformation3D { matrix, inverse_matrix }
+    }
 }
 
 #[cfg(test)]
