@@ -17,15 +17,20 @@ impl<T: Metric> Approx for T {
 #[derive(Debug)]
 pub struct ApproxWrapper<T: Approx> {
     value: T,
+    epsilon: f64,
 }
 
 pub fn approx<T: Approx>(value: T) -> ApproxWrapper<T> {
-    ApproxWrapper { value }
+    approx_eps(value, 0.000001)
+}
+
+pub fn approx_eps<T: Approx>(value: T, epsilon: f64) -> ApproxWrapper<T> {
+    ApproxWrapper { value, epsilon }
 }
 
 impl<T: Approx> PartialEq<T> for ApproxWrapper<T> {
     fn eq(&self, other: &T) -> bool {
-        self.value.approx(other)
+        self.value.approx_eps(other, self.epsilon)
     }
 }
 
