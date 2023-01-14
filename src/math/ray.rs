@@ -1,6 +1,8 @@
 use super::Point;
 use super::Vector;
+use super::approx::Approx;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Ray {
     pub origin: Point<3>,
     pub direction: Vector<3>,
@@ -19,6 +21,16 @@ impl Ray {
 
     pub fn at(&self, t: f64) -> Point<3> {
         self.origin + self.direction * t
+    }
+
+    pub fn nudge(&mut self, factor: f64) {
+        self.origin += self.direction.normalized() * factor;
+    }
+}
+
+impl Approx for Ray {
+    fn approx_eps(&self, rhs: &Self, epsilon: f64) -> bool {
+        self.origin.approx_eps(&rhs.origin, epsilon) && self.direction.approx_eps(&rhs.direction, epsilon)
     }
 }
 
