@@ -1,7 +1,9 @@
-use crate::{imaging::color::Color, math::Ray, util::Refine};
+use crate::{imaging::color::Color, math::{Ray, Vector}, util::Refine};
 
+
+pub type TraceFunction = Box<dyn Fn(&Vector<3>, f64) -> Color>;
 pub type MaterialResult = Box<dyn Refine<Color>>;
 
 pub trait Material {
-    fn at(&self, ray: Ray, trace: Box<dyn Fn(Ray) -> Color>) -> MaterialResult;
+    fn at(&self, direction: &Vector<3>, trace: TraceFunction) -> MaterialResult;
 }
