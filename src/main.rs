@@ -26,6 +26,7 @@ use samplers::{Sampler2D, StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
 
+use crate::materials::reflective::Reflective;
 use crate::primitives::plane::PlaneXY;
 
 fn create_scene() -> Scene {
@@ -33,7 +34,7 @@ fn create_scene() -> Scene {
         let camera_parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: pt!(5, 5, 5),
+            eye: pt!(0, 5, 10),
             look_at: pt!(0, 0, 0),
             up: vc!(0, 1, 0),
         };
@@ -45,24 +46,22 @@ fn create_scene() -> Scene {
         let plane = Rc::new(PlaneXY::new());
         let sphere = Rc::new(Sphere::new());
 
-        let background = Rc::new(Transformer::new(
-            Transformation3D::translate(&vc!(0, 0, -5)),
-            plane,
-        ));
+        let background = plane;
         let left_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&vc!(-2, 0, 0)),
+            Transformation3D::translate(&vc!(-2, 0, 5)),
             sphere.clone(),
         ));
         let right_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&vc!(1, 0, 0)),
+            Transformation3D::translate(&vc!(1, 0, 5)),
             sphere,
         ));
 
         let red_material = Rc::new(UniformMaterial::new(Color::red()));
         let green_material = Rc::new(UniformMaterial::new(Color::green()));
         let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
+        let reflective_material = Rc::new(Reflective::new(0.5));
 
-        let background = Rc::new(Decorator::new(green_material, background));
+        let background = Rc::new(Decorator::new(reflective_material, background));
         let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
@@ -97,7 +96,7 @@ fn main() {
     let rasterizer = Rasterizer::new(rectangle, width, height);
     let sampler = StratifiedSampler2D::new();
     let scene = create_scene();
-    let ray_tracer = RayTracer::new(scene);
+    let ray_tracer = Rc::new(RayTracer::new(scene));
 
     for y in 0..height {
         for x in 0..width {

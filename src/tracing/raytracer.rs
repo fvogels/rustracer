@@ -1,10 +1,10 @@
-use std::ops::Neg;
+use std::{ops::Neg, rc::Rc};
 
 use crate::{
     imaging::color::Color,
     lights::light::{LightRay, LightSource},
     math::Ray,
-    primitives::primitive::Hit,
+    primitives::primitive::Hit, materials::material::TraceFunction,
 };
 
 use super::scene::Scene;
@@ -22,19 +22,40 @@ impl RayTracer {
         RayTracer { scene }
     }
 
-    pub fn trace(&self, ray: &Ray) -> TraceResult {
-        match self.scene.root.find_first_positive_hit(ray) {
-            None => {
-                TraceResult {
-                    color: Color::black(),
+    pub fn trace(self: &Rc<Self>, ray: &Ray) -> TraceResult {
+        self.weighted_trace(ray, 1.0)
+    }
+
+    fn weighted_trace(self: &Rc<Self>, ray: &Ray, weight: f64) -> TraceResult {
+        if weight < 0.01 {
+            TraceResult { color: Color::black() }
+        } else {
+            match self.scene.root.find_first_positive_hit(ray) {
+                None => {
+                    TraceResult {
+                        color: Color::black(),
+                    }
                 }
-            }
-            Some(hit) => {
-                let material = hit.material.as_ref();
-                let light_ray = Ray::new(hit.global_position(), ray.direction.neg());
-                let mut material_result = material.at(light_ray, Box::new(|ray| Color::black()));
-                let color = material_result.current().clone();
-                TraceResult { color }
+                Some(hit) => {
+                    debug_assert!(hit.t > 0.0, "find_first_positive_hit returned hit with negative t-value: {}", hit.t);
+
+                    let material = hit.material.as_ref();
+                    let trace_function: TraceFunction = {
+                        let me = self.clone();
+                        let origin = hit.global_position();
+                        let transformation= hit.transformation;
+
+                        Box::new(move |direction, w| {
+                            let transformed_direction = &transformation.matrix * direction;
+                            let mut ray = Ray::new(origin, transformed_direction);
+                            ray.nudge(0.0001);
+                            me.weighted_trace(&ray, w * weight).color
+                        })
+                    };
+                    let material_result = material.at(&-ray.direction, trace_function);
+                    let color = material_result.current().clone();
+                    TraceResult { color }
+                }
             }
         }
     }
