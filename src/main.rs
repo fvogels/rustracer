@@ -12,9 +12,6 @@ mod scripting;
 mod tracing;
 mod util;
 
-use std::fs::File;
-use std::io::BufWriter;
-use std::process::{Command, Stdio};
 use std::rc::Rc;
 
 use animation::{Animation, Linear};
