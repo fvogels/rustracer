@@ -2,17 +2,17 @@ use crate::{math::{Ray, Vector, Point}, util::Constant};
 
 use super::material::{Material, MaterialResult, TraceFunction};
 
-pub struct Reflective {
+pub struct ReflectiveMaterial {
     reflectivity: f64
 }
 
-impl Reflective {
+impl ReflectiveMaterial {
     pub fn new(reflectivity: f64) -> Self {
-        Reflective { reflectivity }
+        ReflectiveMaterial { reflectivity }
     }
 }
 
-impl Material for Reflective {
+impl Material for ReflectiveMaterial {
     fn at(&self, direction: &Vector<3>, trace: TraceFunction) -> MaterialResult {
         debug_assert!(direction.z() > 0.0, "Direction {:?} should point outwards", direction);
 
@@ -34,7 +34,7 @@ mod test {
 
     #[rstest]
     fn test() {
-        let material = Reflective::new(1.0);
+        let material = ReflectiveMaterial::new(1.0);
         let direction = vc!(-1, 0, 1);
         let trace: TraceFunction = {
             let expected_trace_direction= vc!(1, 0, 1);

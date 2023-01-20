@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::{
-    math::{CoordinateSystem3D, Point, Ray, Vector, transformation3d::Transformation3D}, materials::material::Material,
+    math::{Point, Ray, Vector, transformation3d::Transformation3D}, materials::Material,
 };
 
 pub struct Hit {

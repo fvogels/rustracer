@@ -4,7 +4,7 @@ use crate::{
     imaging::color::Color,
     lights::light::{LightRay, LightSource},
     math::Ray,
-    primitives::primitive::Hit, materials::material::TraceFunction,
+    primitives::primitive::Hit, materials::TraceFunction,
 };
 
 use super::scene::Scene;

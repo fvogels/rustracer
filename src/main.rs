@@ -20,7 +20,7 @@ use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
 use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
-use materials::uniform::UniformMaterial;
+use materials::{UniformMaterial, ReflectiveMaterial};
 use math::{transformation3d::Transformation3D, Position, Rasterizer, Rectangle};
 use primitives::decorator::Decorator;
 use primitives::sphere::Sphere;
@@ -29,7 +29,6 @@ use samplers::{Sampler2D, StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
 
-use crate::materials::reflective::Reflective;
 use crate::primitives::plane::PlaneXY;
 
 
@@ -76,7 +75,7 @@ impl TestScene {
         let red_material = Rc::new(UniformMaterial::new(Color::red()));
         let green_material = Rc::new(UniformMaterial::new(Color::green()));
         let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
-        let reflective_material = Rc::new(Reflective::new(0.5));
+        let reflective_material = Rc::new(ReflectiveMaterial::new(0.5));
 
         let background = Rc::new(Decorator::new(reflective_material, background));
         let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));

@@ -3,11 +3,10 @@ use std::rc::Rc;
 use super::primitive::{Hit, LocalPosition, Primitive};
 use crate::{
     imaging::color::Color,
-    lights::light::LightRay,
     math::{
-        approx, coords::Cartesian3D, pt, vc, Angle, CoordinateSystem3D, Interval, IntervalMapper,
+        approx, coords::Cartesian3D, pt, Angle, CoordinateSystem3D, Interval, IntervalMapper,
         Point, QuadraticEquation, Ray,
-    }, materials::uniform::UniformMaterial,
+    }, materials::UniformMaterial,
 };
 
 pub struct Sphere {}

@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use super::primitive::{Hit, LocalPosition, Primitive};
-use crate::{math::{pt, vc, CoordinateSystem3D, Point, Ray, transformation3d::Transformation3D}, materials::uniform::UniformMaterial, imaging::color::Color};
+use crate::{math::{pt, vc, CoordinateSystem3D, Point, Ray}, materials::UniformMaterial, imaging::color::Color};
 
 pub struct PlaneXY {}
 
