@@ -1,7 +1,7 @@
 use crate::imaging::color::Color;
 use crate::math::Position;
 use std::fs::File;
-use std::io::BufWriter;
+use std::io::{BufWriter, Write};
 use std::path::Path;
 
 pub struct Image {
@@ -47,24 +47,23 @@ impl Image {
     }
 
     pub fn write_to_file(&self, path: &Path) -> std::result::Result<(), WriteError> {
-        fn create_encoder<'a>(
-            writer: BufWriter<File>,
-            width: u32,
-            height: u32,
-        ) -> png::Encoder<'a, BufWriter<File>> {
+        let file = File::create(path).map_err(WriteError::IOError)?;
+        let writer = BufWriter::new(file);
+
+        self.write(writer)
+    }
+
+    pub fn write(&self, writer: impl Write) -> std::result::Result<(), WriteError> {
+        let width = self.width;
+        let height = self.height;
+        let encoder = {
             let mut encoder = png::Encoder::new(writer, width, height);
 
             encoder.set_color(png::ColorType::Rgb);
             encoder.set_depth(png::BitDepth::Eight);
 
             encoder
-        }
-
-        let width = self.width;
-        let height = self.height;
-        let file = File::create(path).map_err(WriteError::IOError)?;
-        let writer = BufWriter::new(file);
-        let encoder = create_encoder(writer, width, height);
+        };
         let mut writer2 = encoder.write_header().map_err(WriteError::PNGError)?;
         let data = self.convert_to_raw_rgb();
         writer2
