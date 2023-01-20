@@ -47,8 +47,6 @@ impl TestScene {
             duration: 1.0
         }.at(t);
 
-        println!("Eye position: {eye_x}");
-
         let camera_parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
