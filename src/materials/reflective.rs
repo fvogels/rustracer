@@ -34,7 +34,7 @@ mod test {
 
     #[rstest]
     fn test() {
-        let material = Reflective::new();
+        let material = Reflective::new(1.0);
         let direction = vc!(-1, 0, 1);
         let trace: TraceFunction = {
             let expected_trace_direction= vc!(1, 0, 1);
