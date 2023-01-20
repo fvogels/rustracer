@@ -12,10 +12,14 @@ mod scripting;
 mod tracing;
 mod util;
 
+use std::fs::File;
+use std::io::BufWriter;
+use std::process::{Command, Stdio};
 use std::rc::Rc;
 
 use animation::{Animation, Linear};
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
+use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
 use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
@@ -118,10 +122,10 @@ struct Renderer {
 }
 
 impl Renderer {
-    fn new(scene: Box<dyn Animation<Scene>>) -> Self {
+    fn new(width: u32, height: u32, scene: Box<dyn Animation<Scene>>) -> Self {
         Renderer {
-            width: 500,
-            height: 500,
+            width,
+            height,
             scene,
         }
     }
@@ -183,7 +187,7 @@ impl TimeDivider {
     }
 
     pub fn iter(&self) -> impl Iterator<Item=(u32, f64)> {
-        let total_frame_count = (self.duration * self.frames_per_second as f64) as u32;
+        let total_frame_count = self.frame_count();
 
         {
             let duration = self.duration;
@@ -191,20 +195,32 @@ impl TimeDivider {
             (0..total_frame_count).map(move |i| (i, duration / fps as f64 * i as f64))
         }
     }
+
+    pub fn frame_count(&self) -> u32 {
+        (self.duration * self.frames_per_second as f64) as u32
+    }
 }
 
 fn main() {
+    let width = 500;
+    let height = 500;
+    let path = "movie.png";
     let scene = Box::new(TestScene::new());
     let timeline = TimeDivider::new(scene.duration(), 30);
-    let renderer = Renderer::new(scene);
+    let renderer = Renderer::new(500, 500, scene);
+    let mut png_writer = {
+        let png_options = PNGWriterOptions {
+            width,
+            height,
+            frame_count: timeline.frame_count(),
+        };
+
+        PNGWriter::to_file(path, png_options)
+    };
 
     for (idx, t) in timeline.iter() {
         println!("Rendering frame {idx}");
         let image = renderer.render_frame(t);
-        let filename = format!("frame{:0>3}.png", idx);
-
-        image
-            .write_to_file(std::path::Path::new(filename.as_str()))
-            .expect("Failed to write image to file");
+        png_writer.write_frame(image);
     }
 }

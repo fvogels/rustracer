@@ -73,11 +73,10 @@ impl Image {
         Ok(())
     }
 
-    fn convert_to_raw_rgb(&self) -> Vec<u8> {
-        let mut result = Vec::new();
+    pub fn convert_to_raw_rgb(&self) -> Vec<u8> {
         let bytes_per_pixel = 3;
         let total_byte_count = (bytes_per_pixel * self.width * self.height) as usize;
-        result.reserve(total_byte_count);
+        let mut result = Vec::with_capacity(total_byte_count);
 
         for color in self.pixels.iter() {
             for c in color.to_byte_array() {
