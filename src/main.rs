@@ -1,3 +1,4 @@
+mod animation;
 mod cameras;
 mod data;
 mod imaging;
@@ -13,6 +14,7 @@ mod util;
 
 use std::rc::Rc;
 
+use animation::{Animation, Linear};
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::color::Color;
 use imaging::image::Image;
@@ -29,12 +31,28 @@ use tracing::scene::Scene;
 use crate::materials::reflective::Reflective;
 use crate::primitives::plane::PlaneXY;
 
-fn create_scene() -> Scene {
-    fn create_camera() -> PerspectiveCamera {
+
+
+struct TestScene { }
+
+impl TestScene {
+    fn new() -> Self {
+        TestScene { }
+    }
+
+    fn create_camera(t: f64) -> PerspectiveCamera {
+        let eye_x = Linear {
+            start: -2.0,
+            end: 2.0,
+            duration: 1.0
+        }.at(t);
+
+        println!("Eye position: {eye_x}");
+
         let camera_parameters = PerspectiveCameraParameters {
             aspect_ratio: 1.0,
             distance_to_screen: 1.0,
-            eye: pt!(0, 5, 10),
+            eye: pt!(eye_x, 5, 10),
             look_at: pt!(0, 0, 0),
             up: vc!(0, 1, 0),
         };
@@ -75,52 +93,120 @@ fn create_scene() -> Scene {
 
         vec![light]
     }
+}
 
-    let camera = create_camera();
-    let root = create_root();
-    let light_sources = create_light_sources();
+impl Animation<Scene> for TestScene {
+    fn duration(&self) -> f64 {
+        1.0
+    }
 
-    Scene {
-        camera,
-        root,
-        light_sources,
+    fn at(&self, t: f64) -> Scene {
+        let camera = Self::create_camera(t);
+        let root = Self::create_root();
+        let light_sources = Self::create_light_sources();
+
+        Scene {
+            camera,
+            root,
+            light_sources,
+        }
+    }
+}
+
+struct Renderer {
+    width: u32,
+    height: u32,
+    scene: Box<dyn Animation<Scene>>,
+}
+
+impl Renderer {
+    fn new(scene: Box<dyn Animation<Scene>>) -> Self {
+        Renderer {
+            width: 500,
+            height: 500,
+            scene,
+        }
+    }
+
+    fn create_rasterizer(&self) -> Rasterizer<2> {
+        let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
+
+        Rasterizer::new(rectangle, self.width, self.height)
+    }
+
+    fn create_sampler(&self) -> impl Sampler2D {
+        StratifiedSampler2D::new()
+    }
+
+    fn render_frame(&self, t: f64) -> Image {
+        let width = self.width;
+        let height = self.height;
+        let mut image = Image::new(width, height);
+
+        let rasterizer = self.create_rasterizer();
+        let sampler = self.create_sampler();
+        let scene = self.scene.at(t);
+        let ray_tracer = Rc::new(RayTracer::new(scene));
+
+        for y in 0..height {
+            for x in 0..width {
+                let position = Position::<2>::cartesian(x as i32, y as i32);
+                let pixel = rasterizer.at(position);
+                let mut sample_count = 0;
+                let mut accumulated_color = Color::black();
+
+                for sample in sampler.sample(pixel).take(5) {
+                    let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
+
+                    for ray in camera_rays {
+                        let trace_result = ray_tracer.trace(&ray);
+                        sample_count += 1;
+                        accumulated_color += &trace_result.color;
+                    }
+                }
+
+                accumulated_color /= sample_count as f64;
+                *image.get_mut(position) = accumulated_color;
+            }
+        }
+
+        image
+    }
+}
+
+struct TimeDivider {
+    duration: f64,
+    frames_per_second: u32,
+}
+
+impl TimeDivider {
+    pub fn new(duration: f64, frames_per_second: u32) -> Self {
+        TimeDivider { duration, frames_per_second }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item=(u32, f64)> {
+        let total_frame_count = (self.duration * self.frames_per_second as f64) as u32;
+
+        {
+            let duration = self.duration;
+            let fps = self.frames_per_second;
+            (0..total_frame_count).map(move |i| (i, duration / fps as f64 * i as f64))
+        }
     }
 }
 
 fn main() {
-    let width: u32 = 500;
-    let height: u32 = 500;
-    let mut image = Image::new(width, height);
+    let scene = Box::new(TestScene::new());
+    let timeline = TimeDivider::new(scene.duration(), 30);
+    let renderer = Renderer::new(scene);
 
-    let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
-    let rasterizer = Rasterizer::new(rectangle, width, height);
-    let sampler = StratifiedSampler2D::new();
-    let scene = create_scene();
-    let ray_tracer = Rc::new(RayTracer::new(scene));
+    for (idx, t) in timeline.iter() {
+        println!("Rendering frame {idx}");
+        let image = renderer.render_frame(t);
+        let filename = format!("frame{:0>3}.png", idx);
 
-    for y in 0..height {
-        for x in 0..width {
-            let position = Position::<2>::cartesian(x as i32, y as i32);
-            let pixel = rasterizer.at(position);
-            let mut sample_count = 0;
-            let mut accumulated_color = Color::black();
-
-            for sample in sampler.sample(pixel).take(5) {
-                let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
-
-                for ray in camera_rays {
-                    let trace_result = ray_tracer.trace(&ray);
-                    sample_count += 1;
-                    accumulated_color += &trace_result.color;
-                }
-            }
-
-            accumulated_color /= sample_count as f64;
-            *image.get_mut(position) = accumulated_color;
-        }
+        image
+            .write_to_file(std::path::Path::new(filename.as_str()))
+            .expect("Failed to write image to file");
     }
-
-    image
-        .write_to_file(std::path::Path::new(r"test.png"))
-        .expect("Failed to write image to file");
 }
