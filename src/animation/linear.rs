@@ -1,22 +1,22 @@
-use super::Animation;
+use super::{Animation, Duration, TimeStamp};
 
 pub trait Interpolate {
     fn interpolate(start: &Self, end: &Self, t: f64) -> Self;
 }
 
 pub struct LinearAnimation<T: Interpolate> {
-    pub duration: f64,
+    pub duration: Duration,
     pub start: T,
     pub end: T,
 }
 
 impl<T: Interpolate> Animation<T> for LinearAnimation<T> {
-    fn duration(&self) -> f64 {
+    fn duration(&self) -> Duration {
         self.duration
     }
 
-    fn at(&self, t: f64) -> T {
-        T::interpolate(&self.start, &self.end, t / self.duration)
+    fn at(&self, t: TimeStamp) -> T {
+        T::interpolate(&self.start, &self.end, t.value / self.duration.value)
     }
 }
 
@@ -45,9 +45,9 @@ mod test {
         let animation = LinearAnimation {
             start,
             end,
-            duration
+            duration: Duration::from_seconds(duration)
         };
-        let actual = animation.at(t);
+        let actual = animation.at(TimeStamp::new(t));
 
         assert_eq!(expected, actual);
     }
