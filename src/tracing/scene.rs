@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     cameras::perspective::PerspectiveCamera, lights::light::LightSource,
-    primitives::primitive::Primitive,
+    primitives::Primitive,
 };
 
 pub struct Scene {

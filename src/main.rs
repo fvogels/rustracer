@@ -20,17 +20,12 @@ use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
 use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
-use materials::{UniformMaterial, ReflectiveMaterial};
+use materials::{UniformMaterial, ReflectiveMaterial, DiffuseMaterial};
 use math::{transformation3d::Transformation3D, Position, Rasterizer, Rectangle};
-use primitives::decorator::Decorator;
-use primitives::sphere::Sphere;
-use primitives::{primitive::Primitive, transformer::Transformer, union::Union};
+use primitives::{Primitive, Transformer, Union, PlaneXY, Sphere, Decorator};
 use samplers::{Sampler2D, StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
-
-use crate::primitives::plane::PlaneXY;
-
 
 
 struct TestScene { }
@@ -72,13 +67,14 @@ impl TestScene {
             sphere,
         ));
 
-        let red_material = Rc::new(UniformMaterial::new(Color::red()));
-        let green_material = Rc::new(UniformMaterial::new(Color::green()));
-        let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
+        let white_emitting_material = Rc::new(UniformMaterial::new(Color::white()));
+        let red_material = Rc::new(DiffuseMaterial::new(Color::red()));
+        let green_material = Rc::new(DiffuseMaterial::new(Color::green()));
+        let blue_material = Rc::new(DiffuseMaterial::new(Color::blue()));
         let reflective_material = Rc::new(ReflectiveMaterial::new(0.5));
 
-        let background = Rc::new(Decorator::new(reflective_material, background));
-        let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
+        let background = Rc::new(Decorator::new(white_emitting_material.clone(), background));
+        let left_sphere = Rc::new(Decorator::new(white_emitting_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
         let union = Union::new(vec![left_sphere, right_sphere, background]);
@@ -145,20 +141,19 @@ impl Renderer {
         let sampler = self.create_sampler();
         let scene = self.scene.at(t);
         let ray_tracer = Rc::new(RayTracer::new(scene));
+        let sample_count = 1;
 
         for y in 0..height {
             for x in 0..width {
                 let position = Position::<2>::cartesian(x as i32, y as i32);
                 let pixel = rasterizer.at(position);
-                let mut sample_count = 0;
                 let mut accumulated_color = Color::black();
 
-                for sample in sampler.sample(pixel).take(5) {
+                for sample in sampler.sample(pixel).take(sample_count) {
                     let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
 
                     for ray in camera_rays {
                         let trace_result = ray_tracer.trace(&ray);
-                        sample_count += 1;
                         accumulated_color += &trace_result.color;
                     }
                 }
@@ -202,7 +197,8 @@ fn main() {
     let height = 500;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
-    let timeline = TimeDivider::new(scene.duration(), 30);
+    let frames_per_second = 1;
+    let timeline = TimeDivider::new(scene.duration(), frames_per_second);
     let renderer = Renderer::new(500, 500, scene);
     let mut png_writer = {
         let png_options = PNGWriterOptions {
