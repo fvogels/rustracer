@@ -4,13 +4,13 @@ pub trait Interpolate {
     fn interpolate(start: &Self, end: &Self, t: f64) -> Self;
 }
 
-pub struct Linear<T: Interpolate> {
+pub struct LinearAnimation<T: Interpolate> {
     pub duration: f64,
     pub start: T,
     pub end: T,
 }
 
-impl<T: Interpolate> Animation<T> for Linear<T> {
+impl<T: Interpolate> Animation<T> for LinearAnimation<T> {
     fn duration(&self) -> f64 {
         self.duration
     }
@@ -42,7 +42,7 @@ mod test {
     #[case(0.0, 2.0, 2.0, 2.0, 2.0)]
     #[case(1.0, 2.0, 2.0, 1.0, 1.5)]
     fn f64_linear(#[case] start: f64, #[case] end: f64, #[case] duration: f64, #[case] t: f64, #[case] expected: f64) {
-        let animation = Linear {
+        let animation = LinearAnimation {
             start,
             end,
             duration

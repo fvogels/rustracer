@@ -14,7 +14,7 @@ mod util;
 
 use std::rc::Rc;
 
-use animation::{Animation, Linear};
+use animation::{Animation, LinearAnimation};
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
@@ -36,7 +36,7 @@ impl TestScene {
     }
 
     fn create_camera(t: f64) -> PerspectiveCamera {
-        let eye_x = Linear {
+        let eye_x = LinearAnimation {
             start: -2.0,
             end: 2.0,
             duration: 1.0

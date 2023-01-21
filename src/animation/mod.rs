@@ -7,4 +7,4 @@ pub trait Animation<T> {
     fn duration(&self) -> f64;
 }
 
-pub use linear::Linear;
+pub use linear::LinearAnimation;
