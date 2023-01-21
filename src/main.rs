@@ -14,7 +14,7 @@ mod util;
 
 use std::rc::Rc;
 
-use animation::{Animation, LinearAnimation};
+use animation::{Animation, LinearAnimation, Duration, TimeStamp, TimeDivider};
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
@@ -35,11 +35,11 @@ impl TestScene {
         TestScene { }
     }
 
-    fn create_camera(t: f64) -> PerspectiveCamera {
+    fn create_camera(t: TimeStamp) -> PerspectiveCamera {
         let eye_x = LinearAnimation {
             start: -2.0,
             end: 2.0,
-            duration: 1.0
+            duration: Duration::from_seconds(1.0)
         }.at(t);
 
         let camera_parameters = PerspectiveCameraParameters {
@@ -68,13 +68,13 @@ impl TestScene {
         ));
 
         let white_emitting_material = Rc::new(UniformMaterial::new(Color::white()));
-        let red_material = Rc::new(DiffuseMaterial::new(Color::red()));
-        let green_material = Rc::new(DiffuseMaterial::new(Color::green()));
-        let blue_material = Rc::new(DiffuseMaterial::new(Color::blue()));
+        let red_material = Rc::new(UniformMaterial::new(Color::red()));
+        let green_material = Rc::new(UniformMaterial::new(Color::green()));
+        let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
         let reflective_material = Rc::new(ReflectiveMaterial::new(0.5));
 
         let background = Rc::new(Decorator::new(white_emitting_material.clone(), background));
-        let left_sphere = Rc::new(Decorator::new(white_emitting_material, left_sphere));
+        let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
         let union = Union::new(vec![left_sphere, right_sphere, background]);
@@ -90,11 +90,11 @@ impl TestScene {
 }
 
 impl Animation<Scene> for TestScene {
-    fn duration(&self) -> f64 {
-        1.0
+    fn duration(&self) -> Duration {
+        Duration::from_seconds(1.0)
     }
 
-    fn at(&self, t: f64) -> Scene {
+    fn at(&self, t: TimeStamp) -> Scene {
         let camera = Self::create_camera(t);
         let root = Self::create_root();
         let light_sources = Self::create_light_sources();
@@ -132,7 +132,7 @@ impl Renderer {
         StratifiedSampler2D::new()
     }
 
-    fn render_frame(&self, t: f64) -> Image {
+    fn render_frame(&self, t: TimeStamp) -> Image {
         let width = self.width;
         let height = self.height;
         let mut image = Image::new(width, height);
@@ -167,37 +167,12 @@ impl Renderer {
     }
 }
 
-struct TimeDivider {
-    duration: f64,
-    frames_per_second: u32,
-}
-
-impl TimeDivider {
-    pub fn new(duration: f64, frames_per_second: u32) -> Self {
-        TimeDivider { duration, frames_per_second }
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item=(u32, f64)> {
-        let total_frame_count = self.frame_count();
-
-        {
-            let duration = self.duration;
-            let fps = self.frames_per_second;
-            (0..total_frame_count).map(move |i| (i, duration / fps as f64 * i as f64))
-        }
-    }
-
-    pub fn frame_count(&self) -> u32 {
-        (self.duration * self.frames_per_second as f64) as u32
-    }
-}
-
 fn main() {
     let width = 500;
     let height = 500;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
-    let frames_per_second = 1;
+    let frames_per_second = 30;
     let timeline = TimeDivider::new(scene.duration(), frames_per_second);
     let renderer = Renderer::new(500, 500, scene);
     let mut png_writer = {
