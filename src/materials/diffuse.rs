@@ -18,7 +18,7 @@ impl Material for DiffuseMaterial {
 
         let rectangle = Rectangle::new(pt!(0, 0), vc!(1, 0), vc!(0, 1));
         let sampler = StratifiedSampler2D::new();
-        let samples = sampler.sample(rectangle);
+        let mut samples = sampler.sample(rectangle);
         let azimuth_mapper = {
             let start = Angle::degrees(0.0);
             let end = Angle::degrees(360.0);
@@ -36,7 +36,8 @@ impl Material for DiffuseMaterial {
 
         let mut total = Color::black();
         let sample_count = 2;
-        for sample in samples.take(sample_count) {
+        for _ in 0..sample_count {
+            let sample = samples.current();
             let radius = 1.0;
             let azimuth = azimuth_mapper.map(sample.x());
             let elevation = elevation_mapper.map(sample.y());
@@ -45,6 +46,7 @@ impl Material for DiffuseMaterial {
             let direction = vc!(cartesian.x, cartesian.y, cartesian.z);
 
             total += trace(&direction, 0.9);
+            samples.refine();
         }
 
         let result = total * self.color / sample_count as f64;

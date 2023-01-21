@@ -148,14 +148,18 @@ impl Renderer {
                 let position = Position::<2>::cartesian(x as i32, y as i32);
                 let pixel = rasterizer.at(position);
                 let mut accumulated_color = Color::black();
+                let mut samples = sampler.sample(pixel);
 
-                for sample in sampler.sample(pixel).take(sample_count) {
+                for _ in 0..sample_count {
+                    let sample = samples.current();
                     let camera_rays = ray_tracer.scene.camera.enumerate_rays(sample);
 
                     for ray in camera_rays {
                         let trace_result = ray_tracer.trace(&ray);
                         accumulated_color += &trace_result.color;
                     }
+
+                    samples.refine();
                 }
 
                 accumulated_color /= sample_count as f64;

@@ -1,5 +1,5 @@
-use crate::math::{Point, Rectangle};
+use crate::{math::{Point, Rectangle}, util::Refine};
 
 pub trait Sampler2D {
-    fn sample(&self, rectangle: Rectangle<2>) -> Box<dyn Iterator<Item = Point<2>>>;
+    fn sample(&self, rectangle: Rectangle<2>) -> Box<dyn Refine<Point<2>>>;
 }

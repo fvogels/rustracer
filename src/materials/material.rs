@@ -1,4 +1,4 @@
-use crate::{imaging::color::Color, math::{Ray, Vector}, util::Refine};
+use crate::{imaging::color::Color, math::Vector, util::Refine};
 
 
 pub type TraceFunction = Box<dyn Fn(&Vector<3>, f64) -> Color>;
