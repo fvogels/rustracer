@@ -43,7 +43,7 @@ impl Polar {
 impl Cartesian3D {
     pub fn to_spherical(&self) -> Spherical {
         let radius = (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt();
-        let azimuth = Angle::radians(-self.z.atan2(self.x));
+        let azimuth = Angle::radians(self.z.atan2(self.x));
         let elevation = if radius > 0.0 {
             Angle::degrees(90.0) - Angle::radians((self.y / radius).acos())
         } else {
@@ -66,7 +66,7 @@ impl Spherical {
     pub fn to_cartesian3d(&self) -> Cartesian3D {
         let x = self.radius * self.azimuth.cos() * self.elevation.cos();
         let y = self.radius * self.elevation.sin();
-        let z = -self.radius * self.azimuth.sin() * self.elevation.cos();
+        let z = self.radius * self.azimuth.sin() * self.elevation.cos();
 
         Cartesian3D { x, y, z }
     }

@@ -1,5 +1,6 @@
 use super::{angle::Angle, Matrix, Vector};
 
+#[derive(Copy, Clone)]
 pub struct Transformation3D {
     pub matrix: Matrix<4, 4>,
     pub inverse_matrix: Matrix<4, 4>,

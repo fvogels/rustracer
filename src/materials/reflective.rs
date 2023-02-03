@@ -16,8 +16,11 @@ impl Material for ReflectiveMaterial {
     fn at(&self, direction: &Vector<3>, trace: TraceFunction) -> MaterialResult {
         debug_assert!(direction.z() > 0.0, "Direction {:?} should point outwards", direction);
 
-        let reflected_direction = (-direction).reflect(&Vector::<3>::z_axis());
+        let normal = Vector::<3>::z_axis();
+        let reflected_direction = (-direction).reflect(&normal);
         let color = trace(&reflected_direction, self.reflectivity);
+
+        // println!("Reflected {:?} by {:?} to {:?}", -direction, normal, reflected_direction);
 
         Box::new(Constant::new(color * self.reflectivity))
     }

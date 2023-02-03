@@ -81,6 +81,9 @@ mod test {
 
         assert_eq!(approx(pt!(0, 0, 0)), hit.global_position());
         assert_eq!(approx(vc!(0, 0, 1)), hit.normal());
+        assert_eq!(approx(vc!(1, 0, 0)), &hit.transformation.matrix * &vc!(1, 0, 0));
+        assert_eq!(approx(vc!(0, 1, 0)), &hit.transformation.matrix * &vc!(0, 1, 0));
+        assert_eq!(approx(vc!(0, 0, 1)), &hit.transformation.matrix * &vc!(0, 0, 1));
     }
 
     #[rstest]
@@ -95,5 +98,8 @@ mod test {
 
         assert_eq!(approx(pt!(0, 0, 0)), hit.global_position());
         assert_eq!(approx(vc!(0, 0, -1)), hit.normal());
+        assert_eq!(approx(vc!(1, 0, 0)), &hit.transformation.matrix * &vc!(1, 0, 0));
+        assert_eq!(approx(vc!(0, 1, 0)), &hit.transformation.matrix * &vc!(0, 1, 0));
+        assert_eq!(approx(vc!(0, 0, -1)), &hit.transformation.matrix * &vc!(0, 0, 1));
     }
 }

@@ -1,5 +1,7 @@
 mod constant;
 
+pub use constant::Constant;
+
 
 pub trait Refine<T> {
     fn current(&self) -> T;
@@ -7,4 +9,3 @@ pub trait Refine<T> {
     fn refine(&mut self);
 }
 
-pub use constant::Constant;

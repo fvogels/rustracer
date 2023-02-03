@@ -40,19 +40,25 @@ impl RayTracer {
                     debug_assert!(hit.t > 0.0, "find_first_positive_hit returned hit with negative t-value: {}", hit.t);
 
                     let material = hit.material.as_ref();
-                    let trace_function: TraceFunction = {
-                        let me = self.clone();
-                        let origin = hit.global_position();
-                        let transformation= hit.transformation;
+                    let mut material_result = {
+                        let trace_function: TraceFunction = {
+                            let me = self.clone();
+                            let origin = hit.global_position();
+                            let original_direction = ray.direction.clone();
 
-                        Box::new(move |direction, w| {
-                            let transformed_direction = &transformation.matrix * direction;
-                            let mut ray = Ray::new(origin, transformed_direction);
-                            ray.nudge(0.0001);
-                            me.weighted_trace(&ray, w * weight).color
-                        })
+                            Box::new(move |direction, w| {
+                                let mut ray = Ray::new(origin, direction.clone());
+                                // println!("{:?} -> {:?} ({w})", original_direction, ray);
+                                ray.nudge(0.0001);
+                                me.weighted_trace(&ray, w * weight).color
+                            })
+                        };
+
+                        material.at(&-ray.direction, trace_function)
                     };
-                    let material_result = material.at(&-ray.direction, trace_function);
+                    for _ in 0..1000 {
+                        material_result.refine();
+                    }
                     let color = material_result.current().clone();
                     TraceResult { color }
                 }

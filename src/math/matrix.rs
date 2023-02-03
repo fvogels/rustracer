@@ -8,7 +8,7 @@ use super::{
     vector::{vc, Vector},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Matrix<const R: usize, const C: usize> {
     m: [[f64; C]; R],
 }

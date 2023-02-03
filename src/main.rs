@@ -12,6 +12,9 @@ mod scripting;
 mod tracing;
 mod util;
 
+#[cfg(test)]
+mod tests;
+
 use std::rc::Rc;
 
 use animation::{Animation, LinearAnimation, Duration, TimeStamp, TimeDivider};
@@ -59,7 +62,7 @@ impl TestScene {
 
         let background = plane;
         let left_sphere = Rc::new(Transformer::new(
-            Transformation3D::translate(&vc!(-2, 0, 5)),
+            Transformation3D::translate(&vc!(-2, 0, 3)),
             sphere.clone(),
         ));
         let right_sphere = Rc::new(Transformer::new(
@@ -67,17 +70,22 @@ impl TestScene {
             sphere,
         ));
 
-        let white_emitting_material = Rc::new(UniformMaterial::new(Color::white()));
-        let red_material = Rc::new(UniformMaterial::new(Color::red()));
-        let green_material = Rc::new(UniformMaterial::new(Color::green()));
-        let blue_material = Rc::new(UniformMaterial::new(Color::blue()));
+        let white_emitting_material = Rc::new(UniformMaterial::new(Color::white() * 10.0));
+        let red_material = Rc::new(DiffuseMaterial::new(Color::red()));
+        let green_material = Rc::new(DiffuseMaterial::new(Color::green()));
+        let blue_material = Rc::new(DiffuseMaterial::new(Color::blue()));
         let reflective_material = Rc::new(ReflectiveMaterial::new(0.5));
+        let white_material = Rc::new(DiffuseMaterial::new(Color::white()));
 
-        let background = Rc::new(Decorator::new(white_emitting_material.clone(), background));
-        let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
+        let background = Rc::new(Decorator::new(white_material.clone(), background));
+        let left_sphere = Rc::new(Decorator::new(white_emitting_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
-        let union = Union::new(vec![left_sphere, right_sphere, background]);
+        let union = Union::new(vec![
+            left_sphere,
+            right_sphere,
+            background,
+        ]);
 
         Rc::new(union)
     }
@@ -174,11 +182,11 @@ impl Renderer {
 fn main() {
     let width = 500;
     let height = 500;
+    let frames_per_second = 1;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
-    let frames_per_second = 30;
     let timeline = TimeDivider::new(scene.duration(), frames_per_second);
-    let renderer = Renderer::new(500, 500, scene);
+    let renderer = Renderer::new(width, height, scene);
     let mut png_writer = {
         let png_options = PNGWriterOptions {
             width,
