@@ -1,6 +1,6 @@
 mod linear;
 mod time;
-mod divider;
+mod timeline;
 
 
 pub trait Animation<T> {
@@ -11,4 +11,4 @@ pub trait Animation<T> {
 
 pub use linear::LinearAnimation;
 pub use time::{TimeStamp, Duration};
-pub use divider::TimeDivider;
+pub use timeline::TimeLine;

@@ -1,13 +1,13 @@
 use super::{Duration, TimeStamp};
 
-pub struct TimeDivider {
+pub struct TimeLine {
     duration: Duration,
     frames_per_second: u32,
 }
 
-impl TimeDivider {
+impl TimeLine {
     pub fn new(duration: Duration, frames_per_second: u32) -> Self {
-        TimeDivider { duration, frames_per_second }
+        TimeLine { duration, frames_per_second }
     }
 
     pub fn iter(&self) -> impl Iterator<Item=(u32, TimeStamp)> {

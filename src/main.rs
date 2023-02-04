@@ -17,7 +17,7 @@ mod tests;
 
 use std::rc::Rc;
 
-use animation::{Animation, LinearAnimation, Duration, TimeStamp, TimeDivider};
+use animation::{Animation, LinearAnimation, Duration, TimeStamp, TimeLine};
 use cameras::perspective::{PerspectiveCamera, PerspectiveCameraParameters};
 use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
@@ -195,7 +195,7 @@ fn main() {
     let frames_per_second = 1;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
-    let timeline = TimeDivider::new(scene.duration(), frames_per_second);
+    let timeline = TimeLine::new(scene.duration(), frames_per_second);
     let renderer = Renderer::new(width, height, scene);
     let mut png_writer = {
         let png_options = PNGWriterOptions {
