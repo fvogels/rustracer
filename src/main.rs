@@ -190,7 +190,7 @@ impl Renderer {
 fn main() {
     let width = 500;
     let height = 500;
-    let frames_per_second = 1;
+    let frames_per_second = 30;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
     let timeline = TimeDivider::new(scene.duration(), frames_per_second);

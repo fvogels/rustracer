@@ -4,7 +4,7 @@ use crate::{
     imaging::color::Color,
     lights::light::{LightRay, LightSource},
     math::Ray,
-    primitives::Hit,
+    primitives::Hit, samplers::HemisphereSampler, util::Refine,
 };
 
 use super::scene::Scene;
@@ -22,11 +22,11 @@ impl RayTracer {
         RayTracer { scene }
     }
 
-    pub fn trace(self: &Rc<Self>, ray: &Ray) -> TraceResult {
+    pub fn trace(&self, ray: &Ray) -> TraceResult {
         self.weighted_trace(ray, 1.0)
     }
 
-    fn weighted_trace(self: &Rc<Self>, ray: &Ray, weight: f64) -> TraceResult {
+    fn weighted_trace(&self, ray: &Ray, weight: f64) -> TraceResult {
         if weight < 0.01 {
             TraceResult { color: Color::black() }
         } else {
@@ -40,18 +40,42 @@ impl RayTracer {
                     debug_assert!(hit.t > 0.0, "find_first_positive_hit returned hit with negative t-value: {}", hit.t);
 
                     TraceResult {
-                        color: self.determine_color(hit)
+                        color: self.determine_color(hit, weight)
                     }
                 }
             }
         }
     }
 
-    fn determine_color(&self, hit: Hit) -> Color {
+    fn determine_color(&self, hit: Hit, weight: f64) -> Color {
         match hit.material_properties {
             None => Color::black(),
-            Some(_) => self.process_lights(&hit)
+            Some(_) => {
+                self.direct_illumination(&hit) + self.indirect_illumination(&hit, weight)
+            }
         }
+    }
+
+    fn direct_illumination(&self, hit: &Hit) -> Color {
+        self.process_lights(hit)
+    }
+
+    fn indirect_illumination(&self, hit: &Hit, weight: f64) -> Color {
+        let mut sampler = HemisphereSampler::new();
+        let mut accumulated_color = Color::black();
+        let sample_count = 10;
+
+        for _ in 0..sample_count {
+            let origin = hit.global_position();
+            let direction = &hit.transformation.matrix * &sampler.current();
+            let mut ray = Ray::new(origin, direction);
+            ray.nudge(0.0001);
+
+            accumulated_color += self.weighted_trace(&ray, weight * 0.09).color * direction.dot(&hit.normal());
+            sampler.refine();
+        }
+
+        accumulated_color / sample_count as f64
     }
 
     fn process_lights(&self, hit: &Hit) -> Color {
