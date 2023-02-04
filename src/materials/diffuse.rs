@@ -47,7 +47,7 @@ impl Refine<Color> for Result {
 
     fn refine(&mut self) {
         let direction = self.directions.current();
-        let color = self.trace.as_mut()(&direction, 0.9);
+        let color = self.trace.as_mut()(&direction, 0.1);
 
         debug_assert!(direction.is_unit());
 

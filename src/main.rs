@@ -83,7 +83,7 @@ impl TestScene {
 
         let union = Union::new(vec![
             left_sphere,
-            right_sphere,
+            // right_sphere,
             background,
         ]);
 
