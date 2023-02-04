@@ -62,7 +62,8 @@ impl TestScene {
         fn create_material(color: Color) -> Rc<dyn Material> {
             let material_properties = MaterialProperties {
                 diffuse: color,
-                brdf: Some(Rc::new(crate::materials::brdf::Diffuse::new()))
+                brdf: None,
+                reflection: Color::white() * 0.8,
             };
 
             Rc::new(UniformMaterial::new(material_properties))
@@ -100,7 +101,7 @@ impl TestScene {
     }
 
     fn create_light_sources() -> Vec<Rc<dyn LightSource>> {
-        let light = Rc::new(PointLight::new(Color::white(), pt!(0, 5, 3)));
+        let light = Rc::new(PointLight::new(Color::white(), pt!(0, 5, 1)));
 
         vec![light]
     }
@@ -191,7 +192,7 @@ impl Renderer {
 fn main() {
     let width = 500;
     let height = 500;
-    let frames_per_second = 30;
+    let frames_per_second = 1;
     let path = "movie.png";
     let scene = Box::new(TestScene::new());
     let timeline = TimeDivider::new(scene.duration(), frames_per_second);

@@ -79,6 +79,7 @@ impl Primitive for Sphere {
                     let coordinate_system = compute_coordinate_system(p);
                     let hit = Hit {
                         t,
+                        ray: ray.clone(),
                         local_position,
                         transformation: coordinate_system.as_transformation(),
                         material_properties: None,

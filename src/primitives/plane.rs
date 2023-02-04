@@ -47,6 +47,7 @@ impl Primitive for PlaneXY {
                 let hit = Hit {
                     material_properties: None,
                     t,
+                    ray: ray.clone(),
                     local_position,
                     transformation: coordinate_system.as_transformation(),
                 };

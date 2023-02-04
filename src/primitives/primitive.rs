@@ -6,6 +6,7 @@ use crate::{
 
 pub struct Hit {
     pub t: f64,
+    pub ray: Ray,
     pub local_position: LocalPosition,
     pub transformation: Transformation3D,
     pub material_properties: Option<MaterialProperties>,

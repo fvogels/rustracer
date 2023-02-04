@@ -40,19 +40,33 @@ impl RayTracer {
                     debug_assert!(hit.t > 0.0, "find_first_positive_hit returned hit with negative t-value: {}", hit.t);
 
                     TraceResult {
-                        color: self.determine_color(ray, hit, weight)
+                        color: self.determine_color(hit, weight)
                     }
                 }
             }
         }
     }
 
-    fn determine_color(&self, ray: &Ray, hit: Hit, weight: f64) -> Color {
+    fn determine_color(&self, hit: Hit, weight: f64) -> Color {
         match &hit.material_properties {
             None => Color::black(),
             Some(material_properties) => {
-                self.direct_illumination(&hit, material_properties) + self.indirect_illumination(ray, &hit, material_properties, weight)
+                self.direct_illumination(&hit, material_properties) + self.reflection(&hit, material_properties, weight) + self.indirect_illumination(&hit, material_properties, weight)
             }
+        }
+    }
+
+    fn reflection(&self, hit: &Hit, material_properties: &MaterialProperties, weight: f64) -> Color {
+        let reflection = &material_properties.reflection;
+
+        if reflection.is_not_black() {
+            let mut reflected_ray = {
+                let reflected_direction = hit.ray.direction.reflect(&hit.normal());
+                Ray::new(hit.global_position(), reflected_direction)
+            }.nudged(0.00001);
+            self.weighted_trace(&reflected_ray, weight * reflection.intensity()).color
+        } else {
+            Color::black()
         }
     }
 
@@ -60,23 +74,23 @@ impl RayTracer {
         self.process_lights(hit, material_properties)
     }
 
-    fn indirect_illumination(&self, ray: &Ray, hit: &Hit, material_properties: &MaterialProperties, weight: f64) -> Color {
+    fn indirect_illumination(&self, hit: &Hit, material_properties: &MaterialProperties, weight: f64) -> Color {
         match &material_properties.brdf {
             None => {
                 Color::black()
             }
             Some(brdf) => {
+                let ray = &hit.ray;
                 let mut sampler = HemisphereSampler::new();
                 let mut accumulated_color = Color::black();
                 let mut total_weight = 0.0;
-                let sample_count = 10;
+                let sample_count = 100;
 
                 for _ in 0..sample_count {
                     let origin = hit.global_position();
                     let direction = sampler.current();
                     let transformed_direction = &hit.transformation.matrix * &direction;
-                    let mut ray = Ray::new(origin, transformed_direction);
-                    ray.nudge(0.0001);
+                    let mut ray = Ray::new(origin, transformed_direction).nudged(0.00001);
 
                     let brdf_factor = {
                         let outgoing = &hit.transformation.inverse_matrix * &ray.direction.normalized();

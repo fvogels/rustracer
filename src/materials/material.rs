@@ -12,5 +12,6 @@ pub trait Material {
 #[derive(Clone)]
 pub struct MaterialProperties {
     pub diffuse: Color,
+    pub reflection: Color,
     pub brdf: Option<Rc<dyn BRDF>>,
 }

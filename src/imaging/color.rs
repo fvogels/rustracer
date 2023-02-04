@@ -50,6 +50,14 @@ impl Color {
 
         [clamp(self.r()), clamp(self.g()), clamp(self.b())]
     }
+
+    pub fn is_not_black(&self) -> bool {
+        self.rgb.iter().any(|x| *x > 0.0)
+    }
+
+    pub fn intensity(&self) -> f64 {
+        self.rgb.iter().sum::<f64>() / 3.0
+    }
 }
 
 impl std::ops::Add for Color {

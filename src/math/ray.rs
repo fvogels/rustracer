@@ -26,6 +26,11 @@ impl Ray {
     pub fn nudge(&mut self, factor: f64) {
         self.origin += self.direction.normalized() * factor;
     }
+
+    pub fn nudged(mut self, factor: f64) -> Self {
+        self.nudge(factor);
+        self
+    }
 }
 
 impl Approx for Ray {
