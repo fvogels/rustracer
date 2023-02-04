@@ -61,7 +61,8 @@ impl TestScene {
     fn create_root() -> Rc<dyn Primitive> {
         fn create_material(color: Color) -> Rc<dyn Material> {
             let material_properties = MaterialProperties {
-                diffuse: color
+                diffuse: color,
+                brdf: Some(Rc::new(crate::materials::brdf::Diffuse::new()))
             };
 
             Rc::new(UniformMaterial::new(material_properties))
