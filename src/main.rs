@@ -62,8 +62,10 @@ impl TestScene {
         fn create_material(color: Color) -> Rc<dyn Material> {
             let material_properties = MaterialProperties {
                 diffuse: color,
+                specular_color: Color::black(),
+                specular_exponent: 10.0,
                 brdf: None,
-                reflection: Color::white() * 0.8,
+                reflection: Color::white() * 0.1,
             };
 
             Rc::new(UniformMaterial::new(material_properties))

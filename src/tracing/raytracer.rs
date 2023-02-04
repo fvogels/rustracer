@@ -64,7 +64,7 @@ impl RayTracer {
                 let reflected_direction = hit.ray.direction.reflect(&hit.normal());
                 Ray::new(hit.global_position(), reflected_direction)
             }.nudged(0.00001);
-            self.weighted_trace(&reflected_ray, weight * reflection.intensity()).color
+            self.weighted_trace(&reflected_ray, weight * reflection.intensity()).color * material_properties.reflection
         } else {
             Color::black()
         }
@@ -150,13 +150,27 @@ impl RayTracer {
         if is_shadowed {
             Color::black()
         } else {
-            let cos_angle = -hit.normal().cos_angle_between(&light_ray.ray.direction);
-
-            if cos_angle > 0.0 {
-                light_ray.color * cos_angle * material_properties.diffuse
-            } else {
-                Color::black()
-            }
+            self.compute_diffuse_lighting(hit, material_properties, light_ray) + self.compute_specular_lighting(hit, material_properties, light_ray)
         }
+    }
+
+    fn compute_diffuse_lighting(&self, hit: &Hit, material_properties: &MaterialProperties, light_ray: &LightRay) -> Color {
+        let cos_angle = -hit.normal().cos_angle_between(&light_ray.ray.direction);
+
+        if cos_angle > 0.0 {
+            light_ray.color * cos_angle * material_properties.diffuse
+        } else {
+            Color::black()
+        }
+    }
+
+    fn compute_specular_lighting(&self, hit: &Hit, material_properties: &MaterialProperties, light_ray: &LightRay) -> Color {
+        let reflected_light_direction = light_ray.ray.direction.reflect(&hit.normal()).normalized();
+        let eye_direction = {
+            let eye = &hit.ray.origin;
+            (eye - &hit.global_position()).normalized()
+        };
+
+        light_ray.color * material_properties.specular_color * reflected_light_direction.dot(&eye_direction).powf(material_properties.specular_exponent)
     }
 }

@@ -13,5 +13,7 @@ pub trait Material {
 pub struct MaterialProperties {
     pub diffuse: Color,
     pub reflection: Color,
+    pub specular_exponent: f64,
+    pub specular_color: Color,
     pub brdf: Option<Rc<dyn BRDF>>,
 }
