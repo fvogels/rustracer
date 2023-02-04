@@ -1,9 +1,11 @@
-use crate::{imaging::color::Color, math::Vector, util::Refine};
+use crate::{imaging::color::Color, primitives::LocalPosition};
 
-
-pub type TraceFunction = Box<dyn Fn(&Vector<3>, f64) -> Color>;
-pub type MaterialResult = Box<dyn Refine<Color>>;
 
 pub trait Material {
-    fn at(&self, direction: &Vector<3>, trace: TraceFunction) -> MaterialResult;
+    fn at(&self, local_position: LocalPosition) -> MaterialProperties;
+}
+
+#[derive(Clone)]
+pub struct MaterialProperties {
+    pub diffuse: Color,
 }

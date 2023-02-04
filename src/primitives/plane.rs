@@ -44,9 +44,8 @@ impl Primitive for PlaneXY {
                     uv: compute_uv_coordinates(p),
                 };
                 let coordinate_system = compute_coordinate_system(p, &ray.origin);
-                let material = Rc::new(UniformMaterial::new(Color::black()));
                 let hit = Hit {
-                    material,
+                    material_properties: None,
                     t,
                     local_position,
                     transformation: coordinate_system.as_transformation(),

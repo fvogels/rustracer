@@ -77,12 +77,11 @@ impl Primitive for Sphere {
                         uv: compute_uv_coordinates(&p),
                     };
                     let coordinate_system = compute_coordinate_system(p);
-                    let material = Rc::new(UniformMaterial::new(Color::black()));
                     let hit = Hit {
                         t,
                         local_position,
                         transformation: coordinate_system.as_transformation(),
-                        material,
+                        material_properties: None,
                     };
 
                     Some(hit)

@@ -23,12 +23,14 @@ use imaging::{PNGWriter, PNGWriterOptions};
 use imaging::color::Color;
 use imaging::image::Image;
 use lights::{light::LightSource, point::PointLight};
-use materials::{UniformMaterial, ReflectiveMaterial, DiffuseMaterial};
+use materials::{UniformMaterial};
 use math::{transformation3d::Transformation3D, Position, Rasterizer, Rectangle};
 use primitives::{Primitive, Transformer, Union, PlaneXY, Sphere, Decorator};
 use samplers::{Sampler2D, StratifiedSampler2D};
 use tracing::raytracer::RayTracer;
 use tracing::scene::Scene;
+
+use crate::materials::{MaterialProperties, Material};
 
 
 struct TestScene { }
@@ -57,6 +59,14 @@ impl TestScene {
     }
 
     fn create_root() -> Rc<dyn Primitive> {
+        fn create_material(color: Color) -> Rc<dyn Material> {
+            let material_properties = MaterialProperties {
+                diffuse: color
+            };
+
+            Rc::new(UniformMaterial::new(material_properties))
+        }
+
         let plane = Rc::new(PlaneXY::new());
         let sphere = Rc::new(Sphere::new());
 
@@ -70,20 +80,18 @@ impl TestScene {
             sphere,
         ));
 
-        let white_emitting_material = Rc::new(UniformMaterial::new(Color::white() * 10.0));
-        let red_material = Rc::new(DiffuseMaterial::new(Color::red()));
-        let green_material = Rc::new(DiffuseMaterial::new(Color::green()));
-        let blue_material = Rc::new(DiffuseMaterial::new(Color::blue()));
-        let reflective_material = Rc::new(ReflectiveMaterial::new(0.5));
-        let white_material = Rc::new(DiffuseMaterial::new(Color::white()));
+        let red_material = create_material(Color::red());
+        let green_material = create_material(Color::green());
+        let blue_material = create_material(Color::blue());
+        let white_material = create_material(Color::white());
 
         let background = Rc::new(Decorator::new(white_material.clone(), background));
-        let left_sphere = Rc::new(Decorator::new(white_emitting_material, left_sphere));
+        let left_sphere = Rc::new(Decorator::new(red_material, left_sphere));
         let right_sphere = Rc::new(Decorator::new(blue_material, right_sphere));
 
         let union = Union::new(vec![
             left_sphere,
-            // right_sphere,
+            right_sphere,
             background,
         ]);
 

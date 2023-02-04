@@ -4,7 +4,7 @@ use crate::{
     imaging::color::Color,
     lights::light::{LightRay, LightSource},
     math::Ray,
-    primitives::Hit, materials::TraceFunction,
+    primitives::Hit,
 };
 
 use super::scene::Scene;
@@ -39,38 +39,26 @@ impl RayTracer {
                 Some(hit) => {
                     debug_assert!(hit.t > 0.0, "find_first_positive_hit returned hit with negative t-value: {}", hit.t);
 
-                    let material = hit.material.as_ref();
-                    let mut material_result = {
-                        let trace_function: TraceFunction = {
-                            let me = self.clone();
-                            let origin = hit.global_position();
-                            let original_direction = ray.direction.clone();
-
-                            Box::new(move |direction, w| {
-                                let mut ray = Ray::new(origin, direction.clone());
-                                // println!("{:?} -> {:?} ({w})", original_direction, ray);
-                                ray.nudge(0.0001);
-                                me.weighted_trace(&ray, w * weight).color
-                            })
-                        };
-
-                        material.at(&-ray.direction, trace_function)
-                    };
-                    for _ in 0..1000 {
-                        material_result.refine();
+                    TraceResult {
+                        color: self.determine_color(hit)
                     }
-                    let color = material_result.current().clone();
-                    TraceResult { color }
                 }
             }
         }
     }
 
-    fn process_lights(&self, hit: &Hit, material_properties: &MaterialProperties) -> Color {
+    fn determine_color(&self, hit: Hit) -> Color {
+        match hit.material_properties {
+            None => Color::black(),
+            Some(_) => self.process_lights(&hit)
+        }
+    }
+
+    fn process_lights(&self, hit: &Hit) -> Color {
         let mut result = Color::black();
 
         for light_source in self.scene.light_sources.iter() {
-            result += self.process_light(hit, material_properties, light_source.as_ref());
+            result += self.process_light(hit, light_source.as_ref());
         }
 
         result
@@ -79,14 +67,13 @@ impl RayTracer {
     fn process_light(
         &self,
         hit: &Hit,
-        material_properties: &MaterialProperties,
         light_source: &dyn LightSource,
     ) -> Color {
         let mut result = Color::black();
         let mut n_lightrays = 0;
 
         for light_ray in light_source.lightrays_to(hit.global_position()) {
-            result += self.process_light_ray(hit, material_properties, &light_ray);
+            result += self.process_light_ray(hit, &light_ray);
 
             n_lightrays += 1;
         }
@@ -98,9 +85,10 @@ impl RayTracer {
     fn process_light_ray(
         &self,
         hit: &Hit,
-        material_properties: &MaterialProperties,
         light_ray: &LightRay,
     ) -> Color {
+        debug_assert!(hit.material_properties.is_some(), "No material associated with hit; this should have been caught earlier");
+
         let is_shadowed = match self.scene.root.find_first_positive_hit(&light_ray.ray) {
             None => false,
             Some(ref hit) => hit.t < 0.999,
@@ -112,7 +100,7 @@ impl RayTracer {
             let cos_angle = -hit.normal().cos_angle_between(&light_ray.ray.direction);
 
             if cos_angle > 0.0 {
-                light_ray.color * cos_angle * material_properties.diffuse
+                light_ray.color * cos_angle * hit.material_properties.clone().unwrap().diffuse
             } else {
                 Color::black()
             }

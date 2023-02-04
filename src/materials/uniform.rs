@@ -1,19 +1,19 @@
-use crate::{imaging::color::Color, math::{Ray, Vector}, util::Constant};
+use crate::{imaging::color::Color, math::{Ray, Vector}, primitives::LocalPosition};
 
-use super::material::{Material, TraceFunction};
+use super::material::{Material, MaterialProperties};
 
 pub struct UniformMaterial {
-    color: Color,
+    properties: MaterialProperties,
 }
 
 impl UniformMaterial {
-    pub fn new(color: Color) -> Self {
-        UniformMaterial { color }
+    pub fn new(properties: MaterialProperties) -> Self {
+        UniformMaterial { properties }
     }
 }
 
 impl Material for UniformMaterial {
-    fn at(&self, direction: &Vector<3>, trace: TraceFunction) -> super::material::MaterialResult {
-        Box::new(Constant::new(self.color))
+    fn at(&self, local_position: LocalPosition) -> MaterialProperties {
+        self.properties.clone()
     }
 }

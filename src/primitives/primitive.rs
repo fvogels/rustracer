@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
 use crate::{
-    math::{Point, Ray, Vector, transformation3d::Transformation3D}, materials::Material,
+    math::{Point, Ray, Vector, transformation3d::Transformation3D}, materials::{Material, MaterialProperties},
 };
 
 pub struct Hit {
     pub t: f64,
     pub local_position: LocalPosition,
     pub transformation: Transformation3D,
-    pub material: Rc<dyn Material>,
+    pub material_properties: Option<MaterialProperties>,
 }
 
 #[derive(Copy, Clone)]
