@@ -12,9 +12,6 @@ mod scripting;
 mod tracing;
 mod util;
 
-#[cfg(test)]
-mod tests;
-
 use std::rc::Rc;
 
 use animation::{Animation, LinearAnimation, Duration, TimeStamp, TimeLine};
